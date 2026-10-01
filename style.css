@@ -208,3 +208,116 @@ footer {
     text-align: center;
     font-size: 18px;
 }
+
+
+/* =========================================================
+   QC Section
+   ========================================================= */
+
+.qc-summary {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 22px 0 30px;
+}
+
+
+.qc-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    background: #f8faf9;
+}
+
+
+.qc-card strong {
+    display: block;
+    color: var(--green-dark);
+    margin-bottom: 8px;
+}
+
+
+.qc-card p {
+    margin-bottom: 0;
+}
+
+
+.qc-big {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--green-dark);
+    margin: 4px 0 8px;
+}
+
+
+.qc-pass {
+    background: #edf7f1;
+    border-color: #9bcbb0;
+}
+
+
+.status-pass {
+    display: inline-block;
+    background: #e5f4ea;
+    color: #24613e;
+    border: 1px solid #a9d2b7;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+.status-structural {
+    display: inline-block;
+    background: #e9f1fa;
+    color: #315e91;
+    border: 1px solid #b5cee8;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+.status-review {
+    display: inline-block;
+    background: #fff3d9;
+    color: #8a6212;
+    border: 1px solid #e8cd8a;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+.qc-conclusion {
+    margin-top: 36px;
+    padding-top: 12px;
+}
+
+
+.qc-final-box {
+    margin-top: 24px;
+    padding: 24px;
+    border-radius: 10px;
+    background: #eaf5ee;
+    border: 2px solid #6aa981;
+    text-align: center;
+}
+
+
+.qc-final-box strong {
+    display: block;
+    color: var(--green-dark);
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+
+.qc-final-box p {
+    margin-bottom: 0;
+}
