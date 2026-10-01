@@ -53,6 +53,8 @@
 
     <a href="#dictionary">欄位說明</a>
 
+    <a href="#qc">Data Quality / QC 結果</a>
+
     <a href="#read">讀取方式</a>
 
     <a href="#version">版本</a>
@@ -841,7 +843,901 @@ composite indicator，
 
 </section>
 
+<!-- ===================================================== -->
+<!-- Quality Control -->
+<!-- ===================================================== -->
 
+<section id="qc">
+
+<h2>
+    5. Data Quality / QC
+</h2>
+
+<p>
+    在正式進行 EDA 與建模前，
+    先針對四個 V1 Core Master 進行資料品質檢查。
+    QC 原則為：
+    <strong>
+        先標記、再判斷，不因極端值自動刪除資料。
+    </strong>
+</p>
+
+
+<div class="qc-summary">
+
+    <div class="qc-card qc-pass">
+
+        <strong>
+            QC Status
+        </strong>
+
+        <span class="qc-big">
+            PASS
+        </span>
+
+        <p>
+            未發現需要大規模刪除的系統性資料錯誤。
+        </p>
+
+    </div>
+
+
+    <div class="qc-card">
+
+        <strong>
+            Master Files
+        </strong>
+
+        <span class="qc-big">
+            4
+        </span>
+
+        <p>
+            N3 / N5 × 南北方向。
+        </p>
+
+    </div>
+
+
+    <div class="qc-card">
+
+        <strong>
+            Exact Duplicate
+        </strong>
+
+        <span class="qc-big">
+            0
+        </span>
+
+        <p>
+            四個方向皆未發現完全重複旅次。
+        </p>
+
+    </div>
+
+
+    <div class="qc-card">
+
+        <strong>
+            QC Decision
+        </strong>
+
+        <span class="qc-big">
+            KEEP
+        </span>
+
+        <p>
+            目前不進行大規模 row deletion。
+        </p>
+
+    </div>
+
+</div>
+
+
+
+<h3>
+    5.1 QC 檢查原則
+</h3>
+
+<p>
+    本研究將 QC 問題區分為三類：
+</p>
+
+<table>
+
+<tr>
+    <th>類型</th>
+    <th>定義</th>
+    <th>處理方式</th>
+</tr>
+
+<tr>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+
+    <td>
+        檢查結果符合資料定義，
+        未發現異常。
+    </td>
+
+    <td>
+        保留原始資料。
+    </td>
+</tr>
+
+<tr>
+    <td>
+        <span class="status-structural">
+            Structural NA
+        </span>
+    </td>
+
+    <td>
+        欄位在該筆紀錄本來就不適用，
+        因此產生 NA。
+    </td>
+
+    <td>
+        保留 NA，
+        不補值、不刪除。
+    </td>
+</tr>
+
+<tr>
+    <td>
+        <span class="status-review">
+            REVIEW
+        </span>
+    </td>
+
+    <td>
+        數值較極端，
+        但不能直接判定為錯誤。
+    </td>
+
+    <td>
+        回查原始路徑與時間，
+        再決定是否處理。
+    </td>
+</tr>
+
+</table>
+
+
+
+<h3>
+    5.2 Missing Value 檢查
+</h3>
+
+<p>
+    大部分核心欄位皆無缺失。
+    Missing value 主要集中於假期名稱類欄位，
+    以及少量由資料定義自然產生的欄位。
+</p>
+
+
+<table>
+
+<tr>
+    <th>欄位</th>
+    <th>QC 判定</th>
+    <th>原因</th>
+    <th>處理方式</th>
+</tr>
+
+<tr>
+
+    <td>
+        HolidayName
+    </td>
+
+    <td>
+        <span class="status-structural">
+            Structural NA
+        </span>
+    </td>
+
+    <td>
+        非連假日期本來就沒有 HolidayName。
+    </td>
+
+    <td>
+        保留 NA。
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>
+        PreLongHolidayName
+    </td>
+
+    <td>
+        <span class="status-structural">
+            Structural NA
+        </span>
+    </td>
+
+    <td>
+        只有連假前一天才有值。
+    </td>
+
+    <td>
+        保留 NA。
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>
+        StandaloneHolidayName
+    </td>
+
+    <td>
+        <span class="status-structural">
+            Structural NA
+        </span>
+    </td>
+
+    <td>
+        只有單日國定假日才有值。
+    </td>
+
+    <td>
+        保留 NA。
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>
+        HolidayEventName /
+        HolidayEventStart /
+        HolidayEventEnd
+    </td>
+
+    <td>
+        <span class="status-structural">
+            Structural NA
+        </span>
+    </td>
+
+    <td>
+        只有落在 Holiday Event Window
+        的日期才具有假期事件資訊。
+    </td>
+
+    <td>
+        保留 NA。
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>
+        HolidayDayIndex
+    </td>
+
+    <td>
+        <span class="status-structural">
+            Structural NA
+        </span>
+    </td>
+
+    <td>
+        只有正式假期期間才有
+        Holiday Day Index。
+    </td>
+
+    <td>
+        保留 NA。
+    </td>
+
+</tr>
+
+</table>
+
+
+<div class="note">
+
+<strong>
+重要：
+</strong>
+
+上述 NA 並不代表資料遺失，
+而是該欄位在一般日期
+<strong>
+不適用（Not Applicable）
+</strong>。
+
+因此不應使用平均數、
+眾數或其他方式進行 imputation。
+
+</div>
+
+
+
+<h3>
+    5.3 M05_Speed_Weighted 缺值
+</h3>
+
+<p>
+    四個方向共有少量
+    <code>M05_Speed_Weighted</code>
+    缺值。
+</p>
+
+<table>
+
+<tr>
+    <th>路段方向</th>
+    <th>NA 筆數</th>
+    <th>NA 比例</th>
+    <th>QC 結果</th>
+</tr>
+
+<tr>
+    <td>N3 大溪－龍潭 北向</td>
+    <td>1,952</td>
+    <td>0.0043%</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+</tr>
+
+<tr>
+    <td>N3 大溪－龍潭 南向</td>
+    <td>3,655</td>
+    <td>0.0079%</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+</tr>
+
+<tr>
+    <td>N5 坪林－頭城 北向</td>
+    <td>10,335</td>
+    <td>0.0466%</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+</tr>
+
+<tr>
+    <td>N5 坪林－頭城 南向</td>
+    <td>4,401</td>
+    <td>0.0194%</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+</tr>
+
+</table>
+
+
+<p>
+    檢查結果顯示，
+    所有
+    <code>M05_Speed_Weighted = NA</code>
+    的紀錄皆同時滿足：
+</p>
+
+<div class="formula">
+
+M05_Volume_Total = 0
+
+</div>
+
+
+<p>
+    因加權速度定義為：
+</p>
+
+<div class="formula">
+
+V<sub>t</sub><sup>(w)</sup>
+=
+Σ(
+Speed<sub>k,t</sub>
+×
+Volume<sub>k,t</sub>
+)
+/
+Σ Volume<sub>k,t</sub>
+
+</div>
+
+
+<p>
+    當總交通量為 0 時，
+    分母為 0，
+    因此加權速度無法定義。
+</p>
+
+
+<div class="note">
+
+<strong>
+處理方式：
+</strong>
+
+保留
+<code>M05_Speed_Weighted = NA</code>。
+
+不可將其補為 0，
+因為速度 0 會被誤解為嚴重壅塞。
+
+</div>
+
+
+
+<h3>
+    5.4 VehicleType = 0
+</h3>
+
+<p>
+    原始 M06B 中發現極少數
+    <code>VehicleType = 0</code>
+    紀錄。
+</p>
+
+
+<table>
+
+<tr>
+    <th>路段方向</th>
+    <th>VehicleType = 0</th>
+    <th>QC 結果</th>
+</tr>
+
+<tr>
+    <td>N3 北向</td>
+    <td>103</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+</tr>
+
+<tr>
+    <td>N3 南向</td>
+    <td>69</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+</tr>
+
+<tr>
+    <td>N5 北向</td>
+    <td>36</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+</tr>
+
+<tr>
+    <td>N5 南向</td>
+    <td>37</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+</tr>
+
+</table>
+
+
+<p>
+    總計：
+    <strong>
+        245 筆
+    </strong>
+</p>
+
+
+<p>
+    這些紀錄的
+    <code>M05_Speed_OwnType</code>
+    與
+    <code>M05_Volume_OwnType</code>
+    皆為 NA。
+</p>
+
+
+<p>
+    原因是目前 M05A 車種分類僅包含：
+</p>
+
+<pre>
+31 = 小客車
+32 = 小貨車
+41 = 大客車
+42 = 大貨車
+5  = 聯結車
+</pre>
+
+
+<div class="note">
+
+<strong>
+處理方式：
+</strong>
+
+將
+<code>VehicleType = 0</code>
+視為
+<strong>UNKNOWN</strong>。
+
+保留該筆旅次，
+不因車種未知而刪除整筆資料。
+
+</div>
+
+
+
+<h3>
+    5.5 TripLength 極端值
+</h3>
+
+<p>
+    第一輪 QC 將
+    <code>TripLength &gt; 500 km</code>
+    標記為 REVIEW，
+    進一步檢查其旅次時間與
+    <code>TripInformation</code>。
+</p>
+
+
+<table>
+
+<tr>
+    <th>路段方向</th>
+    <th>&gt; 500 km</th>
+    <th>比例</th>
+    <th>最大 TripLength</th>
+</tr>
+
+<tr>
+    <td>N3 北向</td>
+    <td>5,899</td>
+    <td>0.0131%</td>
+    <td>928.65 km</td>
+</tr>
+
+<tr>
+    <td>N3 南向</td>
+    <td>6,738</td>
+    <td>0.0146%</td>
+    <td>987.00 km</td>
+</tr>
+
+<tr>
+    <td>N5 北向</td>
+    <td>204</td>
+    <td>0.00092%</td>
+    <td>899.10 km</td>
+</tr>
+
+<tr>
+    <td>N5 南向</td>
+    <td>173</td>
+    <td>0.00076%</td>
+    <td>899.10 km</td>
+</tr>
+
+</table>
+
+
+<p>
+    進一步依不同門檻統計：
+</p>
+
+<table>
+
+<tr>
+    <th>TripLength</th>
+    <th>筆數</th>
+</tr>
+
+<tr>
+    <td>&gt; 500 km</td>
+    <td>13,014</td>
+</tr>
+
+<tr>
+    <td>&gt; 600 km</td>
+    <td>6,948</td>
+</tr>
+
+<tr>
+    <td>&gt; 700 km</td>
+    <td>1,650</td>
+</tr>
+
+<tr>
+    <td>&gt; 800 km</td>
+    <td>170</td>
+</tr>
+
+<tr>
+    <td>&gt; 900 km</td>
+    <td>3</td>
+</tr>
+
+</table>
+
+
+<p>
+    進一步檢視極端旅次之
+    DetectionTime、
+    TripDuration 與
+    TripInformation，
+    可觀察到其路徑通常包含大量連續門架，
+    並具有相對應的長旅次時間。
+</p>
+
+
+<p>
+    因此目前沒有足夠證據將
+    TripLength &gt; 500 km
+    視為錯誤資料。
+</p>
+
+
+<div class="note">
+
+<strong>
+QC Decision：
+</strong>
+
+Extreme but internally coherent trip。
+
+保留原始資料，
+但後續分析可建立：
+
+<code>IsVeryLongTrip = 1(TripLength &gt; 500)</code>
+
+進行 sensitivity analysis。
+
+</div>
+
+
+
+<h3>
+    5.6 Exact Duplicate
+</h3>
+
+<p>
+    Exact duplicate 使用以下 M06B 核心欄位共同判定：
+</p>
+
+<pre>
+VehicleID
+DetectionTimeO
+GantryO
+DetectionTimeD
+GantryD
+TripLength
+TripEnd
+TripInformation
+</pre>
+
+
+<table>
+
+<tr>
+    <th>路段方向</th>
+    <th>Candidate Groups</th>
+    <th>Exact Duplicate Groups</th>
+    <th>Duplicate Extra Rows</th>
+</tr>
+
+<tr>
+    <td>N3 北向</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+</tr>
+
+<tr>
+    <td>N3 南向</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+</tr>
+
+<tr>
+    <td>N5 北向</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+</tr>
+
+<tr>
+    <td>N5 南向</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0</td>
+</tr>
+
+</table>
+
+
+<div class="qc-conclusion">
+
+<h3>
+    5.7 Final QC Decision
+</h3>
+
+<p>
+    綜合 Missing Value、
+    時間一致性、
+    Merge、
+    M05A、
+    Weather、
+    Calendar、
+    TripLength
+    與 Duplicate 檢查後，
+    V1 Core Master 未發現需要進行
+    大規模資料刪除的系統性錯誤。
+</p>
+
+
+<table>
+
+<tr>
+    <th>QC 項目</th>
+    <th>結果</th>
+    <th>最終處理</th>
+</tr>
+
+<tr>
+    <td>核心欄位缺失</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+    <td>保留</td>
+</tr>
+
+<tr>
+    <td>時間順序與時間對齊</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+    <td>保留</td>
+</tr>
+
+<tr>
+    <td>M05A Merge</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+    <td>保留</td>
+</tr>
+
+<tr>
+    <td>Weather Merge</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+    <td>保留</td>
+</tr>
+
+<tr>
+    <td>Calendar Merge</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+    <td>保留</td>
+</tr>
+
+<tr>
+    <td>Holiday 欄位 NA</td>
+    <td>
+        <span class="status-structural">
+            Structural NA
+        </span>
+    </td>
+    <td>保留 NA</td>
+</tr>
+
+<tr>
+    <td>M05_Speed_Weighted NA</td>
+    <td>
+        <span class="status-structural">
+            Structural NA
+        </span>
+    </td>
+    <td>保留 NA</td>
+</tr>
+
+<tr>
+    <td>VehicleType = 0</td>
+    <td>
+        <span class="status-review">
+            UNKNOWN
+        </span>
+    </td>
+    <td>保留旅次，車種視為 UNKNOWN</td>
+</tr>
+
+<tr>
+    <td>TripLength &gt; 500 km</td>
+    <td>
+        <span class="status-review">
+            EXTREME
+        </span>
+    </td>
+    <td>保留並建立 flag</td>
+</tr>
+
+<tr>
+    <td>Exact Duplicate</td>
+    <td>
+        <span class="status-pass">
+            PASS
+        </span>
+    </td>
+    <td>0 筆，不需刪除</td>
+</tr>
+
+</table>
+
+
+<div class="qc-final-box">
+
+<strong>
+V1 Core Master — QC PASS
+</strong>
+
+<p>
+    V1 Core Master 可進入正式
+    Exploratory Data Analysis（EDA）
+    與後續 5-minute Modeling Dataset 建置階段。
+</p>
+
+</div>
+
+</div>
+
+
+</section>
 
 <!-- ===================================================== -->
 <!-- Read -->
