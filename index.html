@@ -1590,9 +1590,54 @@ TripInformation
 
 
 <div class="qc-conclusion">
-
 <h3>
-    5.7 Final QC Decision
+    5.7 QC Scripts
+</h3>
+
+<p>
+    QC 分為兩階段：
+</p>
+
+<table>
+
+<tr>
+    <th>程式</th>
+    <th>用途</th>
+</tr>
+
+<tr>
+    <td>
+        qc_master_v1.py
+    </td>
+
+    <td>
+        第一輪 QC：
+        Missing Value、
+        數值範圍、
+        時間一致性、
+        M05A / Weather / Calendar merge、
+        Gantry、
+        Weighted Speed 等基本檢查。
+    </td>
+</tr>
+
+<tr>
+    <td>
+        qc_followup_v1.py
+    </td>
+
+    <td>
+        第二輪 QC：
+        Weighted Speed NA、
+        VehicleType=0、
+        TripLength &gt; 500 km
+        與 Exact Duplicate 深入檢查。
+    </td>
+</tr>
+
+</table>
+<h3>
+    5.8 Final QC Decision
 </h3>
 
 <p>
