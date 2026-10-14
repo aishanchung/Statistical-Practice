@@ -33,7 +33,7 @@
 
     <p>
         Statistical Practice —
-        V1 Core Master Data Documentation
+        V2 Enriched Trip Master Data Documentation
     </p>
 
 </div>
@@ -122,6 +122,22 @@
 
     </div>
 
+    <div class="card">
+
+        <strong>M03A 時間尺度</strong>
+
+        5 分鐘
+
+    </div>
+
+    <div class="card">
+
+        <strong>VD 時間表示</strong>
+
+        5-minute target grid 上的 1-minute snapshot
+
+    </div>
+
 </div>
 
 
@@ -174,7 +190,7 @@
 <section id="structure">
 
 <h2>
-    2. V1 Core Master 資料架構
+    2. V2 Enriched Trip Master 資料架構
 </h2>
 
 <div class="pipeline">
@@ -182,6 +198,10 @@
 M06B
 +
 M05A
++
+M03A
++
+VD
 +
 Weather
 +
@@ -194,29 +214,37 @@ Calendar / Holiday
 <br>
 
 <strong>
-V1 Core Master
+V2 Enriched Trip Master
 </strong>
 
 </div>
 
-
 <p>
-    Master Data 保留原始旅次層級資訊，
-    因此不會失去 VehicleID、OD、
-    TripInformation 等資訊。
+    V2 延續 V1 的旅次層級設計，
+    <strong>一列仍然代表一筆通過研究瓶頸的 M06B trip</strong>。
+    VehicleID、OD、TripInformation、TripLength 等旅次資訊全部保留。
 </p>
-
 
 <div class="note">
 
-    <strong>重要：</strong>
+<strong>交通狀態欄位的重複是預期結果：</strong>
 
-    Master Data 並不是最終的
-    5-minute modeling dataset。
+同一 Route / Direction / Time5 內的多筆 M06B trip，
+會共享相同的 M03A、M05A、VD、Weather 與 Calendar context。
+因此同一個 VD speed 或 occupancy 可能在多筆 trip row 中重複，
+這不是 duplicate error。
 
-    後續壅塞預警模型會另外從 Master
-    聚合成「一列 = 一個 5 分鐘時段」，
-    Master 本身永久保留。
+</div>
+
+<div class="note">
+
+<strong>建模層級：</strong>
+
+MASTER_V2 是 trip-level 資料，
+不直接將每一筆 trip 視為獨立的交通狀態 observation。
+後續壅塞預警會另建
+<code>MODEL_5MIN_V1</code>，
+聚合為「一列 = Route × Direction × Time5」。
 
 </div>
 
@@ -231,8 +259,19 @@ V1 Core Master
 <section id="files">
 
 <h2>
-    3. V1 Master 檔案
+    3. Master 與衍生資料檔案
 </h2>
+
+<h3>Current：MASTER_V2_2024_2025</h3>
+
+<pre>
+N3_Daxi_Longtan_N_2024_2025_MASTER_V2.parquet
+N3_Daxi_Longtan_S_2024_2025_MASTER_V2.parquet
+N5_Pinglin_Toucheng_N_2024_2025_MASTER_V2.parquet
+N5_Pinglin_Toucheng_S_2024_2025_MASTER_V2.parquet
+</pre>
+
+<h3>Stable Baseline：MASTER_V1_2024_2025</h3>
 
 <pre>
 N3_Daxi_Longtan_N_2024_2025_MASTER_V1.parquet
@@ -241,10 +280,20 @@ N5_Pinglin_Toucheng_N_2024_2025_MASTER_V1.parquet
 N5_Pinglin_Toucheng_S_2024_2025_MASTER_V1.parquet
 </pre>
 
+<h3>VD 衍生資料</h3>
+
+<pre>
+VD_LONG_CLEAN_2024_2025.parquet
+
+N3_Daxi_Longtan_N_2024_2025_VD_5MIN_WIDE.parquet
+N3_Daxi_Longtan_S_2024_2025_VD_5MIN_WIDE.parquet
+N5_Pinglin_Toucheng_N_2024_2025_VD_5MIN_WIDE.parquet
+N5_Pinglin_Toucheng_S_2024_2025_VD_5MIN_WIDE.parquet
+</pre>
 
 <p>
     資料檔案體積較大，因此不放置於 GitHub。
-    GitHub Pages 僅作為資料說明與程式文件。
+    GitHub Pages 僅作為資料定義、QC、程式與研究進度文件。
 </p>
 
 </section>
@@ -307,7 +356,8 @@ N5_Pinglin_Toucheng_S_2024_2025_MASTER_V1.parquet
     <td>Time5</td>
     <td>datetime</td>
     <td>
-        與 M05A 對應的 5 分鐘時階。
+        全資料共同使用的 5 分鐘分析時間格點；
+        用於對應 M05A、M03A 與 VD snapshot。
     </td>
 </tr>
 
@@ -652,12 +702,213 @@ composite indicator，
 
 
 
+<!-- M03A -->
+
+<details>
+
+<summary>
+    D. M03A — 單一 eTag 門架 5 分鐘交通量
+</summary>
+
+<p>
+    M03A 以研究瓶頸 eTag 門架為單位，
+    提供每 5 分鐘、依車種區分之通過交通量。
+    V2 以 <code>Time5 = M03_Time5</code> 進行 many-to-one left join。
+</p>
+
+<table>
+<tr>
+    <th>欄位</th>
+    <th>單位 / 型態</th>
+    <th>定義</th>
+</tr>
+<tr class="field-row">
+    <td>M03_GantryID</td>
+    <td>string</td>
+    <td>研究瓶頸所使用的 eTag 門架。</td>
+</tr>
+<tr class="field-row">
+    <td>M03_Volume_31 / 32 / 41 / 42 / 5</td>
+    <td>veh / 5min</td>
+    <td>五種車種在該門架、該 5 分鐘的通過交通量。</td>
+</tr>
+<tr class="field-row">
+    <td>M03_Volume_Total</td>
+    <td>veh / 5min</td>
+    <td>五車種交通量合計；五類資料完整時才計算。</td>
+</tr>
+<tr class="field-row">
+    <td>M03_Volume_OwnType</td>
+    <td>veh / 5min</td>
+    <td>該筆 M06B trip 所屬車種在相同 5 分鐘的 M03A 流量。</td>
+</tr>
+<tr class="field-row">
+    <td>M03_Matched</td>
+    <td>boolean</td>
+    <td>該 trip 的 Time5 是否成功匹配 M03A。</td>
+</tr>
+</table>
+
+</details>
+
+
+<!-- VD -->
+
+<details open>
+
+<summary>
+    E. VD — 局部交通狀態 snapshot
+</summary>
+
+<div class="note">
+<strong>時間定義：</strong>
+VD 不是五分鐘平均值。
+本研究建立 5 分鐘 Target Time，
+並使用距離該 Target Time 最近、且
+<code>|LagMin| ≤ 4 分鐘</code>
+的一分鐘 VD observation 作為該時間格點的 snapshot。
+Target Time 與 DataCollectTime 均以台灣本地時間解讀。
+</div>
+
+<h3>Sensor-specific 欄位</h3>
+
+<table>
+<tr>
+    <th>欄位型態</th>
+    <th>定義</th>
+</tr>
+<tr class="field-row">
+    <td>VD_*_Speed</td>
+    <td>該 VD 在該 Time5 的有效 snapshot speed（km/h）。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_*_Occupancy</td>
+    <td>該 VD 各有效車道 occupancy 的平均值。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_*_LagMin</td>
+    <td>Target Time − 實際 DataCollectTime，單位為分鐘。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_*_Status</td>
+    <td>原始 VD Status；1 / 2 / 3 視為明確異常。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_*_Observed</td>
+    <td>該 sensor / Time5 是否存在原始 snapshot。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_*_Valid</td>
+    <td>Speed 可用、|Lag| ≤ 4 分鐘且無明確異常 Status 時為 TRUE。</td>
+</tr>
+</table>
+
+<h3>Dynamic Primary VD</h3>
+
+<p>
+    每個 Time5 會從當下
+    <strong>ValidSnapshot = TRUE</strong>
+    的 VD 中，選擇距研究瓶頸 eTag 門架最近者作為 Dynamic Primary VD。
+    因此 Primary VD 並非永遠固定同一支 sensor；
+    若最近 sensor 當下無有效資料，可使用下一支距離較近的有效 sensor。
+</p>
+
+<table>
+<tr>
+    <th>欄位</th>
+    <th>定義</th>
+</tr>
+<tr class="field-row">
+    <td>VD_PrimarySensorID</td>
+    <td>該 Time5 所選擇的最近有效 VDID。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_PrimarySpeed</td>
+    <td>Dynamic Primary VD 的 speed。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_PrimaryOccupancy</td>
+    <td>Dynamic Primary VD 的 occupancy。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_PrimaryLagMin</td>
+    <td>Dynamic Primary VD 與 Target Time 的分鐘差。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_PrimaryValid</td>
+    <td>該 Time5 是否至少存在一支有效 VD；若存在，Primary 即為有效。</td>
+</tr>
+</table>
+
+<h3>Corridor summary</h3>
+
+<table>
+<tr>
+    <th>欄位</th>
+    <th>定義</th>
+</tr>
+<tr class="field-row">
+    <td>VD_ObservedSensorCount</td>
+    <td>該 Time5 有原始 observation 的目標 VD 數量。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_ValidSensorCount</td>
+    <td>該 Time5 通過 QC 的有效 VD 數量。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_MinSpeed / VD_MedianSpeed / VD_MaxSpeed</td>
+    <td>該方向當下所有有效 VD 的速度摘要。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_MeanOccupancy / VD_MaxOccupancy</td>
+    <td>該方向當下有效 VD 的 occupancy 摘要。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_CongestedSensorCount</td>
+    <td>有效 VD 中 speed &lt; 40 km/h 的 sensor 數。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_CongestedSensorShare</td>
+    <td>有效 VD 中 speed &lt; 40 km/h 的比例。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_AnyCongested40</td>
+    <td>只要任一有效 VD speed &lt; 40 km/h 即為 TRUE；無有效 VD 時為 NA。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_WorstSpeedBand</td>
+    <td>依當下最低有效 VD speed 所建立之研究用速度區間。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_StaleSensorCount</td>
+    <td>|Lag| &gt; 4 分鐘的 sensor 數量。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_UnknownStatusSensorCount</td>
+    <td>Status 缺失的 sensor 數量；Status 缺失本身不直接視為設備故障。</td>
+</tr>
+<tr class="field-row">
+    <td>VD_NoTrafficLikeSensorCount</td>
+    <td>所有 lane speed 與 occupancy 同時為 0 的 sensor 數量；不直接解讀為壅塞。</td>
+</tr>
+</table>
+
+<div class="note">
+<strong>研究用壅塞門檻：</strong>
+<code>VD_IsCongested40 = (有效 speed &lt; 40 km/h)</code>。
+此為本研究的 operational definition，不宣稱為唯一官方壅塞定義。
+無有效 VD 時壅塞狀態保留 NA，不將 missing 自動視為「不壅塞」。
+</div>
+
+</details>
+
+
 <!-- Weather -->
 
 <details>
 
 <summary>
-    D. Weather
+    F. Weather
 </summary>
 
 <table>
@@ -709,7 +960,7 @@ composite indicator，
 <details>
 
 <summary>
-    E. Calendar / Holiday
+    G. Calendar / Holiday
 </summary>
 
 <table>
@@ -847,6 +1098,183 @@ composite indicator，
 <h2>
     5. Data Quality / QC
 </h2>
+
+<h3>5.0 MASTER V2 Merge / VD QC</h3>
+
+<div class="qc-summary">
+
+    <div class="qc-card qc-pass">
+        <strong>MASTER V2</strong>
+        <span class="qc-big">PASS</span>
+        <p>四個方向 merge 前後 row count 完全一致。</p>
+    </div>
+
+    <div class="qc-card">
+        <strong>VD sensors in collected raw data</strong>
+        <span class="qc-big">14</span>
+        <p>N3 N=5、N3 S=6、N5 N=2、N5 S=1。</p>
+    </div>
+
+    <div class="qc-card">
+        <strong>VD Valid Coverage</strong>
+        <span class="qc-big">97.63–99.31%</span>
+        <p>依 trip-row 加權後的有效 VD coverage。</p>
+    </div>
+
+    <div class="qc-card">
+        <strong>VD Time Rule</strong>
+        <span class="qc-big">±4 min</span>
+        <p>超過容許 lag 的 snapshot 不作為有效交通狀態。</p>
+    </div>
+
+</div>
+
+<h3>5.0.1 MASTER V2 Merge 結果</h3>
+
+<table>
+<tr>
+    <th>方向</th>
+    <th>Input rows</th>
+    <th>Output rows</th>
+    <th>有 VD observation</th>
+    <th>有效 VD</th>
+    <th>Row count QC</th>
+</tr>
+<tr>
+    <td>N3 龍潭 → 大溪（N）</td>
+    <td>45,150,592</td>
+    <td>45,150,592</td>
+    <td>97.68%</td>
+    <td>97.63%</td>
+    <td><span class="status-pass">PASS</span></td>
+</tr>
+<tr>
+    <td>N3 大溪 → 龍潭（S）</td>
+    <td>46,306,247</td>
+    <td>46,306,247</td>
+    <td>97.71%</td>
+    <td>97.65%</td>
+    <td><span class="status-pass">PASS</span></td>
+</tr>
+<tr>
+    <td>N5 頭城 → 坪林（N）</td>
+    <td>22,158,407</td>
+    <td>22,158,407</td>
+    <td>99.45%</td>
+    <td>99.31%</td>
+    <td><span class="status-pass">PASS</span></td>
+</tr>
+<tr>
+    <td>N5 坪林 → 頭城（S）</td>
+    <td>22,659,631</td>
+    <td>22,659,631</td>
+    <td>99.30%</td>
+    <td>98.92%</td>
+    <td><span class="status-pass">PASS</span></td>
+</tr>
+</table>
+
+<div class="note">
+<strong>為什麼不是 100% 都有 VD？</strong><br><br>
+
+MASTER_V2 以 M06B trip 為主表，因此只要某個 trip 的 Time5
+在 VD 資料中沒有任何目標 sensor observation，
+該 trip 仍會由 LEFT JOIN 保留下來，但 VD 欄位會是 NA。
+
+另外，「有 observation」不代表一定「有效」。
+有些 VD observation 因為與 Target Time 相差超過 4 分鐘、
+沒有可用的 sensor speed，或設備 Status 明確異常，
+會保留 QC 紀錄但不作為有效 VD traffic state。
+
+因此：
+<code>VDObservationPct</code>
+通常略高於
+<code>ValidVDPct</code>，
+而不到 100% 並不是 merge 失敗。
+</div>
+
+<h3>5.0.2 本研究目前收集到的 VD sensors</h3>
+
+<table>
+<tr>
+    <th>方向</th>
+    <th>目前 raw data 中的 VDID</th>
+    <th>數量</th>
+</tr>
+<tr>
+    <td>N3 北向</td>
+    <td>
+        VD-N3-N-61.000-M-LOOP<br>
+        VD-N3-N-61.670-M-RS<br>
+        VD-N3-N-63.990-M-LOOP<br>
+        VD-N3-N-65.990-M-RS<br>
+        VD-N3-N-69.510-M-LOOP
+    </td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>N3 南向</td>
+    <td>
+        VD-N3-S-61.400-M-LOOP<br>
+        VD-N3-S-62.008-M-LOOP<br>
+        VD-N3-S-64.500-M-RS<br>
+        VD-N3-S-66.020-M-LOOP<br>
+        VD-N3-S-67.000-M-LOOP<br>
+        VD-N3-S-69.700-M-RS
+    </td>
+    <td>6（全期間 unique）</td>
+</tr>
+<tr>
+    <td>N5 北向</td>
+    <td>
+        VD-N5-N-28.420-M-LOOP<br>
+        VD-N5-N-29.000-M-LOOP
+    </td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>N5 南向</td>
+    <td>
+        VD-N5-S-28.236-M-LOOP
+    </td>
+    <td>1</td>
+</tr>
+</table>
+
+<div class="note">
+<strong>重要限制：</strong>
+上表表示的是「目前團隊收集到的 raw VD dataset 中包含的 sensor」，
+不是宣稱高速公路局在該實體路段只設置這些 VD。
+若要判斷道路上實際完整 VD 數量，
+應另外以高速公路局 VD 靜態資訊（VDID、RoadDirection、LocationMile 等）
+做 inventory check。
+</div>
+
+<h3>5.0.3 VD sensor availability</h3>
+
+<p>
+    N3 南向的 sensor 並非全期間固定同一組。
+    例如 <code>VD-N3-S-62.008-M-LOOP</code>
+    在目前資料中只出現到 2024-03-25，
+    而 <code>VD-N3-S-64.500-M-RS</code> 與
+    <code>VD-N3-S-66.020-M-LOOP</code>
+    自 2024-04-11 起出現。
+    因此程式使用 Dynamic Primary VD，而不假設兩年間永遠固定同一支 sensor。
+</p>
+
+<h3>5.0.4 VD time / stale QC</h3>
+
+<p>
+    多數 sensor 的絕對時間差中位數約 1–2 分鐘，
+    95th percentile 約 2–3 分鐘。
+    超過 ±4 分鐘者標記為 stale，不作為有效 VD traffic state。
+    QC 另保留極端時間差及 speed &gt; 180 km/h 的 REVIEW 清單。
+</p>
+
+<hr>
+
+<h3>以下保留 V1 Core Master 的既有 QC</h3>
+
 
 <p>
     在正式進行 EDA 與建模前，
@@ -1789,15 +2217,12 @@ V1 Core Master — QC PASS
     6. 如何讀取資料
 </h2>
 
-
-<h3>
-    Python
-</h3>
+<h3>Python：讀取 V2</h3>
 
 <pre>
 import pandas as pd
 
-file = r"D:\統計實務\Data\MASTER_V1_2024_2025\N3_Daxi_Longtan_N_2024_2025_MASTER_V1.parquet"
+file = r"D:\統計實務\Data\MASTER_V2_2024_2025\N3_Daxi_Longtan_N_2024_2025_MASTER_V2.parquet"
 
 df = pd.read_parquet(file)
 
@@ -1806,21 +2231,30 @@ print(df.columns.tolist())
 print(df.head())
 </pre>
 
-
-<h3>
-    Python：只讀需要的欄位
-</h3>
+<h3>Python：只讀需要欄位</h3>
 
 <pre>
 cols = [
     "VehicleID",
     "VehicleType",
     "BottleneckTime",
+    "Time5",
     "GantryO",
     "GantryD",
     "TripLength",
+
+    "M03_Volume_Total",
+
     "M05_Speed_Weighted",
     "M05_Volume_Total",
+
+    "VD_PrimarySensorID",
+    "VD_PrimarySpeed",
+    "VD_PrimaryOccupancy",
+    "VD_ValidSensorCount",
+    "VD_MinSpeed",
+    "VD_AnyCongested40",
+
     "Weather_Precipitation_mm",
     "DayType",
     "HolidayPhase"
@@ -1832,15 +2266,12 @@ df = pd.read_parquet(
 )
 </pre>
 
-
-<h3>
-    R
-</h3>
+<h3>R</h3>
 
 <pre>
 library(arrow)
 
-file &lt;- "D:/統計實務/Data/MASTER_V1_2024_2025/N3_Daxi_Longtan_N_2024_2025_MASTER_V1.parquet"
+file &lt;- "D:/統計實務/Data/MASTER_V2_2024_2025/N3_Daxi_Longtan_N_2024_2025_MASTER_V2.parquet"
 
 df &lt;- read_parquet(file)
 
@@ -1849,14 +2280,10 @@ names(df)
 head(df)
 </pre>
 
-
 <div class="note">
-
-因 Master 檔案很大，
+因 MASTER_V2 仍為大型 trip-level parquet，
 若分析只需要少數欄位，
-建議只讀入所需 columns，
-可大幅降低記憶體使用量。
-
+建議使用 column projection，只讀入所需 columns。
 </div>
 
 </section>
@@ -1883,40 +2310,51 @@ head(df)
 
 <tr>
     <td>V1 Core Master</td>
-
     <td>
-        M06B +
-        M05A +
-        Weather +
-        Calendar / Holiday
+        M06B + M05A + Weather + Calendar / Holiday
     </td>
-
     <td>
-        Current
+        Stable / Archived
     </td>
 </tr>
 
 <tr>
-    <td>V2</td>
-
+    <td>V1 + M03A</td>
     <td>
-        預計加入 VD /
-        upstream traffic state
+        V1 + bottleneck eTag 5-minute traffic volume
     </td>
+    <td>
+        Intermediate
+    </td>
+</tr>
 
+<tr>
+    <td><strong>V2 Enriched Trip Master</strong></td>
+    <td>
+        V1 + M03A + VD 5-minute snapshot traffic context
+    </td>
+    <td>
+        <strong>Current</strong>
+    </td>
+</tr>
+
+<tr>
+    <td>MODEL_5MIN_V1</td>
+    <td>
+        將 M06B / VehicleID / OD 特徵聚合至
+        Route × Direction × Time5，
+        用於 CongestionNow / Next15 / Next30 / Next60。
+    </td>
     <td>
         Planned
     </td>
 </tr>
 
 <tr>
-    <td>V3</td>
-
+    <td>Future Extension</td>
     <td>
-        預計加入 Incident /
-        Traffic Control
+        Incident / Traffic Control / additional external information
     </td>
-
     <td>
         Planned
     </td>
