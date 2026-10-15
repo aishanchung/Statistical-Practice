@@ -1,0 +1,115 @@
+import os
+import requests
+import gzip
+from bs4 import BeautifulSoup
+import re
+import urllib3
+import csv
+import calendar
+
+# 關閉 SSL 憑證警告
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# 維持你原本的正規表示式，確保比對基準一致
+target_pattern = re.compile(r"^VD-N3-[NS]-6[1-9]\.[0-9]{3}-M-|^VD-N5-[NS]-2[89]\.[0-9]{3}-M-")
+csv_headers = ["File_Time", "DataCollectTime", "Section", "Direction", "VDID", "Status", "LaneID", "LaneType", "Speed_kmh", "Occupancy"]
+
+print("🚀 啟動 2024年1月 VD 資料擷取任務 (保留 -99 缺測值)...")
+
+year = 2024
+month = 1
+folder_name = "2024_with_99"
+
+if not os.path.exists(folder_name):
+    os.makedirs(folder_name)
+
+month_str = f"{year}{month:02d}"
+output_filename = os.path.join(folder_name, f"VD_{month_str}_with_99.csv")
+
+with open(output_filename, mode="w", encoding="utf-8-sig", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow(csv_headers)
+    
+    month_total_records = 0
+    days_in_month = calendar.monthrange(year, month)[1] 
+    
+    for day in range(1, days_in_month + 1):
+        date_str = f"{year}{month:02d}{day:02d}"
+        day_records = 0
+        
+        for total_minutes in range(0, 1440, 5):
+            candidate_mins = [total_minutes, total_minutes + 1, total_minutes - 1]
+            
+            hh_std = total_minutes // 60
+            mm_std = total_minutes % 60
+            std_time_str = f"{year}-{month:02d}-{day:02d} {hh_std:02d}:{mm_std:02d}"
+            
+            for cm in candidate_mins:
+                if cm < 0 or cm >= 1440:
+                    continue
+                    
+                hh = cm // 60
+                mm = cm % 60
+                time_str = f"{hh:02d}{mm:02d}"
+                
+                url = f"https://tisvcloud.freeway.gov.tw/history/motc20/VD/{date_str}/VDLive_{time_str}.xml.gz"
+                
+                try:
+                    response = requests.get(url, timeout=5, verify=False)
+                    
+                    if response.status_code == 200:
+                        xml_data = gzip.decompress(response.content)
+                        
+                        try:
+                            soup = BeautifulSoup(xml_data, "xml")
+                        except Exception:
+                            soup = BeautifulSoup(xml_data, "html.parser")
+                        
+                        data_time_node = soup.find("DataCollectTime")
+                        if not data_time_node:
+                            continue
+                            
+                        data_time = data_time_node.text
+                        vd_nodes = soup.find_all("VDLive")
+                        
+                        for node in vd_nodes:
+                            vdid_node = node.find("VDID")
+                            if not vdid_node:
+                                continue
+                                
+                            vdid = vdid_node.text
+                            if target_pattern.search(vdid):
+                                section = "N3_大溪龍潭" if "N3" in vdid else "N5_坪林頭城"
+                                direction = "南下" if "-S-" in vdid else "北上"
+                                
+                                status_node = node.find("Status")
+                                status = status_node.text if status_node else "未知"
+                                
+                                lanes = node.find_all("Lane")
+                                for lane in lanes:
+                                    lane_id_node = lane.find("LaneID")
+                                    lane_type_node = lane.find("LaneType")
+                                    speed_node = lane.find("Speed")
+                                    occ_node = lane.find("Occupancy")
+                                    
+                                    lane_id = lane_id_node.text if lane_id_node else ""
+                                    lane_type = lane_type_node.text if lane_type_node else ""
+                                    speed = float(speed_node.text) if speed_node else -99.0
+                                    occ = float(occ_node.text) if occ_node else -99.0
+                                    
+                                    # 【關鍵修改】不再判斷 speed >= 0，直接將所有資料（包含 -99）寫入
+                                    writer.writerow([
+                                        std_time_str, data_time, section, direction, 
+                                        vdid, status, lane_id, lane_type, speed, occ
+                                    ])
+                                    day_records += 1
+                                    
+                        break # 抓到就跳出容錯搜尋
+                        
+                except requests.exceptions.RequestException:
+                    pass 
+                    
+        month_total_records += day_records
+        print(f"   ✓ {date_str} 完成 (共 {day_records} 筆)")
+        
+print(f"\n🎉 任務完成！總計寫入 {month_total_records} 筆，已存為 {output_filename}")
