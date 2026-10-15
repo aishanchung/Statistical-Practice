@@ -1,0 +1,130 @@
+# ==========================================
+# 步驟一：載入套件與設定路徑
+# ==========================================
+library(dplyr)
+library(readr)
+library(stringr)
+library(tidyr)
+library(lubridate)
+library(purrr)
+
+raw_folder_2024 <- "C:/Users/USER/Desktop/VD/2024"
+raw_folder_2025 <- "C:/Users/USER/Desktop/VD/2025"
+output_folder <- "C:/Users/USER/Desktop/VD/VD匯入庫"
+
+if(!dir.exists(output_folder)) dir.create(output_folder)
+
+# ==========================================
+# 步驟二：一次讀取並合併兩個資料夾內的檔案
+# ==========================================
+cat("📥 正在讀取 2024 與 2025 資料夾中的原始檔案...\n")
+
+file_list_2024 <- list.files(path = raw_folder_2024, pattern = "\\.csv$", full.names = TRUE)
+file_list_2025 <- list.files(path = raw_folder_2025, pattern = "\\.csv$", full.names = TRUE)
+all_files <- c(file_list_2024, file_list_2025)
+
+if(length(all_files) == 0) stop("❌ 找不到 CSV 檔案！")
+
+# 全文字安全讀取法
+raw_vd <- map_df(all_files, function(file) {
+  read_csv(file, col_types = cols(.default = "c"), show_col_types = FALSE, locale = locale(encoding = "UTF-8"))
+})
+
+# 拔掉隱形亂碼
+names(raw_vd) <- str_replace_all(names(raw_vd), "[^a-zA-Z0-9_]", "")
+
+# ==========================================
+# 步驟三：資料清洗與時間格式轉換 (破除 Excel 詐欺版)
+# ==========================================
+cat("🧹 正在過濾路段與轉換時間格式...\n")
+cleaned_vd <- raw_vd %>%
+  filter(str_detect(Section, "N3_大溪龍潭|N5_坪林頭城")) %>%
+  mutate(
+    LaneID = as.numeric(LaneID),
+    Speed_kmh = as.numeric(Speed_kmh),
+    Occupancy = as.numeric(Occupancy),
+    
+    # 🎯 關鍵修正：告訴 R 只要讀 "年-月-日 時:分" (Ymd HM) 就好！
+    Parsed_Time = parse_date_time(File_Time, orders = c("Ymd HM", "Ymd HMS"), tz = "Asia/Taipei"),
+    # 完美變身 OD 格式
+    Target_Time = format(Parsed_Time, "%Y-%m-%dT%H:%M:%S.000Z"),
+    
+    MasterRoute = case_when(
+      str_detect(Section, "N3_大溪龍潭") ~ "N3_Daxi_Longtan",
+      str_detect(Section, "N5_坪林頭城") ~ "N5_Pinglin_Toucheng",
+      TRUE ~ "Other"
+    ),
+    MasterDirection = case_when(
+      str_detect(Direction, "北上") ~ "N",
+      str_detect(Direction, "南下") ~ "S",
+      TRUE ~ "Other"
+    )
+  ) %>%
+  filter(MasterRoute != "Other", MasterDirection != "Other")
+
+# ==========================================
+# 步驟四：車道展開 (Pivot Wider)
+# ==========================================
+cat("🔄 正在展開車道資料...\n")
+wide_vd <- cleaned_vd %>%
+  select(Target_Time, Section, Direction, VDID, LaneID, Speed_kmh, Occupancy, MasterRoute, MasterDirection) %>%
+  pivot_wider(
+    names_from = LaneID,
+    values_from = c(Speed_kmh, Occupancy),
+    names_glue = "VD_{.value}_Lane{LaneID}",
+    values_fn = mean, 
+    values_fill = list(Speed_kmh = -1, Occupancy = -1)
+  )
+
+# ==========================================
+# 步驟五：計算加權車速與壅塞指標
+# ==========================================
+cat("🧮 正在計算加權車速與壅塞指標...\n")
+final_vd <- wide_vd %>%
+  mutate(
+    Total_Speed_Occ = 
+      (if_else(VD_Speed_kmh_Lane0 != -1, VD_Speed_kmh_Lane0 * VD_Occupancy_Lane0, 0)) +
+      (if_else(VD_Speed_kmh_Lane1 != -1, VD_Speed_kmh_Lane1 * VD_Occupancy_Lane1, 0)) +
+      (if_else(VD_Speed_kmh_Lane2 != -1, VD_Speed_kmh_Lane2 * VD_Occupancy_Lane2, 0)) +
+      (if_else(VD_Speed_kmh_Lane3 != -1, VD_Speed_kmh_Lane3 * VD_Occupancy_Lane3, 0)),
+    
+    Total_Occ = 
+      (if_else(VD_Occupancy_Lane0 != -1, VD_Occupancy_Lane0, 0)) +
+      (if_else(VD_Occupancy_Lane1 != -1, VD_Occupancy_Lane1, 0)) +
+      (if_else(VD_Occupancy_Lane2 != -1, VD_Occupancy_Lane2, 0)) +
+      (if_else(VD_Occupancy_Lane3 != -1, VD_Occupancy_Lane3, 0)),
+    
+    VD_Weighted_Avg_Speed = if_else(Total_Occ > 0, Total_Speed_Occ / Total_Occ, -1),
+    
+    VD_Official_Congestion_Level = case_when(
+      VD_Weighted_Avg_Speed < 0 ~ 0,
+      VD_Weighted_Avg_Speed >= 80 ~ 1,
+      VD_Weighted_Avg_Speed >= 60 ~ 2,
+      VD_Weighted_Avg_Speed >= 40 ~ 3,
+      VD_Weighted_Avg_Speed >= 20 ~ 4,
+      TRUE ~ 5
+    ),
+    Is_Congested = if_else(VD_Official_Congestion_Level >= 4, 1, 0)
+  ) %>%
+  select(-Total_Speed_Occ, -Total_Occ)
+
+# ==========================================
+# 步驟六：切成 4 個檔案並輸出
+# ==========================================
+cat("💾 正在輸出 4 個 MASTER 檔案...\n")
+split_data <- final_vd %>%
+  group_by(MasterRoute, MasterDirection) %>%
+  group_split()
+
+walk(split_data, function(df) {
+  route <- df$MasterRoute[1]
+  dir <- df$MasterDirection[1]
+  
+  file_name <- sprintf("%s_%s_2024_2025_MASTER.csv", route, dir)
+  file_path <- file.path(output_folder, file_name)
+  
+  write_csv(df, file_path)
+  cat(sprintf("✅ 已產生: %s\n", file_name))
+})
+
+cat("\n🎉 大功告成！\n")
