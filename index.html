@@ -12,7 +12,7 @@
 >
 
 <title>
-    國道瓶頸資料專案｜Overview
+    國道瓶頸資料專案｜首頁
 </title>
 
 <link
@@ -46,43 +46,50 @@
         </h1>
 
         <p>
-            Statistical Practice
+            統計實務
         </p>
 
     </div>
 
 
     <div class="sidebar-section-title">
-        DATA
+        首頁
     </div>
 
     <a
         href="index.html"
         class="active"
     >
-        Overview
+        專案概述
     </a>
 
-    <a href="v1.html">
-        V1 Full Master
+
+    <div class="sidebar-section-title">
+        資料
+    </div>
+
+    <a href="v1_full.html">
+        V1_FULL
     </a>
 
     <a href="v1_lite.html">
         V1_LITE
     </a>
 
-    <a href="v2.html">
-        V2 Enriched Master
+    <a href="vd.html">
+        VD
+    </a>
+
+    <a href="v2_full.html">
+        V2_FULL
     </a>
 
 
     <div class="sidebar-section-title">
-        PROJECT
+        專案
     </div>
 
-    <a
-        href="progress_2026_10_week1.html"
-    >
+    <a href="progress_2026_10_week1.html">
         研究進度
     </a>
 
@@ -100,9 +107,10 @@
 </h1>
 
 <p>
-    國道 3 號大溪－龍潭與
-    國道 5 號坪林－頭城瓶頸路段資料整理、
-    EDA、交通狀態分析與壅塞預測資料建置。
+    針對國道 3 號大溪－龍潭與
+    國道 5 號坪林－頭城瓶頸路段，
+    進行旅次資料整理、OD 分析、
+    交通狀態分析與壅塞預測。
 </p>
 
 </header>
@@ -115,7 +123,7 @@
 <section>
 
 <h2>
-    Project Overview
+    專案概述
 </h2>
 
 
@@ -133,9 +141,9 @@
 </div>
 
 <p>
-    2024-01-01
+    2024/01/01
     至
-    2025-12-31
+    2025/12/31
 </p>
 
 </div>
@@ -148,11 +156,11 @@
 </strong>
 
 <div class="big-number">
-    4 directions
+    4 個方向
 </div>
 
 <p>
-    N3 / N5 × 南北向
+    國道 3 號與國道 5 號雙向
 </p>
 
 </div>
@@ -161,16 +169,15 @@
 <div class="card">
 
 <strong>
-    Master observation unit
+    主要資料單位
 </strong>
 
 <div class="big-number">
-    Trip
+    旅次
 </div>
 
 <p>
-    一列代表一筆
-    M06B ETC 旅次
+    一列代表一筆 M06B ETC 旅次
 </p>
 
 </div>
@@ -179,15 +186,15 @@
 <div class="card">
 
 <strong>
-    Current enriched version
+    目前完整版本
 </strong>
 
 <div class="big-number">
-    V2
+    V2_FULL
 </div>
 
 <p>
-    加入 VD traffic-state context
+    V1_FULL 加入 VD 交通狀態
 </p>
 
 </div>
@@ -202,9 +209,9 @@
 資料版本原則：
 </strong>
 
-完整 Master 永久保留，
-精簡版與模型資料皆為衍生資料，
-不覆蓋原始完整 Master。
+完整資料永久保留，
+精簡資料由完整資料衍生，
+後續分析不直接覆蓋原始完整版本。
 
 </div>
 
@@ -227,7 +234,9 @@
 <tr>
     <th>道路</th>
     <th>方向</th>
+    <th>研究路段里程</th>
     <th>研究瓶頸門架</th>
+    <th>瓶頸位置</th>
 </tr>
 
 
@@ -242,7 +251,15 @@
 </td>
 
 <td>
+    約 62K → 68K
+</td>
+
+<td>
     03F0648S
+</td>
+
+<td>
+    約 64.8K
 </td>
 
 </tr>
@@ -259,7 +276,15 @@
 </td>
 
 <td>
+    約 68K → 62K
+</td>
+
+<td>
     03F0648N
+</td>
+
+<td>
+    約 64.8K
 </td>
 
 </tr>
@@ -276,7 +301,15 @@
 </td>
 
 <td>
+    約 14K → 30K
+</td>
+
+<td>
     05F0287S
+</td>
+
+<td>
+    約 28.7K
 </td>
 
 </tr>
@@ -293,7 +326,15 @@
 </td>
 
 <td>
+    約 30K → 14K
+</td>
+
+<td>
     05F0287N
+</td>
+
+<td>
+    約 28.7K
 </td>
 
 </tr>
@@ -309,68 +350,71 @@
 <section>
 
 <h2>
-    Data Architecture
+    資料架構
 </h2>
 
 
 <div class="pipeline">
 
-M06B ETC Trips
-
-<br>
-
-↓
-
-<br>
-
+M06B
++
 M05A
-+ Weather
-+ Calendar
-+ M03A
-
-<br>
-
-↓
-
-<br>
-
-<strong>
-V1 Full Master
-</strong>
++
+M03A
++
+氣象資料
++
+日曆資料
 
 <br><br>
 
 ↓
 
-<br>
+<br><br>
 
-V1_LITE
-&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;
-+ VD
+<strong>
+V1_FULL
+</strong>
 
-<br>
+<br><br>
 
-↓
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-↓
+↙
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+↘
 
-<br>
+<br><br>
 
 <strong>
 V1_LITE
-&nbsp;&nbsp;&nbsp;&nbsp;
-V2
+</strong>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<strong>
+V1_FULL + VD
+</strong>
+
+<br>
+精簡欄位
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+↓
+
+<br><br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<strong>
+V2_FULL
 </strong>
 
 </div>
 
 
 <p>
-    V1 保留完整旅次與交通資訊；
-    V1_LITE 為國道三號精簡資料；
-    V2 則加入 VD 局部交通狀態。
+    V1_FULL 保留完整旅次與各項輔助資料；
+    V1_LITE 為國道 3 號的精簡分析版本；
+    VD 則另外保留測站交通狀態；
+    V2_FULL 為 V1_FULL 再整合 VD 後的完整版本。
 </p>
-
 
 </section>
 
@@ -379,7 +423,7 @@ V2
 <section>
 
 <h2>
-    Dataset Versions
+    資料版本
 </h2>
 
 
@@ -388,9 +432,9 @@ V2
 <table>
 
 <tr>
-    <th>版本</th>
-    <th>主要內容</th>
-    <th>用途</th>
+    <th>資料</th>
+    <th>內容</th>
+    <th>主要用途</th>
     <th>狀態</th>
 </tr>
 
@@ -398,22 +442,22 @@ V2
 <tr>
 
 <td>
-    <strong>V1</strong>
+    <strong>V1_FULL</strong>
 </td>
 
 <td>
     M06B + M05A +
-    Weather + Calendar +
-    M03A
+    M03A + 氣象 +
+    日曆資料
 </td>
 
 <td>
-    完整 trip-level Master
+    保留完整旅次與交通資訊
 </td>
 
 <td>
     <span class="status-pass">
-        Stable
+        已完成
     </span>
 </td>
 
@@ -427,19 +471,17 @@ V2
 </td>
 
 <td>
-    國道三號，
-    精簡為 15 個核心欄位
+    國道 3 號，
+    由 V1_FULL 精簡為 15 個核心欄位
 </td>
 
 <td>
-    EDA /
-    一般分析 /
-    快速讀取
+    EDA、OD 分析與快速讀取
 </td>
 
 <td>
     <span class="status-current">
-        Current
+        已完成
     </span>
 </td>
 
@@ -449,20 +491,21 @@ V2
 <tr>
 
 <td>
-    <strong>V2</strong>
+    <strong>VD</strong>
 </td>
 
 <td>
-    V1 + VD traffic state
+    各 VD 測站之車速、
+    佔有率與設備狀態
 </td>
 
 <td>
-    壅塞狀態與後續預測
+    描述瓶頸附近交通狀態
 </td>
 
 <td>
     <span class="status-current">
-        Current
+        檢查中
     </span>
 </td>
 
@@ -472,20 +515,20 @@ V2
 <tr>
 
 <td>
-    MODEL_5MIN_V1
+    <strong>V2_FULL</strong>
 </td>
 
 <td>
-    Route × Direction × Time5
+    V1_FULL + VD
 </td>
 
 <td>
-    15 / 30 / 60 分鐘預警模型
+    交通狀態分析與後續壅塞預測
 </td>
 
 <td>
-    <span class="status-planned">
-        Planned
+    <span class="status-current">
+        已建立
     </span>
 </td>
 
@@ -495,7 +538,6 @@ V2
 
 </div>
 
-
 </section>
 
 
@@ -503,7 +545,7 @@ V2
 <section>
 
 <h2>
-    Data Sources
+    主要資料來源
 </h2>
 
 
@@ -516,7 +558,7 @@ V2
     M06B
 </strong>
 
-ETC OD trip-level data
+ETC 旅次與 OD 路徑資料
 
 </div>
 
@@ -527,8 +569,7 @@ ETC OD trip-level data
     M05A
 </strong>
 
-5-minute section
-speed / volume
+五分鐘站間速度與交通量
 
 </div>
 
@@ -539,8 +580,7 @@ speed / volume
     M03A
 </strong>
 
-5-minute bottleneck
-gantry volume
+五分鐘門架車流量
 
 </div>
 
@@ -551,8 +591,7 @@ gantry volume
     VD
 </strong>
 
-Local traffic-state
-snapshot
+測站車速與佔有率
 
 </div>
 
@@ -560,11 +599,10 @@ snapshot
 <div class="card">
 
 <strong>
-    Weather
+    氣象資料
 </strong>
 
-Hourly meteorological
-variables
+氣溫、露點、降雨與風速
 
 </div>
 
@@ -572,11 +610,10 @@ variables
 <div class="card">
 
 <strong>
-    Calendar
+    日曆資料
 </strong>
 
-Weekend / holiday /
-summer information
+平日、週末、連假與暑假資訊
 
 </div>
 
@@ -594,8 +631,8 @@ summer information
 
 <footer>
 
-Statistical Practice —
-Freeway Bottleneck OD Analysis Project
+統計實務 —
+國道瓶頸路段 OD 旅次分析與預測
 
 </footer>
 
