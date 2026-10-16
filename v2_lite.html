@@ -1,1019 +1,171 @@
 <!DOCTYPE html>
-
 <html lang="zh-Hant">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-V2_FULL｜整合 VD 的完整資料
-</title>
-
-<link
-    rel="stylesheet"
-    href="style.css"
->
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V2_LITE｜國道 3 號北向整合資料</title>
+<link rel="stylesheet" href="style.css">
 </head>
-
-
 <body>
 
+<button class="mobile-menu-button" onclick="toggleSidebar()">☰</button>
 
-<button
-    class="mobile-menu-button"
-    onclick="toggleSidebar()"
->
-☰
-</button>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <h1>國道瓶頸資料專案</h1>
+        <p>統計實務</p>
+    </div>
 
+    <div class="sidebar-section-title">首頁</div>
+    <a href="index.html">專案概述</a>
 
-<aside
-    class="sidebar"
-    id="sidebar"
->
+    <div class="sidebar-section-title">資料</div>
+    <a href="v1_full.html">V1_FULL</a>
+    <a href="v1_lite.html">V1_LITE</a>
+    <a href="vd.html">VD</a>
+    <a href="v2_lite.html" class="active">V2_LITE</a>
 
-<div class="sidebar-brand">
-
-<h1>
-國道瓶頸資料專案
-</h1>
-
-<p>
-統計實務
-</p>
-
-</div>
-
-
-<div class="sidebar-section-title">
-首頁
-</div>
-
-<a href="index.html">
-專案概述
-</a>
-
-
-<div class="sidebar-section-title">
-資料
-</div>
-
-<a href="v1_full.html">
-V1_FULL
-</a>
-
-<a href="v1_lite.html">
-V1_LITE
-</a>
-
-<a href="vd.html">
-VD
-</a>
-
-<a href="v2_lite.html">
-V2_LITE
-</a>
-
-
-<div class="sidebar-section-title">
-進度與報告
-</div>
-
-<a href="progress.html">
-研究進度
-</a>
-
-<a href="reports.html">
-報告簡報
-</a>
-
+    <div class="sidebar-section-title">進度與報告</div>
+    <a href="progress.html">研究進度</a>
+    <a href="reports.html">報告簡報</a>
 </aside>
 
-
-
 <div class="main">
-
-
 <header class="page-header">
-
-<h1>
-V2_FULL — 整合 VD 的完整資料
-</h1>
-
-<p>
-在 V1_FULL 基礎上加入 VD 測站交通資訊，
-並維持原本一列一筆 M06B 旅次的資料結構。
-</p>
-
+    <h1>V2_LITE — 國道 3 號北向整合資料</h1>
+    <p>
+        以 V1_LITE 的國道 3 號北向旅次資料為基礎，
+        加入整理完成的 5 支 VD 速度與佔有率。
+    </p>
 </header>
-
-
 
 <main class="content">
 
-
-<!-- ===================================================== -->
-<!-- 資料概述 -->
-<!-- ===================================================== -->
-
 <section>
-
-<h2>
-資料概述
-</h2>
-
-
+<h2>資料概述</h2>
 <div class="card-grid">
-
-
-<div class="card">
-
-<strong>
-基礎資料
-</strong>
-
-<div class="big-number">
-V1_FULL
+    <div class="card">
+        <strong>研究方向</strong>
+        <div class="big-number">北向</div>
+        <p>龍潭 → 大溪</p>
+    </div>
+    <div class="card">
+        <strong>基礎欄位</strong>
+        <div class="big-number">15</div>
+        <p>V1_LITE</p>
+    </div>
+    <div class="card">
+        <strong>新增 VD 欄位</strong>
+        <div class="big-number">10</div>
+        <p>5 支 VD × 速度與佔有率</p>
+    </div>
+    <div class="card">
+        <strong>最終欄位數</strong>
+        <div class="big-number">25</div>
+        <p>不保留額外時間鍵與大量 QC 欄位</p>
+    </div>
 </div>
-
-<p>
-完整旅次資料
-</p>
-
-</div>
-
-
-<div class="card">
-
-<strong>
-新增資料
-</strong>
-
-<div class="big-number">
-VD
-</div>
-
-<p>
-測站交通狀態
-</p>
-
-</div>
-
-
-<div class="card">
-
-<strong>
-資料單位
-</strong>
-
-<div class="big-number">
-旅次
-</div>
-
-<p>
-一列代表一筆 M06B 旅次
-</p>
-
-</div>
-
-
-<div class="card">
-
-<strong>
-資料格式
-</strong>
-
-<div class="big-number">
-Parquet
-</div>
-
-<p>
-完整分析版本
-</p>
-
-</div>
-
-
-</div>
-
-
-<div class="note">
-
-V2_FULL 並不是把資料改成
-「一列一個 VD」。
-
-原本的 M06B 旅次仍然完整保留，
-VD 只是依照時間加入該旅次通過瓶頸時
-附近的道路交通狀態。
-
-</div>
-
 </section>
 
-
-
-<!-- ===================================================== -->
-<!-- 架構 -->
-<!-- ===================================================== -->
-
 <section>
-
-<h2>
-資料架構
-</h2>
-
-
+<h2>資料架構</h2>
 <div class="pipeline">
-
-<strong>
-V1_FULL
-</strong>
-
-<br><br>
-
-M06B
-+
-M05A
-+
-M03A
-+
-氣象資料
-+
-日曆資料
-
-<br><br>
-
-+
-
-<br><br>
-
-<strong>
-VD
-</strong>
-
-<br>
-
-測站速度與佔有率
-
-<br><br>
-
-↓
-
-<br><br>
-
-<strong>
-V2_FULL
-</strong>
-
+<strong>V1_LITE</strong><br>
+15 個核心旅次、氣象與日期欄位<br><br>
++<br><br>
+<strong>VD_N3_N_LITE</strong><br>
+5 支 VD 的 Speed + Occupancy<br><br>
+↓<br><br>
+<strong>V2_LITE</strong><br>
+25 欄國道 3 號北向整合資料
 </div>
-
-
-<p>
-因此 V2_FULL 的資料關係為：
-</p>
-
-
-<div class="note">
-
-<strong>
-V2_FULL = V1_FULL + VD
-</strong>
-
-</div>
-
 </section>
 
-
-
-<!-- ===================================================== -->
-<!-- VD 時間 -->
-<!-- ===================================================== -->
+<section>
+<h2>合併方式</h2>
+<p>
+V1_LITE 以每筆旅次的 <code>BottleneckTime</code> 為基礎，
+在合併過程中暫時向上對齊至五分鐘時間格點，
+再與 VD 的 <code>TargetTime</code> 對應。
+</p>
+<div class="note">
+五分鐘合併時間只作為程式中的暫時鍵。
+合併完成後不保留額外的 <code>Time5</code> 或 <code>MergeTime</code> 欄位。
+</div>
+</section>
 
 <section>
-
-<h2>
-VD 時間定義
-</h2>
-
-
-<p>
-VD 原始資料為高頻交通偵測資料，
-但本研究其他交通資料主要以五分鐘為共同時間尺度，
-因此先建立五分鐘目標時間，
-再將鄰近的 VD 資料對應至該時間點。
-</p>
-
-
-<div class="note">
-
-<strong>
-重要：
-</strong>
-
-這裡的 VD 是五分鐘時間點附近的交通狀態，
-不是五分鐘期間內所有資料的平均值。
-
+<h2>新增 VD 欄位</h2>
+<div class="table-wrap">
+<table>
+<tr><th>VD</th><th>速度欄位</th><th>佔有率欄位</th></tr>
+<tr><td>61.000K</td><td><code>VD_61p000_Speed</code></td><td><code>VD_61p000_Occupancy</code></td></tr>
+<tr><td>61.670K</td><td><code>VD_61p670_Speed</code></td><td><code>VD_61p670_Occupancy</code></td></tr>
+<tr><td>63.990K</td><td><code>VD_63p990_Speed</code></td><td><code>VD_63p990_Occupancy</code></td></tr>
+<tr><td>65.990K</td><td><code>VD_65p990_Speed</code></td><td><code>VD_65p990_Occupancy</code></td></tr>
+<tr><td>69.510K</td><td><code>VD_69p510_Speed</code></td><td><code>VD_69p510_Occupancy</code></td></tr>
+</table>
 </div>
 
+<div class="note">
+研究瓶頸門架位於約 64.8K。
+網站直接列出每支 VD 的里程位置，因此 V2_LITE 不另外建立「主要 VD」或「距瓶頸最近 VD」欄位。
+</div>
+</section>
 
+<section>
+<h2>VD 特殊值</h2>
+<div class="table-wrap">
+<table>
+<tr><th>數值</th><th>意義</th></tr>
+<tr><td><code>&gt;= 0</code></td><td>正常可用值</td></tr>
+<tr><td><code>-1</code></td><td>VD 有觀測，但所有可用車道佔有率皆為 0</td></tr>
+<tr><td><code>-99</code></td><td>VD 存在，但官方該變數無效或缺測</td></tr>
+<tr><td><code>-999</code></td><td>官方 XML 存在，但該 VDID 不在 XML</td></tr>
+<tr><td><code>-9999</code></td><td>官方歷史 XML 不存在或無法取得</td></tr>
+</table>
+</div>
+
+<div class="warning">
+負數是資料狀態碼，不是真實交通量測值。
+進行平均、相關分析、繪圖或模型估計前，必須先依研究目的轉為缺失值或個別處理。
+</div>
+</section>
+
+<section>
+<h2>為什麼 V2_LITE 不放 VDType？</h2>
 <p>
-在 V2_FULL 的品質檢查中，
-會保留 VD 實際資料時間，
-並計算其與五分鐘目標時間之間的差距。
+獨立的 VD_N3_N_LITE 檔保留 <code>VDType</code>，
+可辨識 OBSERVED、RECOVERED_EXACT、RECOVERED_M1、RECOVERED_P1、OFFICIAL_NA、VD_ABSENT 與 FILE_UNAVAILABLE。
 </p>
+<p>
+但若將每支 VD 的 Type 都展開進旅次資料，會再增加 5 個文字欄位，
+而且同一個五分鐘內會在大量旅次中重複出現。
+因此 V2_LITE 只保留 Speed 與 Occupancy，資料追溯時再回到 VD_N3_N_LITE。
+</p>
+</section>
 
+<section>
+<h2>預測模型注意事項</h2>
+<div class="warning">
+VD_N3_N_LITE 中的 <code>RECOVERED_P1</code> 是使用目標時間後 1 分鐘資料補回。
+這對歷史 EDA 可以接受，但未來若建立「當下預測未來」的模型，
+必須根據獨立 VD 檔中的 VDType 排除這類未來資訊，避免資料洩漏。
+</div>
+</section>
 
+<section>
+<h2>檔案位置</h2>
 <pre>
-VD_MatchOffsetMin
+D:\統計實務\Data\MASTER_V2_LITE_2024_2025\
+
+N3_Daxi_Longtan_N_2024_2025_MASTER_V2_LITE.parquet
 </pre>
-
-
-<p>
-若時間差過大，
-該筆 VD 不會直接拿來代表該五分鐘的交通狀態。
-</p>
-
 </section>
-
-
-
-<!-- ===================================================== -->
-<!-- Sensors -->
-<!-- ===================================================== -->
-
-<section>
-
-<h2>
-目前資料中的 VD 測站
-</h2>
-
-
-<div class="table-wrap">
-
-<table>
-
-<tr>
-<th>研究路段</th>
-<th>方向</th>
-<th>目前資料中的 VD 數量</th>
-</tr>
-
-
-<tr>
-
-<td>
-國道 3 號 大溪－龍潭
-</td>
-
-<td>
-北向
-</td>
-
-<td>
-5 支
-</td>
-
-</tr>
-
-
-<tr>
-
-<td>
-國道 3 號 大溪－龍潭
-</td>
-
-<td>
-南向
-</td>
-
-<td>
-6 支 unique VD
-</td>
-
-</tr>
-
-
-<tr>
-
-<td>
-國道 5 號 坪林－頭城
-</td>
-
-<td>
-北向
-</td>
-
-<td>
-2 支
-</td>
-
-</tr>
-
-
-<tr>
-
-<td>
-國道 5 號 坪林－頭城
-</td>
-
-<td>
-南向
-</td>
-
-<td>
-1 支
-</td>
-
-</tr>
-
-</table>
-
-</div>
-
-
-<div class="warning">
-
-上述數量代表
-<strong>
-目前收集到的資料中實際出現的 VD
-</strong>。
-
-不代表高速公路局在整個實體道路範圍內
-只設置這些 VD。
-
-</div>
-
-</section>
-
-
-
-<!-- ===================================================== -->
-<!-- N3 -->
-<!-- ===================================================== -->
-
-<section>
-
-<h2>
-國道 3 號 VD
-</h2>
-
-
-<h3>
-北向
-</h3>
-
-
-<div class="table-wrap">
-
-<table>
-
-<tr>
-<th>VDID</th>
-<th>里程</th>
-</tr>
-
-
-<tr>
-<td>VD-N3-N-61.000-M-LOOP</td>
-<td>61.000K</td>
-</tr>
-
-
-<tr>
-<td>VD-N3-N-61.670-M-RS</td>
-<td>61.670K</td>
-</tr>
-
-
-<tr>
-<td>VD-N3-N-63.990-M-LOOP</td>
-<td>63.990K</td>
-</tr>
-
-
-<tr>
-<td>VD-N3-N-65.990-M-RS</td>
-<td>65.990K</td>
-</tr>
-
-
-<tr>
-<td>VD-N3-N-69.510-M-LOOP</td>
-<td>69.510K</td>
-</tr>
-
-</table>
-
-</div>
-
-
-
-<h3>
-南向
-</h3>
-
-
-<div class="table-wrap">
-
-<table>
-
-<tr>
-<th>VDID</th>
-<th>資料期間說明</th>
-</tr>
-
-
-<tr>
-<td>VD-N3-S-61.400-M-LOOP</td>
-<td>2024–2025 均有資料</td>
-</tr>
-
-
-<tr>
-<td>VD-N3-S-62.008-M-LOOP</td>
-<td>
-主要出現在 2024 年前期
-</td>
-</tr>
-
-
-<tr>
-<td>VD-N3-S-64.500-M-RS</td>
-<td>
-自 2024 年 4 月後開始出現
-</td>
-</tr>
-
-
-<tr>
-<td>VD-N3-S-66.020-M-LOOP</td>
-<td>
-自 2024 年 4 月後開始出現
-</td>
-</tr>
-
-
-<tr>
-<td>VD-N3-S-67.000-M-LOOP</td>
-<td>
-2024–2025 均有資料
-</td>
-</tr>
-
-
-<tr>
-<td>VD-N3-S-69.700-M-RS</td>
-<td>
-2024–2025 均有資料
-</td>
-</tr>
-
-</table>
-
-</div>
-
-
-<div class="note">
-
-國道 3 號南向的 VD 組成
-在 2024–2025 期間有變化。
-
-因此不能假設全部 6 支 VD
-在所有時間點都同時存在。
-
-</div>
-
-</section>
-
-
-
-<!-- ===================================================== -->
-<!-- Merge QC -->
-<!-- ===================================================== -->
-
-<section>
-
-<h2>
-VD 合併品質檢查
-</h2>
-
-
-<div class="table-wrap">
-
-<table>
-
-<tr>
-<th>方向</th>
-<th>有 VD 資料的旅次比例</th>
-<th>有有效 VD 的旅次比例</th>
-<th>合併筆數</th>
-</tr>
-
-
-<tr>
-
-<td>
-國道 3 號北向
-</td>
-
-<td>
-97.68%
-</td>
-
-<td>
-97.63%
-</td>
-
-<td>
-<span class="status-pass">
-筆數一致
-</span>
-</td>
-
-</tr>
-
-
-<tr>
-
-<td>
-國道 3 號南向
-</td>
-
-<td>
-97.71%
-</td>
-
-<td>
-97.65%
-</td>
-
-<td>
-<span class="status-pass">
-筆數一致
-</span>
-</td>
-
-</tr>
-
-
-<tr>
-
-<td>
-國道 5 號北向
-</td>
-
-<td>
-99.45%
-</td>
-
-<td>
-99.31%
-</td>
-
-<td>
-<span class="status-pass">
-筆數一致
-</span>
-</td>
-
-</tr>
-
-
-<tr>
-
-<td>
-國道 5 號南向
-</td>
-
-<td>
-99.30%
-</td>
-
-<td>
-98.92%
-</td>
-
-<td>
-<span class="status-pass">
-筆數一致
-</span>
-</td>
-
-</tr>
-
-</table>
-
-</div>
-
-
-<div class="note">
-
-VD 比例未達 100%
-不代表資料合併失敗。
-
-V2_FULL 使用 LEFT JOIN，
-因此原本的旅次資料全部保留。
-
-沒有 VD 的旅次仍然存在，
-只是 VD 欄位為缺失值。
-
-</div>
-
-</section>
-
-
-
-<!-- ===================================================== -->
-<!-- VD QC -->
-<!-- ===================================================== -->
-
-<section>
-
-<h2>
-VD 資料品質規則
-</h2>
-
-
-<div class="table-wrap">
-
-<table>
-
-<tr>
-<th>情況</th>
-<th>處理方式</th>
-</tr>
-
-
-<tr>
-
-<td>
-VD 時間距離目標時間過遠
-</td>
-
-<td>
-標記為無效資料，
-不拿來代表當下交通狀況
-</td>
-
-</tr>
-
-
-<tr>
-
-<td>
-沒有可使用的速度
-</td>
-
-<td>
-速度保留為缺失值
-</td>
-
-</tr>
-
-
-<tr>
-
-<td>
-所有車道速度與佔有率皆為 0
-</td>
-
-<td>
-另外標記，
-不直接判定為嚴重壅塞
-</td>
-
-</tr>
-
-
-<tr>
-
-<td>
-VD 完全沒有資料
-</td>
-
-<td>
-壅塞狀態保留為未知，
-不直接視為「沒有壅塞」
-</td>
-
-</tr>
-
-
-<tr>
-
-<td>
-速度大於 180 km/h
-</td>
-
-<td>
-保留資料並標記檢查，
-不直接刪除
-</td>
-
-</tr>
-
-</table>
-
-</div>
-
-</section>
-
-
-
-<!-- ===================================================== -->
-<!-- Primary VD -->
-<!-- ===================================================== -->
-
-<section>
-
-<h2>
-主要 VD 選取方式
-</h2>
-
-
-<p>
-同一個時間點可能有多支 VD 可使用，
-因此 V2_FULL 另外建立
-主要 VD 相關欄位，
-方便快速取得瓶頸附近的代表交通狀態。
-</p>
-
-
-<div class="pipeline">
-
-當下有效的 VD
-
-<br>
-
-↓
-
-<br>
-
-計算與研究瓶頸位置的距離
-
-<br>
-
-↓
-
-<br>
-
-<strong>
-選擇距離最近的有效 VD
-</strong>
-
-</div>
-
-
-<p>
-例如國道 3 號瓶頸位置約為 64.8K。
-若最接近的 VD 當下有正常資料，
-就使用該 VD；
-若該 VD 當下缺失，
-則改用下一支距離較近的有效 VD。
-</p>
-
-
-<div class="note">
-
-因此主要 VD
-不是永久固定同一支測站。
-
-它會依每個時間點的
-實際資料可用情況進行選擇。
-
-</div>
-
-</section>
-
-
-
-<!-- ===================================================== -->
-<!-- Missing -->
-<!-- ===================================================== -->
-
-<section>
-
-<h2>
-缺失資料檢查
-</h2>
-
-
-<p>
-目前正在進一步回查
-2024–2025 年 VD 的缺失時段，
-確認缺失原因。
-</p>
-
-
-<div class="warning">
-
-整理後資料中的 VD 缺失，
-不一定代表高速公路局原始資料本身缺失。
-
-目前會重新查詢歷史 XML，
-區分：
-
-<br><br>
-
-1. 官方歷史檔本身不存在<br>
-2. XML 存在但該 VD 沒有資料<br>
-3. VD 存在但速度為異常值<br>
-4. 原始資料正常，但先前下載程序未成功取得
-
-<br><br>
-
-缺失原因確認完成前，
-不直接進行大量補值。
-
-</div>
-
-</section>
-
-
-
-<!-- ===================================================== -->
-<!-- MODEL -->
-<!-- ===================================================== -->
-
-<section>
-
-<h2>
-後續五分鐘分析資料
-</h2>
-
-
-<p>
-V2_FULL 仍然是一筆一筆的旅次資料，
-並不是最後拿來建立壅塞預測模型的資料表。
-</p>
-
-
-<div class="pipeline">
-
-V2_FULL
-
-<br><br>
-
-↓
-
-<br><br>
-
-依五分鐘彙整旅次、
-OD、車種與交通資訊
-
-<br><br>
-
-↓
-
-<br><br>
-
-<strong>
-五分鐘分析資料
-</strong>
-
-<br>
-
-一列 = 一個路段 × 方向 × 五分鐘
-</div>
-
-
-<div class="note">
-
-後續建立壅塞預測模型時，
-會另外產生五分鐘層級資料。
-
-避免把同一個五分鐘時段內的多筆旅次
-錯誤視為彼此獨立的交通狀態觀測。
-
-</div>
-
-</section>
-
-
 
 </main>
-
 </div>
-
-
-
-<footer>
-
-統計實務 —
-V2_FULL 整合 VD 的完整資料
-
-</footer>
-
-
+<footer>統計實務 — V2_LITE 國道 3 號北向整合資料</footer>
 <script src="script.js"></script>
-
 </body>
-
 </html>
