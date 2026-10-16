@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+    V1_LITE
+</title>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+
+</head>
+
+
+<body>
+
+
+<button
+    class="mobile-menu-button"
+    onclick="toggleSidebar()"
+>
+☰
+</button>
+
+
+<aside
+    class="sidebar"
+    id="sidebar"
+>
+
+<div class="sidebar-brand">
+
+<h1>
+國道瓶頸資料專案
+</h1>
+
+<p>
+Statistical Practice
+</p>
+
+</div>
+
+
+<div class="sidebar-section-title">
+DATA
+</div>
+
+<a href="index.html">
+Overview
+</a>
+
+<a href="v1.html">
+V1 Full Master
+</a>
+
+<a
+    href="v1_lite.html"
+    class="active"
+>
+V1_LITE
+</a>
+
+<a href="v2.html">
+V2 Enriched Master
+</a>
+
+
+<div class="sidebar-section-title">
+PROJECT
+</div>
+
+<a href="progress_2026_10_week1.html">
+研究進度
+</a>
+
+</aside>
+
+
+
+<div class="main">
+
+
+<header class="page-header">
+
+<h1>
+V1_LITE — N3 Analysis Dataset
+</h1>
+
+<p>
+由完整 MASTER_V1_M03A
+衍生之國道三號大溪－龍潭精簡資料，
+保留 15 個核心 trip、weather 與 calendar 欄位。
+</p>
+
+</header>
+
+
+
+<main class="content">
+
+
+<section>
+
+<h2>
+Overview
+</h2>
+
+
+<div class="card-grid">
+
+
+<div class="card">
+
+<strong>
+Road
+</strong>
+
+<div class="big-number">
+N3
+</div>
+
+<p>
+大溪－龍潭
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+Directions
+</strong>
+
+<div class="big-number">
+2
+</div>
+
+<p>
+North / South
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+Columns
+</strong>
+
+<div class="big-number">
+15
+</div>
+
+<p>
+78 → 15
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+Format
+</strong>
+
+<div class="big-number">
+Parquet
+</div>
+
+<p>
+不另外輸出 CSV
+</p>
+
+</div>
+
+
+</div>
+
+
+<div class="note">
+
+V1_LITE 不取代 V1 Full Master。
+它只是為 EDA、一般分析與快速讀取建立的
+衍生精簡資料。
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+保留欄位
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>#</th>
+<th>欄位</th>
+<th>內容</th>
+</tr>
+
+
+<tr>
+<td>01</td>
+<td>VehicleID</td>
+<td>匿名化車輛 ID</td>
+</tr>
+
+<tr>
+<td>02</td>
+<td>VehicleType</td>
+<td>車種</td>
+</tr>
+
+<tr>
+<td>03</td>
+<td>DetectionTimeO</td>
+<td>旅次起點偵測時間</td>
+</tr>
+
+<tr>
+<td>04</td>
+<td>GantryO</td>
+<td>旅次起點門架</td>
+</tr>
+
+<tr>
+<td>05</td>
+<td>DetectionTimeD</td>
+<td>旅次終點偵測時間</td>
+</tr>
+
+<tr>
+<td>06</td>
+<td>GantryD</td>
+<td>旅次終點門架</td>
+</tr>
+
+<tr>
+<td>07</td>
+<td>TripLength</td>
+<td>旅次距離</td>
+</tr>
+
+<tr>
+<td>08</td>
+<td>TripInformation</td>
+<td>完整門架路徑資訊</td>
+</tr>
+
+<tr>
+<td>09</td>
+<td>BottleneckTime</td>
+<td>通過研究瓶頸時間</td>
+</tr>
+
+<tr>
+<td>10</td>
+<td>Weather_Temperature_C</td>
+<td>氣溫</td>
+</tr>
+
+<tr>
+<td>11</td>
+<td>Weather_Dewpoint_C</td>
+<td>露點溫度</td>
+</tr>
+
+<tr>
+<td>12</td>
+<td>Weather_Precipitation_mm</td>
+<td>降雨量</td>
+</tr>
+
+<tr>
+<td>13</td>
+<td>Weather_WindSpeed_mps</td>
+<td>風速</td>
+</tr>
+
+<tr>
+<td>14</td>
+<td>WeekdayNum</td>
+<td>星期一=1 ～ 星期日=7</td>
+</tr>
+
+<tr>
+<td>15</td>
+<td>DayType</td>
+<td>
+WEEKDAY /
+WEEKEND /
+LONGHOLIDAY /
+STANDALONEHOLIDAY
+</td>
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+DayType Definition
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>Priority</th>
+<th>條件</th>
+<th>V1_LITE DayType</th>
+</tr>
+
+
+<tr>
+<td>1</td>
+<td>IsLongHoliday = 1</td>
+<td>LONGHOLIDAY</td>
+</tr>
+
+
+<tr>
+<td>2</td>
+<td>IsStandaloneHoliday = 1</td>
+<td>STANDALONEHOLIDAY</td>
+</tr>
+
+
+<tr>
+<td>3</td>
+<td>IsWeekend = 1</td>
+<td>WEEKEND</td>
+</tr>
+
+
+<tr>
+<td>4</td>
+<td>其他</td>
+<td>WEEKDAY</td>
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="warning">
+
+原本的 PRE_LONG_HOLIDAY
+不再獨立作為 DayType。
+會依該日期本身是否為週末，
+重新歸入 WEEKDAY 或 WEEKEND。
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+Files
+</h2>
+
+
+<pre>
+D:\統計實務\Data\MASTER_V1_N3_LITE_2024_2025\
+
+N3_Daxi_Longtan_N_2024_2025_MASTER_V1_LITE.parquet
+
+N3_Daxi_Longtan_S_2024_2025_MASTER_V1_LITE.parquet
+</pre>
+
+</section>
+
+
+
+<section>
+
+<h2>
+讀取方式
+</h2>
+
+
+<h3>
+Python
+</h3>
+
+
+<pre>
+import pandas as pd
+
+file = r"D:\統計實務\Data\MASTER_V1_N3_LITE_2024_2025\N3_Daxi_Longtan_N_2024_2025_MASTER_V1_LITE.parquet"
+
+df = pd.read_parquet(file)
+
+print(df.shape)
+
+print(df.columns)
+
+print(df.head())
+</pre>
+
+
+<h3>
+R
+</h3>
+
+
+<pre>
+library(arrow)
+
+file &lt;-
+"D:/統計實務/Data/MASTER_V1_N3_LITE_2024_2025/N3_Daxi_Longtan_N_2024_2025_MASTER_V1_LITE.parquet"
+
+df &lt;- read_parquet(file)
+
+dim(df)
+
+names(df)
+
+head(df)
+</pre>
+
+</section>
+
+
+
+</main>
+
+</div>
+
+
+<footer>
+
+Statistical Practice —
+V1_LITE
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
