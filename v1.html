@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+    V1 Full Master
+</title>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+
+</head>
+
+
+<body>
+
+
+<button
+    class="mobile-menu-button"
+    onclick="toggleSidebar()"
+>
+    ☰
+</button>
+
+
+<aside
+    class="sidebar"
+    id="sidebar"
+>
+
+<div class="sidebar-brand">
+
+<h1>
+    國道瓶頸資料專案
+</h1>
+
+<p>
+    Statistical Practice
+</p>
+
+</div>
+
+
+<div class="sidebar-section-title">
+DATA
+</div>
+
+<a href="index.html">
+Overview
+</a>
+
+<a
+    href="v1.html"
+    class="active"
+>
+V1 Full Master
+</a>
+
+<a href="v1_lite.html">
+V1_LITE
+</a>
+
+<a href="v2.html">
+V2 Enriched Master
+</a>
+
+
+<div class="sidebar-section-title">
+PROJECT
+</div>
+
+<a href="progress_2026_10_week1.html">
+研究進度
+</a>
+
+</aside>
+
+
+
+<div class="main">
+
+
+<header class="page-header">
+
+<h1>
+    V1 — Full Trip Master
+</h1>
+
+<p>
+    MASTER_V1_M03A_2024_2025：
+    完整保留 M06B trip-level 資訊，
+    並整合 M05A、Weather、Calendar 與 M03A。
+</p>
+
+</header>
+
+
+
+<main class="content">
+
+
+<section>
+
+<h2>
+    Overview
+</h2>
+
+
+<div class="card-grid">
+
+
+<div class="card">
+
+<strong>
+Rows
+</strong>
+
+<div class="big-number">
+≈ 136.3 M
+</div>
+
+<p>
+四方向合計 trip rows
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+Columns
+</strong>
+
+<div class="big-number">
+78
+</div>
+
+<p>
+Full Master
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+Observation Unit
+</strong>
+
+<div class="big-number">
+Trip
+</div>
+
+<p>
+一列 = 一筆 M06B trip
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+Format
+</strong>
+
+<div class="big-number">
+Parquet
+</div>
+
+<p>
+ZSTD compressed
+</p>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+    Data Composition
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>資料來源</th>
+<th>主要內容</th>
+</tr>
+
+
+<tr>
+<td>M06B</td>
+<td>
+VehicleID、OD、Detection Time、
+TripLength、TripInformation
+</td>
+</tr>
+
+
+<tr>
+<td>M05A</td>
+<td>
+站間 5 分鐘速度與交通量
+</td>
+</tr>
+
+
+<tr>
+<td>Weather</td>
+<td>
+Temperature、Dewpoint、
+Precipitation、Wind Speed
+</td>
+</tr>
+
+
+<tr>
+<td>Calendar</td>
+<td>
+Weekday、Weekend、
+Holiday、Summer 等
+</td>
+</tr>
+
+
+<tr>
+<td>M03A</td>
+<td>
+瓶頸門架 5 分鐘車種交通量
+</td>
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+    Column Groups
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>欄位範圍</th>
+<th>類別</th>
+<th>內容</th>
+</tr>
+
+
+<tr>
+<td>01–20</td>
+<td>M06B / Master</td>
+<td>
+Trip、OD、瓶頸時間、
+來源檔與研究方向資訊
+</td>
+</tr>
+
+
+<tr>
+<td>21–37</td>
+<td>M05A</td>
+<td>
+5 車種 speed / volume、
+weighted speed、
+own-type 指標
+</td>
+</tr>
+
+
+<tr>
+<td>38–42</td>
+<td>Weather</td>
+<td>
+Temperature、
+Dewpoint、
+Precipitation、
+Wind Speed
+</td>
+</tr>
+
+
+<tr>
+<td>43–67</td>
+<td>Calendar</td>
+<td>
+Weekday、Holiday、
+Holiday Phase、
+Summer、Hour / Minute
+</td>
+</tr>
+
+
+<tr>
+<td>68–78</td>
+<td>M03A</td>
+<td>
+瓶頸門架 5 分鐘
+vehicle-class volume
+</td>
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="note">
+
+V1 Full Master 為完整保存版本。
+即使某些欄位之後不進入模型，
+本版本仍不刪除，
+以保留資料可追溯性。
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+    Files
+</h2>
+
+
+<pre>
+D:\統計實務\Data\MASTER_V1_M03A_2024_2025\
+
+N3_Daxi_Longtan_N_2024_2025_MASTER_V1_M03A.parquet
+N3_Daxi_Longtan_S_2024_2025_MASTER_V1_M03A.parquet
+N5_Pinglin_Toucheng_N_2024_2025_MASTER_V1_M03A.parquet
+N5_Pinglin_Toucheng_S_2024_2025_MASTER_V1_M03A.parquet
+</pre>
+
+</section>
+
+
+
+<section>
+
+<h2>
+    Important Notes
+</h2>
+
+
+<div class="note">
+
+<strong>
+M03A 與 Time5：
+</strong>
+
+M03A 使用與 Master 相同的五分鐘時間鍵，
+因此
+<code>M03_Time5</code>
+與
+<code>Time5</code>
+具有高度重複性。
+
+</div>
+
+
+<div class="note">
+
+<strong>
+Trip-level Master：
+</strong>
+
+同一個 Time5 內可能存在大量 M06B trips，
+因此 M03A、M05A、Weather 等 context
+會在多筆 trip row 中重複出現。
+這是預期資料結構，不是 duplicate error。
+
+</div>
+
+</section>
+
+
+
+</main>
+
+</div>
+
+
+<footer>
+
+Statistical Practice —
+V1 Full Master
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
