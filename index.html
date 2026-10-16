@@ -1,236 +1,79 @@
 <!DOCTYPE html>
-
 <html lang="zh-Hant">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-    國道瓶頸資料專案｜首頁
-</title>
-
-<link
-    rel="stylesheet"
-    href="style.css"
->
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>國道瓶頸資料專案｜專案概述</title>
+<link rel="stylesheet" href="style.css">
 </head>
-
-
 <body>
 
+<button class="mobile-menu-button" onclick="toggleSidebar()">☰</button>
 
-<button
-    class="mobile-menu-button"
-    onclick="toggleSidebar()"
->
-    ☰
-</button>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <h1>國道瓶頸資料專案</h1>
+        <p>統計實務</p>
+    </div>
 
+    <div class="sidebar-section-title">首頁</div>
+    <a href="index.html" class="active">專案概述</a>
 
-<aside
-    class="sidebar"
-    id="sidebar"
->
+    <div class="sidebar-section-title">資料</div>
+    <a href="v1_full.html">V1_FULL</a>
+    <a href="v1_lite.html">V1_LITE</a>
+    <a href="vd.html">VD</a>
+    <a href="v2_lite.html">V2_LITE</a>
 
-<div class="sidebar-brand">
-
-<h1>
-國道瓶頸資料專案
-</h1>
-
-<p>
-統計實務
-</p>
-
-</div>
-
-
-<div class="sidebar-section-title">
-首頁
-</div>
-
-<a href="index.html">
-專案概述
-</a>
-
-
-<div class="sidebar-section-title">
-資料
-</div>
-
-<a href="v1_full.html">
-V1_FULL
-</a>
-
-<a href="v1_lite.html">
-V1_LITE
-</a>
-
-<a href="vd.html">
-VD
-</a>
-
-<a href="v2_lite.html">
-V2_LITE
-</a>
-
-
-<div class="sidebar-section-title">
-進度與報告
-</div>
-
-<a href="progress.html">
-研究進度
-</a>
-
-<a href="reports.html">
-報告簡報
-</a>
-
+    <div class="sidebar-section-title">進度與報告</div>
+    <a href="progress.html">研究進度</a>
+    <a href="reports.html">報告簡報</a>
 </aside>
 
-
 <div class="main">
-
-
 <header class="page-header">
-
-<h1>
-    國道瓶頸路段 OD 旅次分析與預測
-</h1>
-
-<p>
-    針對國道 3 號大溪－龍潭與
-    國道 5 號坪林－頭城瓶頸路段，
-    進行旅次資料整理、OD 分析、
-    交通狀態分析與壅塞預測。
-</p>
-
+    <h1>國道瓶頸路段 OD 旅次分析與預測</h1>
+    <p>
+        針對國道 3 號大溪－龍潭與國道 5 號坪林－頭城瓶頸路段，
+        進行旅次資料整理、OD 分析、交通狀態分析與後續壅塞預測。
+    </p>
 </header>
-
-
 
 <main class="content">
 
-
 <section>
-
-<h2>
-    專案概述
-</h2>
-
-
+<h2>專案概述</h2>
 <div class="card-grid">
+    <div class="card">
+        <strong>研究期間</strong>
+        <div class="big-number">2024–2025</div>
+        <p>2024/01/01 至 2025/12/31</p>
+    </div>
 
+    <div class="card">
+        <strong>研究路段</strong>
+        <div class="big-number">4 個方向</div>
+        <p>國道 3 號與國道 5 號雙向</p>
+    </div>
 
-<div class="card">
+    <div class="card">
+        <strong>目前重點</strong>
+        <div class="big-number">國道 3 號北向</div>
+        <p>V1_LITE、VD 與 V2_LITE</p>
+    </div>
 
-<strong>
-    研究期間
-</strong>
-
-<div class="big-number">
-    2024–2025
+    <div class="card">
+        <strong>主要資料格式</strong>
+        <div class="big-number">Parquet</div>
+        <p>保留完整資料並建立精簡分析版本</p>
+    </div>
 </div>
-
-<p>
-    2024/01/01
-    至
-    2025/12/31
-</p>
-
-</div>
-
-
-<div class="card">
-
-<strong>
-    研究路段
-</strong>
-
-<div class="big-number">
-    4 個方向
-</div>
-
-<p>
-    國道 3 號與國道 5 號雙向
-</p>
-
-</div>
-
-
-<div class="card">
-
-<strong>
-    主要資料單位
-</strong>
-
-<div class="big-number">
-    旅次
-</div>
-
-<p>
-    一列代表一筆 M06B ETC 旅次
-</p>
-
-</div>
-
-
-<div class="card">
-
-<strong>
-    目前完整版本
-</strong>
-
-<div class="big-number">
-    V2_FULL
-</div>
-
-<p>
-    V1_FULL 加入 VD 交通狀態
-</p>
-
-</div>
-
-
-</div>
-
-
-<div class="note">
-
-<strong>
-資料版本原則：
-</strong>
-
-完整資料永久保留，
-精簡資料由完整資料衍生，
-後續分析不直接覆蓋原始完整版本。
-
-</div>
-
-
 </section>
 
-
-
 <section>
-
-<h2>
-    研究路段
-</h2>
-
-
+<h2>研究路段</h2>
 <div class="table-wrap">
-
 <table>
-
 <tr>
     <th>道路</th>
     <th>方向</th>
@@ -238,407 +81,121 @@ V2_LITE
     <th>研究瓶頸門架</th>
     <th>瓶頸位置</th>
 </tr>
-
-
 <tr>
-
-<td>
-    國道 3 號
-</td>
-
-<td>
-    大溪 → 龍潭
-</td>
-
-<td>
-    約 62K → 68K
-</td>
-
-<td>
-    03F0648S
-</td>
-
-<td>
-    約 64.8K
-</td>
-
+    <td>國道 3 號</td>
+    <td>大溪 → 龍潭</td>
+    <td>約 62K → 68K</td>
+    <td>03F0648S</td>
+    <td>約 64.8K</td>
 </tr>
-
-
 <tr>
-
-<td>
-    國道 3 號
-</td>
-
-<td>
-    龍潭 → 大溪
-</td>
-
-<td>
-    約 68K → 62K
-</td>
-
-<td>
-    03F0648N
-</td>
-
-<td>
-    約 64.8K
-</td>
-
+    <td>國道 3 號</td>
+    <td>龍潭 → 大溪</td>
+    <td>約 68K → 62K</td>
+    <td>03F0648N</td>
+    <td>約 64.8K</td>
 </tr>
-
-
 <tr>
-
-<td>
-    國道 5 號
-</td>
-
-<td>
-    坪林 → 頭城
-</td>
-
-<td>
-    約 14K → 30K
-</td>
-
-<td>
-    05F0287S
-</td>
-
-<td>
-    約 28.7K
-</td>
-
+    <td>國道 5 號</td>
+    <td>坪林 → 頭城</td>
+    <td>約 14K → 30K</td>
+    <td>05F0287S</td>
+    <td>約 28.7K</td>
 </tr>
-
-
 <tr>
-
-<td>
-    國道 5 號
-</td>
-
-<td>
-    頭城 → 坪林
-</td>
-
-<td>
-    約 30K → 14K
-</td>
-
-<td>
-    05F0287N
-</td>
-
-<td>
-    約 28.7K
-</td>
-
+    <td>國道 5 號</td>
+    <td>頭城 → 坪林</td>
+    <td>約 30K → 14K</td>
+    <td>05F0287N</td>
+    <td>約 28.7K</td>
 </tr>
-
 </table>
-
 </div>
-
 </section>
 
-
-
 <section>
-
-<h2>
-    資料架構
-</h2>
-
-
+<h2>資料架構</h2>
 <div class="pipeline">
-
-M06B
-+
-M05A
-+
-M03A
-+
-氣象資料
-+
-日曆資料
-
-<br><br>
-
-↓
-
-<br><br>
-
-<strong>
-V1_FULL
-</strong>
-
-<br><br>
-
-↙
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-↘
-
-<br><br>
-
-<strong>
-V1_LITE
-</strong>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-<strong>
-V1_FULL + VD
-</strong>
-
-<br>
-精簡欄位
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-↓
-
-<br><br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<strong>
-V2_FULL
-</strong>
-
+    <strong>V1_FULL</strong><br>
+    完整旅次與輔助資料<br><br>
+    ↓<br>
+    欄位精簡<br>
+    ↓<br><br>
+    <strong>V1_LITE</strong><br>
+    國道 3 號核心旅次資料<br><br>
+    +<br><br>
+    <strong>VD</strong><br>
+    國道 3 號北向測站速度與佔有率<br><br>
+    ↓<br><br>
+    <strong>V2_LITE</strong><br>
+    國道 3 號北向整合分析資料
 </div>
 
-
-<p>
-    V1_FULL 保留完整旅次與各項輔助資料；
-    V1_LITE 為國道 3 號的精簡分析版本；
-    VD 則另外保留測站交通狀態；
-    V2_FULL 為 V1_FULL 再整合 VD 後的完整版本。
-</p>
-
+<div class="note">
+<strong>目前 V2_LITE 先只處理國道 3 號北向。</strong>
+南向 VD 的測站組成與資料期間仍需進一步確認，因此暫不併入目前版本。
+</div>
 </section>
 
-
-
 <section>
-
-<h2>
-    資料版本
-</h2>
-
-
+<h2>資料版本</h2>
 <div class="table-wrap">
-
 <table>
-
 <tr>
     <th>資料</th>
-    <th>內容</th>
-    <th>主要用途</th>
+    <th>範圍</th>
+    <th>主要內容</th>
+    <th>用途</th>
     <th>狀態</th>
 </tr>
-
-
 <tr>
-
-<td>
-    <strong>V1_FULL</strong>
-</td>
-
-<td>
-    M06B + M05A +
-    M03A + 氣象 +
-    日曆資料
-</td>
-
-<td>
-    保留完整旅次與交通資訊
-</td>
-
-<td>
-    <span class="status-pass">
-        已完成
-    </span>
-</td>
-
+    <td><strong>V1_FULL</strong></td>
+    <td>國道 3 號、國道 5 號</td>
+    <td>M06B + M05A + M03A + 氣象 + 日曆</td>
+    <td>完整資料保存</td>
+    <td><span class="status-pass">已完成</span></td>
 </tr>
-
-
 <tr>
-
-<td>
-    <strong>V1_LITE</strong>
-</td>
-
-<td>
-    國道 3 號，
-    由 V1_FULL 精簡為 15 個核心欄位
-</td>
-
-<td>
-    EDA、OD 分析與快速讀取
-</td>
-
-<td>
-    <span class="status-current">
-        已完成
-    </span>
-</td>
-
+    <td><strong>V1_LITE</strong></td>
+    <td>目前以國道 3 號為主</td>
+    <td>由 V1_FULL 精簡為 15 個核心欄位</td>
+    <td>EDA、OD 分析與快速讀取</td>
+    <td><span class="status-pass">已完成</span></td>
 </tr>
-
-
 <tr>
-
-<td>
-    <strong>VD</strong>
-</td>
-
-<td>
-    各 VD 測站之車速、
-    佔有率與設備狀態
-</td>
-
-<td>
-    描述瓶頸附近交通狀態
-</td>
-
-<td>
-    <span class="status-current">
-        檢查中
-    </span>
-</td>
-
+    <td><strong>VD</strong></td>
+    <td>目前正式整理國道 3 號北向</td>
+    <td>5 支 VD 的速度、佔有率與資料狀態</td>
+    <td>描述瓶頸附近交通狀況</td>
+    <td><span class="status-current">整理完成後使用</span></td>
 </tr>
-
-
 <tr>
-
-<td>
-    <strong>V2_FULL</strong>
-</td>
-
-<td>
-    V1_FULL + VD
-</td>
-
-<td>
-    交通狀態分析與後續壅塞預測
-</td>
-
-<td>
-    <span class="status-current">
-        已建立
-    </span>
-</td>
-
+    <td><strong>V2_LITE</strong></td>
+    <td>國道 3 號北向</td>
+    <td>V1_LITE + 整理完成的 VD</td>
+    <td>交通分析與後續預測</td>
+    <td><span class="status-planned">建置中</span></td>
 </tr>
-
 </table>
-
 </div>
-
 </section>
-
-
 
 <section>
-
-<h2>
-    主要資料來源
-</h2>
-
-
+<h2>主要資料來源</h2>
 <div class="card-grid">
-
-
-<div class="card">
-
-<strong>
-    M06B
-</strong>
-
-ETC 旅次與 OD 路徑資料
-
+    <div class="card"><strong>M06B</strong>ETC 旅次與 OD 路徑資料</div>
+    <div class="card"><strong>M05A</strong>五分鐘站間速度與交通量</div>
+    <div class="card"><strong>M03A</strong>五分鐘門架車流量</div>
+    <div class="card"><strong>VD</strong>測站車速與佔有率</div>
+    <div class="card"><strong>氣象資料</strong>氣溫、露點、降雨與風速</div>
+    <div class="card"><strong>日曆資料</strong>平日、週末、連假與暑假資訊</div>
 </div>
-
-
-<div class="card">
-
-<strong>
-    M05A
-</strong>
-
-五分鐘站間速度與交通量
-
-</div>
-
-
-<div class="card">
-
-<strong>
-    M03A
-</strong>
-
-五分鐘門架車流量
-
-</div>
-
-
-<div class="card">
-
-<strong>
-    VD
-</strong>
-
-測站車速與佔有率
-
-</div>
-
-
-<div class="card">
-
-<strong>
-    氣象資料
-</strong>
-
-氣溫、露點、降雨與風速
-
-</div>
-
-
-<div class="card">
-
-<strong>
-    日曆資料
-</strong>
-
-平日、週末、連假與暑假資訊
-
-</div>
-
-
-</div>
-
 </section>
 
-
-
 </main>
-
 </div>
 
-
-<footer>
-
-統計實務 —
-國道瓶頸路段 OD 旅次分析與預測
-
-</footer>
-
-
+<footer>統計實務 — 國道瓶頸路段 OD 旅次分析與預測</footer>
 <script src="script.js"></script>
-
 </body>
-
 </html>
