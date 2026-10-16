@@ -20,6 +20,252 @@
     href="style.css"
 >
 
+
+<style>
+
+/* =========================================================
+   研究進度頁專用
+========================================================= */
+
+.progress-summary {
+
+    background: #eef5fb;
+
+    border: 1px solid #d3e2ee;
+
+    border-radius: 12px;
+
+    padding: 24px;
+
+    margin: 20px 0 30px 0;
+
+}
+
+
+.progress-summary h3 {
+
+    margin-top: 0;
+
+    color: #245c8a;
+
+}
+
+
+.progress-status-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(210px, 1fr)
+        );
+
+    gap: 16px;
+
+    margin: 22px 0 30px 0;
+
+}
+
+
+.progress-status-card {
+
+    background: white;
+
+    border: 1px solid #dce3e9;
+
+    border-radius: 10px;
+
+    padding: 20px;
+
+}
+
+
+.progress-status-card strong {
+
+    display: block;
+
+    color: #667788;
+
+    margin-bottom: 6px;
+
+}
+
+
+.progress-status-value {
+
+    display: block;
+
+    font-size: 24px;
+
+    font-weight: 700;
+
+    color: #245c8a;
+
+    margin-bottom: 7px;
+
+}
+
+
+.timeline {
+
+    position: relative;
+
+    margin: 25px 0;
+
+    padding-left: 28px;
+
+}
+
+
+.timeline::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 7px;
+
+    top: 5px;
+
+    bottom: 5px;
+
+    width: 2px;
+
+    background: #cfd9e2;
+
+}
+
+
+.timeline-item {
+
+    position: relative;
+
+    margin-bottom: 28px;
+
+}
+
+
+.timeline-item::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: -27px;
+
+    top: 8px;
+
+    width: 12px;
+
+    height: 12px;
+
+    border-radius: 50%;
+
+    background: #245c8a;
+
+    border: 3px solid #eaf3fb;
+
+}
+
+
+.timeline-item h3 {
+
+    margin: 0 0 7px 0;
+
+}
+
+
+.timeline-item p {
+
+    margin: 5px 0;
+
+}
+
+
+.decision-box {
+
+    background: white;
+
+    border: 1px solid #dce3e9;
+
+    border-radius: 10px;
+
+    padding: 20px;
+
+    margin: 16px 0;
+
+}
+
+
+.decision-box strong {
+
+    color: #245c8a;
+
+}
+
+
+.old-eda-box {
+
+    background: #fff7d6;
+
+    border-left: 5px solid #b78a00;
+
+    border-radius: 7px;
+
+    padding: 18px 20px;
+
+    margin: 20px 0;
+
+}
+
+
+.next-step {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 14px;
+
+    padding: 16px 0;
+
+    border-bottom: 1px solid #e2e7eb;
+
+}
+
+
+.next-step:last-child {
+
+    border-bottom: none;
+
+}
+
+
+.step-number {
+
+    min-width: 34px;
+
+    height: 34px;
+
+    border-radius: 50%;
+
+    background: #245c8a;
+
+    color: white;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-weight: 700;
+
+}
+
+</style>
+
 </head>
 
 
@@ -34,10 +280,15 @@
 </button>
 
 
+<!-- =====================================================
+     側邊欄
+========================================================= -->
+
 <aside
     class="sidebar"
     id="sidebar"
 >
+
 
 <div class="sidebar-brand">
 
@@ -97,12 +348,17 @@ V2_LITE
 報告簡報
 </a>
 
+
 </aside>
 
 
 
 <div class="main">
 
+
+<!-- =====================================================
+     頁首
+========================================================= -->
 
 <header class="page-header">
 
@@ -111,8 +367,9 @@ V2_LITE
 </h1>
 
 <p>
-記錄資料整理、品質檢查、
-探索性分析與模型建置進度。
+記錄研究過程中的資料問題、
+處理決策與目前工作方向。
+正式分析結果將在資料版本穩定後重新建立。
 </p>
 
 </header>
@@ -122,80 +379,117 @@ V2_LITE
 <main class="content">
 
 
+<!-- =====================================================
+     目前研究定位
+========================================================= -->
+
 <section>
 
 <h2>
-目前進度
+目前研究定位
 </h2>
 
 
-<div class="card-grid">
+<div class="progress-summary">
+
+<h3>
+目前處於「資料重新整理與確認」階段
+</h3>
+
+<p>
+前期已進行過部分探索性資料分析，
+但當時資料來源、欄位結構及 VD 缺失狀況
+仍持續調整，因此部分早期 EDA
+不再視為正式研究結果。
+</p>
+
+<p>
+目前先將分析範圍集中在
+<strong>國道 3 號北向</strong>，
+完成 VD 資料品質確認、
+V1_LITE 與 VD 整合後，
+再以新的 V2_LITE
+重新開始正式 EDA。
+</p>
+
+</div>
 
 
-<div class="card">
+
+<div class="progress-status-grid">
+
+
+<div class="progress-status-card">
 
 <strong>
 V1_FULL
 </strong>
 
-<div class="big-number">
-完成
-</div>
+<span class="progress-status-value">
+已完成
+</span>
 
-<p>
-完整旅次資料整理完成
-</p>
+完整資料保存版本
 
 </div>
 
 
-<div class="card">
+<div class="progress-status-card">
 
 <strong>
 V1_LITE
 </strong>
 
-<div class="big-number">
-完成
-</div>
+<span class="progress-status-value">
+已完成
+</span>
 
-<p>
-國道 3 號精簡資料完成
-</p>
+國道 3 號精簡分析資料
 
 </div>
 
 
-<div class="card">
+<div class="progress-status-card">
 
 <strong>
 VD
 </strong>
 
-<div class="big-number">
-檢查中
-</div>
+<span class="progress-status-value">
+整理中
+</span>
 
-<p>
-正在確認缺失時段與資料品質
-</p>
+目前集中處理國道 3 號北向
 
 </div>
 
 
-<div class="card">
+<div class="progress-status-card">
 
 <strong>
 V2_LITE
 </strong>
 
-<div class="big-number">
-下一步
+<span class="progress-status-value">
+建置中
+</span>
+
+V1_LITE + 整理後 VD
+
 </div>
 
-<p>
-V1_LITE + 整理完成 VD
-</p>
+
+<div class="progress-status-card">
+
+<strong>
+正式 EDA
+</strong>
+
+<span class="progress-status-value">
+重新開始
+</span>
+
+待 V2_LITE 完成後進行
 
 </div>
 
@@ -206,11 +500,34 @@ V1_LITE + 整理完成 VD
 
 
 
+<!-- =====================================================
+     為什麼重新開始 EDA
+========================================================= -->
+
 <section>
 
 <h2>
-進度紀錄
+為什麼重新開始 EDA？
 </h2>
+
+
+<div class="old-eda-box">
+
+<strong>
+前期 EDA 暫不作為正式研究結果。
+</strong>
+
+<br><br>
+
+前期分析是在資料架構仍持續變動的情況下進行，
+當時部分資料尚未完全整理，
+VD 的測站範圍、缺失原因及時間對應方式
+也尚未確認。
+
+因此舊圖表目前僅保留作為探索過程參考，
+正式研究結果將使用重新整理完成的資料重新產生。
+
+</div>
 
 
 <div class="table-wrap">
@@ -218,34 +535,27 @@ V1_LITE + 整理完成 VD
 <table>
 
 <tr>
-<th>日期</th>
-<th>階段</th>
-<th>主要內容</th>
-<th>紀錄</th>
+<th>當時的問題</th>
+<th>造成的影響</th>
+<th>目前處理方式</th>
 </tr>
 
 
 <tr>
 
 <td>
-2026/10 第一週
+資料版本仍持續變動
 </td>
 
 <td>
-資料整理與初步 EDA
+不同階段產生的圖表
+不一定使用相同資料定義
 </td>
 
 <td>
-完成 V1 資料整併、
-QC 與初步資料探索
-</td>
-
-<td>
-
-<a href="progress/progress_2026_10_week1.html">
-查看紀錄
-</a>
-
+固定 V1_FULL、
+V1_LITE 與 V2_LITE
+版本關係
 </td>
 
 </tr>
@@ -254,25 +564,58 @@ QC 與初步資料探索
 <tr>
 
 <td>
-2026/10 第二週
+VD 資料尚未完成品質確認
 </td>
 
 <td>
-M03A、VD 與精簡資料
+部分缺失可能被誤認為
+一般隨機缺值
 </td>
 
 <td>
-加入 M03A、
-建立 V1_LITE，
-並開始檢查 VD 缺失
-</td>
-
-<td>
-整理中
+重新回查官方歷史資料，
+確認缺失原因
 </td>
 
 </tr>
 
+
+<tr>
+
+<td>
+南向 VD 組成存在時期性變化
+</td>
+
+<td>
+不同期間的測站組成不一致，
+暫時不適合直接進行完整比較
+</td>
+
+<td>
+先集中處理
+國道 3 號北向
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+早期分析方向較分散
+</td>
+
+<td>
+產生許多圖，
+但部分與最終研究問題關聯較弱
+</td>
+
+<td>
+重新從研究問題出發，
+建立新的 EDA 架構
+</td>
+
+</tr>
 
 </table>
 
@@ -282,62 +625,224 @@ M03A、VD 與精簡資料
 
 
 
+<!-- =====================================================
+     資料整理過程
+========================================================= -->
+
 <section>
 
 <h2>
-目前資料流程
+資料整理過程中的主要問題與處理
 </h2>
 
 
-<div class="pipeline">
+<p>
+這裡只記錄研究過程中
+<strong>影響分析方向的重要問題與決策</strong>。
+欄位定義、測站名稱及詳細資料格式，
+統一放在各資料頁面，不在此重複。
+</p>
 
-V1_FULL
 
-<br><br>
+<div class="timeline">
 
-↓
 
-<br>
+<!-- 1 -->
 
-欄位精簡
+<div class="timeline-item">
 
-<br>
+<h3>
+建立完整旅次資料
+</h3>
 
-↓
+<p>
+先將 M06B 旅次資料與
+M05A、M03A、氣象及日曆資料整合，
+建立完整保存版本 V1_FULL。
+</p>
 
-<br><br>
+<p>
+此版本主要目的為保留資料完整性，
+並作為後續精簡資料的來源。
+</p>
 
-<strong>
-V1_LITE
-</strong>
+</div>
 
-<br><br>
 
-+
 
-<br><br>
+<!-- 2 -->
 
-<strong>
-整理完成的 VD
-</strong>
+<div class="timeline-item">
 
-<br><br>
+<h3>
+建立 V1_LITE
+</h3>
 
-↓
+<p>
+由於完整資料欄位較多，
+且後續分析並不需要所有工程及合併欄位，
+因此另外建立 V1_LITE。
+</p>
 
-<br><br>
+<p>
+V1_LITE 僅保留目前研究需要的核心旅次、
+氣象與日期資訊，
+降低後續讀取及分析負擔。
+</p>
 
-<strong>
-V2_LITE
-</strong>
+</div>
 
-<br><br>
 
-↓
 
-<br>
+<!-- 3 -->
 
-EDA / OD 分析 / 壅塞預測
+<div class="timeline-item">
+
+<h3>
+重新檢查 VD 資料來源
+</h3>
+
+<p>
+進一步檢查同學原先的 VD 抓取程式後發現，
+原始程式會先嘗試目標分鐘，
+再嘗試前後一分鐘，
+但只要某個 XML 成功下載，
+就會停止繼續搜尋。
+</p>
+
+<p>
+因此整理後資料中的「缺失」
+不能直接解讀成官方資料不存在。
+</p>
+
+</div>
+
+
+
+<!-- 4 -->
+
+<div class="timeline-item">
+
+<h3>
+回查 VD 歷史資料
+</h3>
+
+<p>
+針對國道 3 號北向整理後資料中的缺失時段，
+重新查詢官方歷史 XML，
+不重新下載完整兩年資料，
+只檢查原本缺少的時間點。
+</p>
+
+<p>
+結果顯示 VD 缺失具有明顯結構，
+包含：
+官方 XML 本身不存在、
+XML 存在但該 VD 未出現、
+VD 存在但速度資料無效，
+以及少量可從原時間或前後一分鐘重新取得的資料。
+</p>
+
+</div>
+
+
+
+<!-- 5 -->
+
+<div class="timeline-item">
+
+<h3>
+確認缺失不是單純隨機缺值
+</h3>
+
+<p>
+部分缺失會連續數小時甚至數日，
+而且可能同時發生在多支 VD。
+因此後續不採用「所有缺失直接插補」的方式。
+</p>
+
+<p>
+改為保留不同缺失狀態，
+讓後續分析可以辨識資料缺失的來源。
+</p>
+
+</div>
+
+
+
+<!-- 6 -->
+
+<div class="timeline-item">
+
+<h3>
+暫停南向 VD 分析
+</h3>
+
+<p>
+國道 3 號南向在研究期間內
+存在測站組成改變，
+部分測站只出現在特定期間。
+此外，原整理資料還存在
+需要重新確認的車道整合問題。
+</p>
+
+<p>
+因此目前不急著將南向加入正式分析，
+先將北向資料流程完整建立後，
+再回頭處理南向。
+</p>
+
+</div>
+
+
+
+<!-- 7 -->
+
+<div class="timeline-item">
+
+<h3>
+重新設計正式 VD 資料
+</h3>
+
+<p>
+正式 VD 資料不再保留大量
+lane-level 與重複 QC 欄位，
+而是保留每個時間、每支 VD
+最核心的速度、佔有率及資料類型。
+</p>
+
+<p>
+詳細欄位與特殊值定義請見
+<a href="vd.html">VD 資料頁</a>。
+</p>
+
+</div>
+
+
+
+<!-- 8 -->
+
+<div class="timeline-item">
+
+<h3>
+建立 V2_LITE
+</h3>
+
+<p>
+下一步將整理完成的
+國道 3 號北向 VD
+與 V1_LITE 合併，
+建立 V2_LITE。
+</p>
+
+<p>
+V2_LITE 將作為後續
+正式 EDA、OD 分析
+及壅塞預測的主要分析資料。
+</p>
+
+</div>
+
 
 </div>
 
@@ -345,31 +850,342 @@ EDA / OD 分析 / 壅塞預測
 
 
 
+<!-- =====================================================
+     目前決策
+========================================================= -->
+
 <section>
 
 <h2>
-目前工作重點
+目前確定的研究決策
 </h2>
 
 
-<div class="note">
+<div class="decision-box">
 
-目前優先處理國道 3 號 VD 資料，
-確認 2024–2025 各測站缺失時段的原因。
+<strong>
+1. 目前正式分析先集中在國道 3 號北向
+</strong>
+
+<p>
+先完成一個方向的完整資料流程，
+確認資料品質與分析方法後，
+再考慮擴展至南向及國道 5 號。
+</p>
 
 </div>
 
 
-<div class="warning">
+<div class="decision-box">
 
-目前整理後 VD 中出現的缺失，
-不直接視為高速公路局原始資料缺失。
+<strong>
+2. 舊版 EDA 不直接沿用
+</strong>
 
-正在重新查詢歷史 XML，
-確認是原始資料缺檔、
-測站無資料、
-異常速度，
-或先前抓取流程造成的遺漏。
+<p>
+過去產生的圖表可保留作為探索紀錄，
+但不直接放入後續正式研究成果。
+V2_LITE 完成後重新建立 EDA。
+</p>
+
+</div>
+
+
+<div class="decision-box">
+
+<strong>
+3. VD 缺失保留其來源差異
+</strong>
+
+<p>
+不把所有 VD 缺失視為同一種類型，
+也不直接以單一插補方式填滿。
+資料狀態的詳細定義統一放在
+<a href="vd.html">VD 頁面</a>。
+</p>
+
+</div>
+
+
+<div class="decision-box">
+
+<strong>
+4. V2_LITE 保持精簡
+</strong>
+
+<p>
+資料品質追蹤資訊保留在獨立 VD 檔案中，
+V2_LITE 只加入後續分析真正需要的
+VD 速度與佔有率，
+避免資料表重新膨脹。
+</p>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     下一步
+========================================================= -->
+
+<section>
+
+<h2>
+接下來的工作
+</h2>
+
+
+<div class="next-step">
+
+<div class="step-number">
+1
+</div>
+
+<div>
+
+<strong>
+完成國道 3 號北向 VD 整理
+</strong>
+
+<br>
+
+確認重新取得的資料、
+缺失狀態及速度／佔有率整理結果。
+
+</div>
+
+</div>
+
+
+
+<div class="next-step">
+
+<div class="step-number">
+2
+</div>
+
+<div>
+
+<strong>
+建立並檢查 V2_LITE
+</strong>
+
+<br>
+
+將 V1_LITE 與整理後 VD 合併，
+確認資料筆數不增加、
+時間對應正確且特殊值分布合理。
+
+</div>
+
+</div>
+
+
+
+<div class="next-step">
+
+<div class="step-number">
+3
+</div>
+
+<div>
+
+<strong>
+重新開始正式 EDA
+</strong>
+
+<br>
+
+不沿用舊版分析流程，
+重新從時間分布、旅次特性、
+OD 結構及壅塞狀態開始整理。
+
+</div>
+
+</div>
+
+
+
+<div class="next-step">
+
+<div class="step-number">
+4
+</div>
+
+<div>
+
+<strong>
+建立五分鐘分析資料
+</strong>
+
+<br>
+
+將 trip-level 資料依五分鐘彙整，
+建立後續壅塞預測真正使用的分析資料表。
+
+</div>
+
+</div>
+
+
+
+<div class="next-step">
+
+<div class="step-number">
+5
+</div>
+
+<div>
+
+<strong>
+再評估南向與國道 5 號
+</strong>
+
+<br>
+
+待北向流程穩定後，
+再處理南向測站變動問題，
+並評估是否將相同流程擴展至其他研究方向。
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     網站分工
+========================================================= -->
+
+<section>
+
+<h2>
+網站內容分工
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>頁面</th>
+<th>記錄內容</th>
+</tr>
+
+
+<tr>
+
+<td>
+<a href="v1_full.html">
+V1_FULL
+</a>
+</td>
+
+<td>
+完整資料結構與來源
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<a href="v1_lite.html">
+V1_LITE
+</a>
+</td>
+
+<td>
+精簡資料與保留欄位
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<a href="vd.html">
+VD
+</a>
+</td>
+
+<td>
+VD 測站、欄位、
+特殊值與資料品質定義
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<a href="v2_lite.html">
+V2_LITE
+</a>
+</td>
+
+<td>
+V1_LITE 與 VD 的整合方式
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<strong>
+研究進度
+</strong>
+</td>
+
+<td>
+研究過程中的問題、
+決策、方向改變與下一步
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<a href="reports.html">
+報告簡報
+</a>
+</td>
+
+<td>
+實際對外報告使用的 PDF / PPT
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="note">
+
+研究進度頁不重複保存大量欄位定義或 QC 數字。
+
+這一頁主要回答：
+
+<strong>
+「研究為什麼改變方向？」、
+「遇到什麼問題？」、
+「做了什麼決定？」、
+「下一步要做什麼？」
+</strong>
 
 </div>
 
@@ -380,6 +1196,7 @@ EDA / OD 分析 / 壅塞預測
 </main>
 
 </div>
+
 
 
 <footer>
