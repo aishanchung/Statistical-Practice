@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+研究進度｜國道瓶頸資料專案
+</title>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+
+</head>
+
+
+<body>
+
+
+<button
+    class="mobile-menu-button"
+    onclick="toggleSidebar()"
+>
+☰
+</button>
+
+
+<aside
+    class="sidebar"
+    id="sidebar"
+>
+
+<div class="sidebar-brand">
+
+<h1>
+國道瓶頸資料專案
+</h1>
+
+<p>
+統計實務
+</p>
+
+</div>
+
+
+<div class="sidebar-section-title">
+首頁
+</div>
+
+<a href="index.html">
+專案概述
+</a>
+
+
+<div class="sidebar-section-title">
+資料
+</div>
+
+<a href="v1_full.html">
+V1_FULL
+</a>
+
+<a href="v1_lite.html">
+V1_LITE
+</a>
+
+<a href="vd.html">
+VD
+</a>
+
+<a href="v2_lite.html">
+V2_LITE
+</a>
+
+
+<div class="sidebar-section-title">
+進度與報告
+</div>
+
+<a
+    href="progress.html"
+    class="active"
+>
+研究進度
+</a>
+
+<a href="reports.html">
+報告簡報
+</a>
+
+</aside>
+
+
+
+<div class="main">
+
+
+<header class="page-header">
+
+<h1>
+研究進度
+</h1>
+
+<p>
+記錄資料整理、品質檢查、
+探索性分析與模型建置進度。
+</p>
+
+</header>
+
+
+
+<main class="content">
+
+
+<section>
+
+<h2>
+目前進度
+</h2>
+
+
+<div class="card-grid">
+
+
+<div class="card">
+
+<strong>
+V1_FULL
+</strong>
+
+<div class="big-number">
+完成
+</div>
+
+<p>
+完整旅次資料整理完成
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+V1_LITE
+</strong>
+
+<div class="big-number">
+完成
+</div>
+
+<p>
+國道 3 號精簡資料完成
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+VD
+</strong>
+
+<div class="big-number">
+檢查中
+</div>
+
+<p>
+正在確認缺失時段與資料品質
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+V2_LITE
+</strong>
+
+<div class="big-number">
+下一步
+</div>
+
+<p>
+V1_LITE + 整理完成 VD
+</p>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+進度紀錄
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>日期</th>
+<th>階段</th>
+<th>主要內容</th>
+<th>紀錄</th>
+</tr>
+
+
+<tr>
+
+<td>
+2026/10 第一週
+</td>
+
+<td>
+資料整理與初步 EDA
+</td>
+
+<td>
+完成 V1 資料整併、
+QC 與初步資料探索
+</td>
+
+<td>
+
+<a href="progress/progress_2026_10_week1.html">
+查看紀錄
+</a>
+
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+2026/10 第二週
+</td>
+
+<td>
+M03A、VD 與精簡資料
+</td>
+
+<td>
+加入 M03A、
+建立 V1_LITE，
+並開始檢查 VD 缺失
+</td>
+
+<td>
+整理中
+</td>
+
+</tr>
+
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+目前資料流程
+</h2>
+
+
+<div class="pipeline">
+
+V1_FULL
+
+<br><br>
+
+↓
+
+<br>
+
+欄位精簡
+
+<br>
+
+↓
+
+<br><br>
+
+<strong>
+V1_LITE
+</strong>
+
+<br><br>
+
++
+
+<br><br>
+
+<strong>
+整理完成的 VD
+</strong>
+
+<br><br>
+
+↓
+
+<br><br>
+
+<strong>
+V2_LITE
+</strong>
+
+<br><br>
+
+↓
+
+<br>
+
+EDA / OD 分析 / 壅塞預測
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+目前工作重點
+</h2>
+
+
+<div class="note">
+
+目前優先處理國道 3 號 VD 資料，
+確認 2024–2025 各測站缺失時段的原因。
+
+</div>
+
+
+<div class="warning">
+
+目前整理後 VD 中出現的缺失，
+不直接視為高速公路局原始資料缺失。
+
+正在重新查詢歷史 XML，
+確認是原始資料缺檔、
+測站無資料、
+異常速度，
+或先前抓取流程造成的遺漏。
+
+</div>
+
+</section>
+
+
+
+</main>
+
+</div>
+
+
+<footer>
+
+統計實務 —
+研究進度
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
