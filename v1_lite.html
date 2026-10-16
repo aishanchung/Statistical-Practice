@@ -12,7 +12,7 @@
 >
 
 <title>
-    V1_LITE
+    V1_LITE｜國道 3 號精簡資料
 </title>
 
 <link
@@ -30,7 +30,7 @@
     class="mobile-menu-button"
     onclick="toggleSidebar()"
 >
-☰
+    ☰
 </button>
 
 
@@ -46,22 +46,27 @@
 </h1>
 
 <p>
-Statistical Practice
+統計實務
 </p>
 
 </div>
 
 
 <div class="sidebar-section-title">
-DATA
+首頁
 </div>
 
 <a href="index.html">
-Overview
+專案概述
 </a>
 
-<a href="v1.html">
-V1 Full Master
+
+<div class="sidebar-section-title">
+資料
+</div>
+
+<a href="v1_full.html">
+V1_FULL
 </a>
 
 <a
@@ -71,13 +76,17 @@ V1 Full Master
 V1_LITE
 </a>
 
-<a href="v2.html">
-V2 Enriched Master
+<a href="vd.html">
+VD
+</a>
+
+<a href="v2_full.html">
+V2_FULL
 </a>
 
 
 <div class="sidebar-section-title">
-PROJECT
+專案
 </div>
 
 <a href="progress_2026_10_week1.html">
@@ -94,13 +103,14 @@ PROJECT
 <header class="page-header">
 
 <h1>
-V1_LITE — N3 Analysis Dataset
+V1_LITE — 國道 3 號精簡資料
 </h1>
 
 <p>
-由完整 MASTER_V1_M03A
-衍生之國道三號大溪－龍潭精簡資料，
-保留 15 個核心 trip、weather 與 calendar 欄位。
+由 V1_FULL 衍生，
+僅保留國道 3 號大溪－龍潭
+分析所需的 15 個核心欄位，
+用於後續 EDA、OD 分析與快速資料讀取。
 </p>
 
 </header>
@@ -110,10 +120,14 @@ V1_LITE — N3 Analysis Dataset
 <main class="content">
 
 
+<!-- ===================================================== -->
+<!-- 資料概述 -->
+<!-- ===================================================== -->
+
 <section>
 
 <h2>
-Overview
+資料概述
 </h2>
 
 
@@ -123,11 +137,11 @@ Overview
 <div class="card">
 
 <strong>
-Road
+研究道路
 </strong>
 
 <div class="big-number">
-N3
+國道 3 號
 </div>
 
 <p>
@@ -140,7 +154,7 @@ N3
 <div class="card">
 
 <strong>
-Directions
+方向
 </strong>
 
 <div class="big-number">
@@ -148,7 +162,7 @@ Directions
 </div>
 
 <p>
-North / South
+北向與南向
 </p>
 
 </div>
@@ -157,7 +171,7 @@ North / South
 <div class="card">
 
 <strong>
-Columns
+欄位數
 </strong>
 
 <div class="big-number">
@@ -165,7 +179,7 @@ Columns
 </div>
 
 <p>
-78 → 15
+由 78 欄精簡至 15 欄
 </p>
 
 </div>
@@ -174,7 +188,7 @@ Columns
 <div class="card">
 
 <strong>
-Format
+檔案格式
 </strong>
 
 <div class="big-number">
@@ -193,15 +207,105 @@ Parquet
 
 <div class="note">
 
-V1_LITE 不取代 V1 Full Master。
-它只是為 EDA、一般分析與快速讀取建立的
-衍生精簡資料。
+<strong>
+V1_LITE 不取代 V1_FULL。
+</strong>
+
+V1_FULL 仍保留完整欄位，
+V1_LITE 只是從完整資料中
+挑選目前分析需要的欄位，
+讓資料更容易讀取與使用。
 
 </div>
 
 </section>
 
 
+
+<!-- ===================================================== -->
+<!-- 資料範圍 -->
+<!-- ===================================================== -->
+
+<section>
+
+<h2>
+資料範圍
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+    <th>道路</th>
+    <th>方向</th>
+    <th>研究路段里程</th>
+    <th>研究瓶頸門架</th>
+    <th>瓶頸位置</th>
+</tr>
+
+
+<tr>
+
+<td>
+國道 3 號
+</td>
+
+<td>
+大溪 → 龍潭
+</td>
+
+<td>
+約 62K → 68K
+</td>
+
+<td>
+03F0648S
+</td>
+
+<td>
+約 64.8K
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+國道 3 號
+</td>
+
+<td>
+龍潭 → 大溪
+</td>
+
+<td>
+約 68K → 62K
+</td>
+
+<td>
+03F0648N
+</td>
+
+<td>
+約 64.8K
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<!-- ===================================================== -->
+<!-- 保留欄位 -->
+<!-- ===================================================== -->
 
 <section>
 
@@ -223,97 +327,106 @@ V1_LITE 不取代 V1 Full Master。
 
 <tr>
 <td>01</td>
-<td>VehicleID</td>
-<td>匿名化車輛 ID</td>
+<td><code>VehicleID</code></td>
+<td>匿名化車輛識別碼</td>
 </tr>
+
 
 <tr>
 <td>02</td>
-<td>VehicleType</td>
+<td><code>VehicleType</code></td>
 <td>車種</td>
 </tr>
 
+
 <tr>
 <td>03</td>
-<td>DetectionTimeO</td>
-<td>旅次起點偵測時間</td>
+<td><code>DetectionTimeO</code></td>
+<td>旅次起點門架偵測時間</td>
 </tr>
+
 
 <tr>
 <td>04</td>
-<td>GantryO</td>
+<td><code>GantryO</code></td>
 <td>旅次起點門架</td>
 </tr>
 
+
 <tr>
 <td>05</td>
-<td>DetectionTimeD</td>
-<td>旅次終點偵測時間</td>
+<td><code>DetectionTimeD</code></td>
+<td>旅次終點門架偵測時間</td>
 </tr>
+
 
 <tr>
 <td>06</td>
-<td>GantryD</td>
+<td><code>GantryD</code></td>
 <td>旅次終點門架</td>
 </tr>
 
+
 <tr>
 <td>07</td>
-<td>TripLength</td>
+<td><code>TripLength</code></td>
 <td>旅次距離</td>
 </tr>
 
+
 <tr>
 <td>08</td>
-<td>TripInformation</td>
-<td>完整門架路徑資訊</td>
+<td><code>TripInformation</code></td>
+<td>該筆旅次完整門架路徑資訊</td>
 </tr>
+
 
 <tr>
 <td>09</td>
-<td>BottleneckTime</td>
-<td>通過研究瓶頸時間</td>
+<td><code>BottleneckTime</code></td>
+<td>車輛通過研究瓶頸的時間</td>
 </tr>
+
 
 <tr>
 <td>10</td>
-<td>Weather_Temperature_C</td>
-<td>氣溫</td>
+<td><code>Weather_Temperature_C</code></td>
+<td>氣溫，單位 °C</td>
 </tr>
+
 
 <tr>
 <td>11</td>
-<td>Weather_Dewpoint_C</td>
-<td>露點溫度</td>
+<td><code>Weather_Dewpoint_C</code></td>
+<td>露點溫度，單位 °C</td>
 </tr>
+
 
 <tr>
 <td>12</td>
-<td>Weather_Precipitation_mm</td>
-<td>降雨量</td>
+<td><code>Weather_Precipitation_mm</code></td>
+<td>降雨量，單位 mm</td>
 </tr>
+
 
 <tr>
 <td>13</td>
-<td>Weather_WindSpeed_mps</td>
-<td>風速</td>
+<td><code>Weather_WindSpeed_mps</code></td>
+<td>風速，單位 m/s</td>
 </tr>
+
 
 <tr>
 <td>14</td>
-<td>WeekdayNum</td>
-<td>星期一=1 ～ 星期日=7</td>
+<td><code>WeekdayNum</code></td>
+<td>星期一 = 1 ～ 星期日 = 7</td>
 </tr>
+
 
 <tr>
 <td>15</td>
-<td>DayType</td>
-<td>
-WEEKDAY /
-WEEKEND /
-LONGHOLIDAY /
-STANDALONEHOLIDAY
-</td>
+<td><code>DayType</code></td>
+<td>日期類型</td>
 </tr>
 
 </table>
@@ -324,11 +437,21 @@ STANDALONEHOLIDAY
 
 
 
+<!-- ===================================================== -->
+<!-- DayType -->
+<!-- ===================================================== -->
+
 <section>
 
 <h2>
-DayType Definition
+DayType 分類方式
 </h2>
+
+
+<p>
+為了讓後續分析較簡單，
+V1_LITE 將日期重新整理為四種主要類型。
+</p>
 
 
 <div class="table-wrap">
@@ -336,37 +459,86 @@ DayType Definition
 <table>
 
 <tr>
-<th>Priority</th>
-<th>條件</th>
-<th>V1_LITE DayType</th>
+<th>優先順序</th>
+<th>判定條件</th>
+<th>DayType</th>
+<th>說明</th>
 </tr>
 
 
 <tr>
+
 <td>1</td>
-<td>IsLongHoliday = 1</td>
-<td>LONGHOLIDAY</td>
+
+<td>
+<code>IsLongHoliday = 1</code>
+</td>
+
+<td>
+<code>LONGHOLIDAY</code>
+</td>
+
+<td>
+連假正式期間
+</td>
+
 </tr>
 
 
 <tr>
+
 <td>2</td>
-<td>IsStandaloneHoliday = 1</td>
-<td>STANDALONEHOLIDAY</td>
+
+<td>
+<code>IsStandaloneHoliday = 1</code>
+</td>
+
+<td>
+<code>STANDALONEHOLIDAY</code>
+</td>
+
+<td>
+單日國定假日
+</td>
+
 </tr>
 
 
 <tr>
+
 <td>3</td>
-<td>IsWeekend = 1</td>
-<td>WEEKEND</td>
+
+<td>
+<code>IsWeekend = 1</code>
+</td>
+
+<td>
+<code>WEEKEND</code>
+</td>
+
+<td>
+一般週六、週日
+</td>
+
 </tr>
 
 
 <tr>
+
 <td>4</td>
-<td>其他</td>
-<td>WEEKDAY</td>
+
+<td>
+其他日期
+</td>
+
+<td>
+<code>WEEKDAY</code>
+</td>
+
+<td>
+一般平日
+</td>
+
 </tr>
 
 </table>
@@ -376,10 +548,16 @@ DayType Definition
 
 <div class="warning">
 
-原本的 PRE_LONG_HOLIDAY
-不再獨立作為 DayType。
-會依該日期本身是否為週末，
-重新歸入 WEEKDAY 或 WEEKEND。
+原本 V1_FULL 中的
+<code>PRE_LONG_HOLIDAY</code>
+不再另外保留為一種類別。
+
+連假前的日期會依照該日本身
+是否為週末，
+重新歸入
+<code>WEEKDAY</code>
+或
+<code>WEEKEND</code>。
 
 </div>
 
@@ -387,10 +565,14 @@ DayType Definition
 
 
 
+<!-- ===================================================== -->
+<!-- 檔案 -->
+<!-- ===================================================== -->
+
 <section>
 
 <h2>
-Files
+檔案位置
 </h2>
 
 
@@ -402,9 +584,23 @@ N3_Daxi_Longtan_N_2024_2025_MASTER_V1_LITE.parquet
 N3_Daxi_Longtan_S_2024_2025_MASTER_V1_LITE.parquet
 </pre>
 
+
+<div class="note">
+
+北向與南向分成兩份 Parquet，
+因此精簡版中不另外保留方向欄位。
+
+檔名本身即可辨識資料方向。
+
+</div>
+
 </section>
 
 
+
+<!-- ===================================================== -->
+<!-- Python / R -->
+<!-- ===================================================== -->
 
 <section>
 
@@ -441,8 +637,7 @@ R
 <pre>
 library(arrow)
 
-file &lt;-
-"D:/統計實務/Data/MASTER_V1_N3_LITE_2024_2025/N3_Daxi_Longtan_N_2024_2025_MASTER_V1_LITE.parquet"
+file &lt;- "D:/統計實務/Data/MASTER_V1_N3_LITE_2024_2025/N3_Daxi_Longtan_N_2024_2025_MASTER_V1_LITE.parquet"
 
 df &lt;- read_parquet(file)
 
@@ -462,10 +657,11 @@ head(df)
 </div>
 
 
+
 <footer>
 
-Statistical Practice —
-V1_LITE
+統計實務 —
+V1_LITE 國道 3 號精簡資料
 
 </footer>
 
