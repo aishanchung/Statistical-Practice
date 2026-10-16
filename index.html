@@ -1,211 +1,332 @@
 <!DOCTYPE html>
+
 <html lang="zh-Hant">
 
 <head>
-    <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta charset="UTF-8">
 
-    <title>
-        國道瓶頸資料說明｜Statistical Practice
-    </title>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
+<title>
+    國道瓶頸資料專案｜Overview
+</title>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+
 </head>
 
 
 <body>
 
 
-<header>
+<button
+    class="mobile-menu-button"
+    onclick="toggleSidebar()"
+>
+    ☰
+</button>
 
-<div class="container">
 
-    <h1>
-        國道瓶頸路段資料說明
-    </h1>
+<aside
+    class="sidebar"
+    id="sidebar"
+>
 
-    <p>
-        Statistical Practice —
-        V2 Enriched Trip Master Data Documentation
-    </p>
+    <div class="sidebar-brand">
 
-</div>
+        <h1>
+            國道瓶頸資料專案
+        </h1>
+
+        <p>
+            Statistical Practice
+        </p>
+
+    </div>
+
+
+    <div class="sidebar-section-title">
+        DATA
+    </div>
+
+    <a
+        href="index.html"
+        class="active"
+    >
+        Overview
+    </a>
+
+    <a href="v1.html">
+        V1 Full Master
+    </a>
+
+    <a href="v1_lite.html">
+        V1_LITE
+    </a>
+
+    <a href="v2.html">
+        V2 Enriched Master
+    </a>
+
+
+    <div class="sidebar-section-title">
+        PROJECT
+    </div>
+
+    <a
+        href="progress_2026_10_week1.html"
+    >
+        研究進度
+    </a>
+
+</aside>
+
+
+
+<div class="main">
+
+
+<header class="page-header">
+
+<h1>
+    國道瓶頸路段 OD 旅次分析與預測
+</h1>
+
+<p>
+    國道 3 號大溪－龍潭與
+    國道 5 號坪林－頭城瓶頸路段資料整理、
+    EDA、交通狀態分析與壅塞預測資料建置。
+</p>
 
 </header>
 
 
-<nav>
-<a href="progress_2026_10_week1.html">10月第一週進度</a>
-<div class="container">
 
-    <a href="#overview">資料概覽</a>
-
-    <a href="#structure">資料架構</a>
-
-    <a href="#files">檔案</a>
-
-    <a href="#dictionary">欄位說明</a>
-
-    <a href="#qc">Data Quality / QC 結果</a>
-
-    <a href="#read">讀取方式</a>
-
-    <a href="#version">版本</a>
-</div>
-
-</nav>
+<main class="content">
 
 
-<main class="container">
-
-
-<!-- ===================================================== -->
-<!-- Overview -->
-<!-- ===================================================== -->
-
-<section id="overview">
+<section>
 
 <h2>
-    1. 資料概覽
+    Project Overview
 </h2>
 
-<p>
-    本資料集整理高速公路瓶頸路段之
-    ETC OD 旅次、5 分鐘交通狀態、
-    氣象資訊與日曆／假期資訊。
-</p>
 
 <div class="card-grid">
 
-    <div class="card">
 
-        <strong>研究期間</strong>
+<div class="card">
 
-        2024-01-01
-        至
-        2025-12-31
+<strong>
+    研究期間
+</strong>
 
-    </div>
+<div class="big-number">
+    2024–2025
+</div>
 
-
-    <div class="card">
-
-        <strong>Master 資料單位</strong>
-
-        一列 =
-        一筆通過研究瓶頸的 M06B 旅次
-
-    </div>
-
-
-    <div class="card">
-
-        <strong>M05A 時間尺度</strong>
-
-        5 分鐘
-
-    </div>
-
-
-    <div class="card">
-
-        <strong>Weather 時間尺度</strong>
-
-        1 小時
-
-    </div>
-
-    <div class="card">
-
-        <strong>M03A 時間尺度</strong>
-
-        5 分鐘
-
-    </div>
-
-    <div class="card">
-
-        <strong>VD 時間表示</strong>
-
-        5-minute target grid 上的 1-minute snapshot
-
-    </div>
+<p>
+    2024-01-01
+    至
+    2025-12-31
+</p>
 
 </div>
 
 
-<h3>
-    研究方向
-</h3>
+<div class="card">
 
-<table>
+<strong>
+    研究路段
+</strong>
 
-<tr>
-    <th>路段</th>
-    <th>門架號碼</th>
-    <th>對應里程數</th>
-</tr>
+<div class="big-number">
+    4 directions
+</div>
 
-<tr>
-    <td>國道3號(大溪 → 龍潭)</td>
-    <td>03F0648S</td>
-    <td>62k → 68k</td>
-</tr>
+<p>
+    N3 / N5 × 南北向
+</p>
 
-<tr>
-    <td>國道3號(龍潭 → 大溪)</td>
-    <td>03F0648N</td>
-    <td>68k → 62k</td>
-</tr>
+</div>
 
-<tr>
-    <td>國道5號(坪林 → 頭城)</td>
-    <td>05F0287S</td>
-    <td>14k → 30k</td>
-</tr>
 
-<tr>
-    <td>國道5號(頭城 → 坪林)</td>
-    <td>05F0287N</td>
-    <td>30k → 14k</td>
-</tr>
+<div class="card">
 
-</table>
+<strong>
+    Master observation unit
+</strong>
+
+<div class="big-number">
+    Trip
+</div>
+
+<p>
+    一列代表一筆
+    M06B ETC 旅次
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+    Current enriched version
+</strong>
+
+<div class="big-number">
+    V2
+</div>
+
+<p>
+    加入 VD traffic-state context
+</p>
+
+</div>
+
+
+</div>
+
+
+<div class="note">
+
+<strong>
+資料版本原則：
+</strong>
+
+完整 Master 永久保留，
+精簡版與模型資料皆為衍生資料，
+不覆蓋原始完整 Master。
+
+</div>
+
 
 </section>
 
 
 
-<!-- ===================================================== -->
-<!-- Structure -->
-<!-- ===================================================== -->
-
-<section id="structure">
+<section>
 
 <h2>
-    2. V2 Enriched Trip Master 資料架構
+    研究路段
 </h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+    <th>道路</th>
+    <th>方向</th>
+    <th>研究瓶頸門架</th>
+</tr>
+
+
+<tr>
+
+<td>
+    國道 3 號
+</td>
+
+<td>
+    大溪 → 龍潭
+</td>
+
+<td>
+    03F0648S
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+    國道 3 號
+</td>
+
+<td>
+    龍潭 → 大溪
+</td>
+
+<td>
+    03F0648N
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+    國道 5 號
+</td>
+
+<td>
+    坪林 → 頭城
+</td>
+
+<td>
+    05F0287S
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+    國道 5 號
+</td>
+
+<td>
+    頭城 → 坪林
+</td>
+
+<td>
+    05F0287N
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+    Data Architecture
+</h2>
+
 
 <div class="pipeline">
 
-M06B
-+
+M06B ETC Trips
+
+<br>
+
+↓
+
+<br>
+
 M05A
-+
-M03A
-+
-VD
-+
-Weather
-+
-Calendar / Holiday
++ Weather
++ Calendar
++ M03A
 
 <br>
 
@@ -214,2158 +335,261 @@ Calendar / Holiday
 <br>
 
 <strong>
-V2 Enriched Trip Master
+V1 Full Master
+</strong>
+
+<br><br>
+
+↓
+
+<br>
+
+V1_LITE
+&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;
++ VD
+
+<br>
+
+↓
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+↓
+
+<br>
+
+<strong>
+V1_LITE
+&nbsp;&nbsp;&nbsp;&nbsp;
+V2
 </strong>
 
 </div>
 
+
 <p>
-    V2 延續 V1 的旅次層級設計，
-    <strong>一列仍然代表一筆通過研究瓶頸的 M06B trip</strong>。
-    VehicleID、OD、TripInformation、TripLength 等旅次資訊全部保留。
+    V1 保留完整旅次與交通資訊；
+    V1_LITE 為國道三號精簡資料；
+    V2 則加入 VD 局部交通狀態。
 </p>
 
-<div class="note">
-
-<strong>交通狀態欄位的重複是預期結果：</strong>
-
-同一 Route / Direction / Time5 內的多筆 M06B trip，
-會共享相同的 M03A、M05A、VD、Weather 與 Calendar context。
-因此同一個 VD speed 或 occupancy 可能在多筆 trip row 中重複，
-這不是 duplicate error。
-
-</div>
-
-<div class="note">
-
-<strong>建模層級：</strong>
-
-MASTER_V2 是 trip-level 資料，
-不直接將每一筆 trip 視為獨立的交通狀態 observation。
-後續壅塞預警會另建
-<code>MODEL_5MIN_V1</code>，
-聚合為「一列 = Route × Direction × Time5」。
-
-</div>
 
 </section>
 
 
 
-<!-- ===================================================== -->
-<!-- Files -->
-<!-- ===================================================== -->
-
-<section id="files">
+<section>
 
 <h2>
-    3. Master 與衍生資料檔案
-</h2>
-
-<h3>Current：MASTER_V2_2024_2025</h3>
-
-<pre>
-N3_Daxi_Longtan_N_2024_2025_MASTER_V2.parquet
-N3_Daxi_Longtan_S_2024_2025_MASTER_V2.parquet
-N5_Pinglin_Toucheng_N_2024_2025_MASTER_V2.parquet
-N5_Pinglin_Toucheng_S_2024_2025_MASTER_V2.parquet
-</pre>
-
-<h3>Stable Baseline：MASTER_V1_2024_2025</h3>
-
-<pre>
-N3_Daxi_Longtan_N_2024_2025_MASTER_V1.parquet
-N3_Daxi_Longtan_S_2024_2025_MASTER_V1.parquet
-N5_Pinglin_Toucheng_N_2024_2025_MASTER_V1.parquet
-N5_Pinglin_Toucheng_S_2024_2025_MASTER_V1.parquet
-</pre>
-
-<h3>VD 衍生資料</h3>
-
-<pre>
-VD_LONG_CLEAN_2024_2025.parquet
-
-N3_Daxi_Longtan_N_2024_2025_VD_5MIN_WIDE.parquet
-N3_Daxi_Longtan_S_2024_2025_VD_5MIN_WIDE.parquet
-N5_Pinglin_Toucheng_N_2024_2025_VD_5MIN_WIDE.parquet
-N5_Pinglin_Toucheng_S_2024_2025_VD_5MIN_WIDE.parquet
-</pre>
-
-<p>
-    資料檔案體積較大，因此不放置於 GitHub。
-    GitHub Pages 僅作為資料定義、QC、程式與研究進度文件。
-</p>
-
-</section>
-
-
-
-<!-- ===================================================== -->
-<!-- Dictionary -->
-<!-- ===================================================== -->
-
-<section id="dictionary">
-
-<h2>
-    4. Data Dictionary
+    Dataset Versions
 </h2>
 
 
-<!-- Time -->
-
-<details open>
-
-<summary>
-    A. 資料識別與時間
-</summary>
-
-<table>
-
-<tr>
-    <th>欄位</th>
-    <th>單位 / 型態</th>
-    <th>定義</th>
-</tr>
-
-<tr class="field-row">
-    <td>MasterRoute</td>
-    <td>string</td>
-    <td>
-        研究瓶頸路段，
-        如 N3_Daxi_Longtan。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>MasterDirection</td>
-    <td>N / S</td>
-    <td>
-        行車方向。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>BottleneckTime</td>
-    <td>datetime</td>
-    <td>
-        該筆旅次實際通過研究瓶頸的時間。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>Time5</td>
-    <td>datetime</td>
-    <td>
-        全資料共同使用的 5 分鐘分析時間格點；
-        用於對應 M05A、M03A 與 VD snapshot。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>WeatherTime</td>
-    <td>datetime</td>
-    <td>
-        對應氣象資料的小時時間。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>CalendarDate</td>
-    <td>date</td>
-    <td>
-        BottleneckTime 所屬日期。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>Hour</td>
-    <td>0–23</td>
-    <td>
-        通過瓶頸的小時。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>Minute</td>
-    <td>0–59</td>
-    <td>
-        通過瓶頸的分鐘。
-    </td>
-</tr>
-
-</table>
-
-</details>
-
-
-
-<!-- M06B -->
-
-<details>
-
-<summary>
-    B. M06B — ETC 旅次 / OD
-</summary>
-
-<table>
-
-<tr>
-    <th>欄位</th>
-    <th>單位 / 型態</th>
-    <th>定義</th>
-</tr>
-
-<tr class="field-row">
-    <td>VehicleID</td>
-    <td>string</td>
-    <td>
-        匿名化車輛識別碼。
-        同一 ID 可跨日重複出現。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>VehicleType</td>
-    <td>category</td>
-    <td>
-        31 小客車、
-        32 小貨車、
-        41 大客車、
-        42 大貨車、
-        5 聯結車。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>DetectionTimeO</td>
-    <td>datetime</td>
-    <td>
-        旅次起點門架偵測時間。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>GantryO</td>
-    <td>string</td>
-    <td>
-        旅次起點 ETC 門架。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>DetectionTimeD</td>
-    <td>datetime</td>
-    <td>
-        旅次終點門架偵測時間。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>GantryD</td>
-    <td>string</td>
-    <td>
-        旅次終點 ETC 門架。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>TripLength</td>
-    <td>km</td>
-    <td>
-        此筆旅次行駛距離。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>TripEnd</td>
-    <td>Y / N</td>
-    <td>
-        是否為旅次結束紀錄。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>TripInformation</td>
-    <td>string</td>
-    <td>
-        此旅次依序通過的門架與時間資訊。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>BottleneckGantry</td>
-    <td>string</td>
-    <td>
-        判定該旅次通過研究瓶頸所使用的門架。
-    </td>
-</tr>
-
-</table>
-
-</details>
-
-
-
-<!-- M05A -->
-
-<details>
-
-<summary>
-    C. M05A — 5 分鐘交通狀態
-</summary>
-
-<h3>
-    各車種速度
-</h3>
-
-<table>
-
-<tr>
-    <th>欄位</th>
-    <th>單位</th>
-    <th>定義</th>
-</tr>
-
-<tr class="field-row">
-    <td>M05_Speed_31</td>
-    <td>km/h</td>
-    <td>小客車站間速度。</td>
-</tr>
-
-<tr class="field-row">
-    <td>M05_Speed_32</td>
-    <td>km/h</td>
-    <td>小貨車站間速度。</td>
-</tr>
-
-<tr class="field-row">
-    <td>M05_Speed_41</td>
-    <td>km/h</td>
-    <td>大客車站間速度。</td>
-</tr>
-
-<tr class="field-row">
-    <td>M05_Speed_42</td>
-    <td>km/h</td>
-    <td>大貨車站間速度。</td>
-</tr>
-
-<tr class="field-row">
-    <td>M05_Speed_5</td>
-    <td>km/h</td>
-    <td>聯結車站間速度。</td>
-</tr>
-
-</table>
-
-
-<h3>
-    各車種交通量
-</h3>
-
-<table>
-
-<tr>
-    <th>欄位</th>
-    <th>單位</th>
-    <th>定義</th>
-</tr>
-
-<tr class="field-row">
-    <td>M05_Volume_31</td>
-    <td>veh / 5min</td>
-    <td>小客車交通量。</td>
-</tr>
-
-<tr class="field-row">
-    <td>M05_Volume_32</td>
-    <td>veh / 5min</td>
-    <td>小貨車交通量。</td>
-</tr>
-
-<tr class="field-row">
-    <td>M05_Volume_41</td>
-    <td>veh / 5min</td>
-    <td>大客車交通量。</td>
-</tr>
-
-<tr class="field-row">
-    <td>M05_Volume_42</td>
-    <td>veh / 5min</td>
-    <td>大貨車交通量。</td>
-</tr>
-
-<tr class="field-row">
-    <td>M05_Volume_5</td>
-    <td>veh / 5min</td>
-    <td>聯結車交通量。</td>
-</tr>
-
-<tr class="field-row">
-    <td>M05_Volume_Total</td>
-    <td>veh / 5min</td>
-    <td>
-        五車種有效交通量合計。
-    </td>
-</tr>
-
-</table>
-
-
-
-<h3>
-    加權速度
-</h3>
-
-<div class="formula">
-
-V<sub>t</sub>
-=
-Σ(
-Speed<sub>k,t</sub>
-×
-Volume<sub>k,t</sub>
-)
-/
-Σ Volume<sub>k,t</sub>
-
-</div>
-
-
-<p class="field-row">
-
-<strong>
-M05_Speed_Weighted
-</strong>
-
-為各車種速度依交通量加權後的
-綜合站間速度。
-
-</p>
-
-
-<div class="note">
-
-此欄位為本研究自行建立之
-composite indicator，
-
-<strong>
-不是高速公路局直接提供的
-「全車平均速度」。
-</strong>
-
-</div>
-
-
-<table>
-
-<tr>
-    <th>欄位</th>
-    <th>定義</th>
-</tr>
-
-<tr class="field-row">
-
-<td>M05_Speed_OwnType</td>
-
-<td>
-此筆 M06B 車輛所屬車種，
-在相同 5 分鐘的 M05A 速度。
-</td>
-
-</tr>
-
-<tr class="field-row">
-
-<td>M05_Volume_OwnType</td>
-
-<td>
-此筆車輛所屬車種，
-在相同 5 分鐘的交通量。
-</td>
-
-</tr>
-
-<tr class="field-row">
-
-<td>M05_Matched</td>
-
-<td>
-是否成功匹配 M05A。
-</td>
-
-</tr>
-
-</table>
-
-</details>
-
-
-
-<!-- M03A -->
-
-<details>
-
-<summary>
-    D. M03A — 單一 eTag 門架 5 分鐘交通量
-</summary>
-
-<p>
-    M03A 以研究瓶頸 eTag 門架為單位，
-    提供每 5 分鐘、依車種區分之通過交通量。
-    V2 以 <code>Time5 = M03_Time5</code> 進行 many-to-one left join。
-</p>
-
-<table>
-<tr>
-    <th>欄位</th>
-    <th>單位 / 型態</th>
-    <th>定義</th>
-</tr>
-<tr class="field-row">
-    <td>M03_GantryID</td>
-    <td>string</td>
-    <td>研究瓶頸所使用的 eTag 門架。</td>
-</tr>
-<tr class="field-row">
-    <td>M03_Volume_31 / 32 / 41 / 42 / 5</td>
-    <td>veh / 5min</td>
-    <td>五種車種在該門架、該 5 分鐘的通過交通量。</td>
-</tr>
-<tr class="field-row">
-    <td>M03_Volume_Total</td>
-    <td>veh / 5min</td>
-    <td>五車種交通量合計；五類資料完整時才計算。</td>
-</tr>
-<tr class="field-row">
-    <td>M03_Volume_OwnType</td>
-    <td>veh / 5min</td>
-    <td>該筆 M06B trip 所屬車種在相同 5 分鐘的 M03A 流量。</td>
-</tr>
-<tr class="field-row">
-    <td>M03_Matched</td>
-    <td>boolean</td>
-    <td>該 trip 的 Time5 是否成功匹配 M03A。</td>
-</tr>
-</table>
-
-</details>
-
-
-<!-- VD -->
-
-<details open>
-
-<summary>
-    E. VD — 局部交通狀態 snapshot
-</summary>
-
-<div class="note">
-<strong>時間定義：</strong>
-VD 不是五分鐘平均值。
-本研究建立 5 分鐘 Target Time，
-並使用距離該 Target Time 最近、且
-<code>|LagMin| ≤ 4 分鐘</code>
-的一分鐘 VD observation 作為該時間格點的 snapshot。
-Target Time 與 DataCollectTime 均以台灣本地時間解讀。
-</div>
-
-<h3>Sensor-specific 欄位</h3>
-
-<table>
-<tr>
-    <th>欄位型態</th>
-    <th>定義</th>
-</tr>
-<tr class="field-row">
-    <td>VD_*_Speed</td>
-    <td>該 VD 在該 Time5 的有效 snapshot speed（km/h）。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_*_Occupancy</td>
-    <td>該 VD 各有效車道 occupancy 的平均值。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_*_LagMin</td>
-    <td>Target Time − 實際 DataCollectTime，單位為分鐘。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_*_Status</td>
-    <td>原始 VD Status；1 / 2 / 3 視為明確異常。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_*_Observed</td>
-    <td>該 sensor / Time5 是否存在原始 snapshot。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_*_Valid</td>
-    <td>Speed 可用、|Lag| ≤ 4 分鐘且無明確異常 Status 時為 TRUE。</td>
-</tr>
-</table>
-
-<h3>Dynamic Primary VD</h3>
-
-<p>
-    每個 Time5 會從當下
-    <strong>ValidSnapshot = TRUE</strong>
-    的 VD 中，選擇距研究瓶頸 eTag 門架最近者作為 Dynamic Primary VD。
-    因此 Primary VD 並非永遠固定同一支 sensor；
-    若最近 sensor 當下無有效資料，可使用下一支距離較近的有效 sensor。
-</p>
-
-<table>
-<tr>
-    <th>欄位</th>
-    <th>定義</th>
-</tr>
-<tr class="field-row">
-    <td>VD_PrimarySensorID</td>
-    <td>該 Time5 所選擇的最近有效 VDID。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_PrimarySpeed</td>
-    <td>Dynamic Primary VD 的 speed。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_PrimaryOccupancy</td>
-    <td>Dynamic Primary VD 的 occupancy。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_PrimaryLagMin</td>
-    <td>Dynamic Primary VD 與 Target Time 的分鐘差。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_PrimaryValid</td>
-    <td>該 Time5 是否至少存在一支有效 VD；若存在，Primary 即為有效。</td>
-</tr>
-</table>
-
-<h3>Corridor summary</h3>
-
-<table>
-<tr>
-    <th>欄位</th>
-    <th>定義</th>
-</tr>
-<tr class="field-row">
-    <td>VD_ObservedSensorCount</td>
-    <td>該 Time5 有原始 observation 的目標 VD 數量。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_ValidSensorCount</td>
-    <td>該 Time5 通過 QC 的有效 VD 數量。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_MinSpeed / VD_MedianSpeed / VD_MaxSpeed</td>
-    <td>該方向當下所有有效 VD 的速度摘要。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_MeanOccupancy / VD_MaxOccupancy</td>
-    <td>該方向當下有效 VD 的 occupancy 摘要。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_CongestedSensorCount</td>
-    <td>有效 VD 中 speed &lt; 40 km/h 的 sensor 數。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_CongestedSensorShare</td>
-    <td>有效 VD 中 speed &lt; 40 km/h 的比例。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_AnyCongested40</td>
-    <td>只要任一有效 VD speed &lt; 40 km/h 即為 TRUE；無有效 VD 時為 NA。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_WorstSpeedBand</td>
-    <td>依當下最低有效 VD speed 所建立之研究用速度區間。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_StaleSensorCount</td>
-    <td>|Lag| &gt; 4 分鐘的 sensor 數量。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_UnknownStatusSensorCount</td>
-    <td>Status 缺失的 sensor 數量；Status 缺失本身不直接視為設備故障。</td>
-</tr>
-<tr class="field-row">
-    <td>VD_NoTrafficLikeSensorCount</td>
-    <td>所有 lane speed 與 occupancy 同時為 0 的 sensor 數量；不直接解讀為壅塞。</td>
-</tr>
-</table>
-
-<div class="note">
-<strong>研究用壅塞門檻：</strong>
-<code>VD_IsCongested40 = (有效 speed &lt; 40 km/h)</code>。
-此為本研究的 operational definition，不宣稱為唯一官方壅塞定義。
-無有效 VD 時壅塞狀態保留 NA，不將 missing 自動視為「不壅塞」。
-</div>
-
-</details>
-
-
-<!-- Weather -->
-
-<details>
-
-<summary>
-    F. Weather
-</summary>
-
-<table>
-
-<tr>
-    <th>欄位</th>
-    <th>單位</th>
-    <th>定義</th>
-</tr>
-
-<tr class="field-row">
-    <td>Weather_Temperature_C</td>
-    <td>°C</td>
-    <td>小時氣溫。</td>
-</tr>
-
-<tr class="field-row">
-    <td>Weather_Dewpoint_C</td>
-    <td>°C</td>
-    <td>小時露點溫度。</td>
-</tr>
-
-<tr class="field-row">
-    <td>Weather_Precipitation_mm</td>
-    <td>mm</td>
-    <td>小時降雨量。</td>
-</tr>
-
-<tr class="field-row">
-    <td>Weather_WindSpeed_mps</td>
-    <td>m/s</td>
-    <td>小時風速。</td>
-</tr>
-
-<tr class="field-row">
-    <td>Weather_Matched</td>
-    <td>boolean</td>
-    <td>是否成功匹配氣象資料。</td>
-</tr>
-
-</table>
-
-</details>
-
-
-
-<!-- Calendar -->
-
-<details>
-
-<summary>
-    G. Calendar / Holiday
-</summary>
-
-<table>
-
-<tr>
-    <th>欄位</th>
-    <th>定義</th>
-</tr>
-
-<tr class="field-row">
-    <td>WeekdayNum</td>
-    <td>星期一=1 ～ 星期日=7。</td>
-</tr>
-
-<tr class="field-row">
-    <td>IsWeekend</td>
-    <td>是否為週六或週日。</td>
-</tr>
-
-<tr class="field-row">
-    <td>IsLongHoliday</td>
-    <td>是否位於連假正式期間。</td>
-</tr>
-
-<tr class="field-row">
-    <td>HolidayName</td>
-    <td>正式連假名稱。</td>
-</tr>
-
-<tr class="field-row">
-    <td>IsPreLongHoliday</td>
-    <td>是否為連假前一天。</td>
-</tr>
-
-<tr class="field-row">
-    <td>PreLongHolidayName</td>
-    <td>即將到來之連假名稱。</td>
-</tr>
-
-<tr class="field-row">
-    <td>IsStandaloneHoliday</td>
-    <td>是否為單日假日。</td>
-</tr>
-
-<tr class="field-row">
-    <td>StandaloneHolidayName</td>
-    <td>單日假日名稱。</td>
-</tr>
-
-<tr class="field-row">
-    <td>DayType</td>
-    <td>
-        WEEKDAY /
-        WEEKEND /
-        PRE_LONG_HOLIDAY /
-        LONG_HOLIDAY /
-        STANDALONE_HOLIDAY
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>HolidayEventName</td>
-    <td>
-        D-3 至 D+2 事件窗所屬假期名稱。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>HolidayDaysTotal</td>
-    <td>
-        該假期總天數。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>HolidayDayIndex</td>
-    <td>
-        若為正式假期，
-        表示該日為假期第幾天。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>HolidayPhase</td>
-    <td>
-        NORMAL、
-        D-3、D-2、D-1、
-        Holiday_D1 ... Holiday_Last、
-        D+1、D+2。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>HolidayPhaseGroup</td>
-    <td>
-        NORMAL / PRE / HOLIDAY / POST。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>IsHolidayWindow</td>
-    <td>
-        是否位於 D-3 至假期結束後 D+2。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>IsSummer</td>
-    <td>
-        7/1 至 8/31 = 1。
-        為本研究之暑假操作性定義。
-    </td>
-</tr>
-
-<tr class="field-row">
-    <td>Calendar_Matched</td>
-    <td>
-        是否成功匹配日曆資料。
-    </td>
-</tr>
-
-</table>
-
-</details>
-
-
-</section>
-
-<!-- ===================================================== -->
-<!-- Quality Control -->
-<!-- ===================================================== -->
-
-<section id="qc">
-
-<h2>
-    5. Data Quality / QC
-</h2>
-
-<h3>5.0 MASTER V2 Merge / VD QC</h3>
-
-<div class="qc-summary">
-
-    <div class="qc-card qc-pass">
-        <strong>MASTER V2</strong>
-        <span class="qc-big">PASS</span>
-        <p>四個方向 merge 前後 row count 完全一致。</p>
-    </div>
-
-    <div class="qc-card">
-        <strong>VD sensors in collected raw data</strong>
-        <span class="qc-big">14</span>
-        <p>N3 N=5、N3 S=6、N5 N=2、N5 S=1。</p>
-    </div>
-
-    <div class="qc-card">
-        <strong>VD Valid Coverage</strong>
-        <span class="qc-big">97.63–99.31%</span>
-        <p>依 trip-row 加權後的有效 VD coverage。</p>
-    </div>
-
-    <div class="qc-card">
-        <strong>VD Time Rule</strong>
-        <span class="qc-big">±4 min</span>
-        <p>超過容許 lag 的 snapshot 不作為有效交通狀態。</p>
-    </div>
-
-</div>
-
-<h3>5.0.1 MASTER V2 Merge 結果</h3>
-
-<table>
-<tr>
-    <th>方向</th>
-    <th>Input rows</th>
-    <th>Output rows</th>
-    <th>有 VD observation</th>
-    <th>有效 VD</th>
-    <th>Row count QC</th>
-</tr>
-<tr>
-    <td>N3 龍潭 → 大溪（N）</td>
-    <td>45,150,592</td>
-    <td>45,150,592</td>
-    <td>97.68%</td>
-    <td>97.63%</td>
-    <td><span class="status-pass">PASS</span></td>
-</tr>
-<tr>
-    <td>N3 大溪 → 龍潭（S）</td>
-    <td>46,306,247</td>
-    <td>46,306,247</td>
-    <td>97.71%</td>
-    <td>97.65%</td>
-    <td><span class="status-pass">PASS</span></td>
-</tr>
-<tr>
-    <td>N5 頭城 → 坪林（N）</td>
-    <td>22,158,407</td>
-    <td>22,158,407</td>
-    <td>99.45%</td>
-    <td>99.31%</td>
-    <td><span class="status-pass">PASS</span></td>
-</tr>
-<tr>
-    <td>N5 坪林 → 頭城（S）</td>
-    <td>22,659,631</td>
-    <td>22,659,631</td>
-    <td>99.30%</td>
-    <td>98.92%</td>
-    <td><span class="status-pass">PASS</span></td>
-</tr>
-</table>
-
-<div class="note">
-<strong>為什麼不是 100% 都有 VD？</strong><br><br>
-
-MASTER_V2 以 M06B trip 為主表，因此只要某個 trip 的 Time5
-在 VD 資料中沒有任何目標 sensor observation，
-該 trip 仍會由 LEFT JOIN 保留下來，但 VD 欄位會是 NA。
-
-另外，「有 observation」不代表一定「有效」。
-有些 VD observation 因為與 Target Time 相差超過 4 分鐘、
-沒有可用的 sensor speed，或設備 Status 明確異常，
-會保留 QC 紀錄但不作為有效 VD traffic state。
-
-因此：
-<code>VDObservationPct</code>
-通常略高於
-<code>ValidVDPct</code>，
-而不到 100% 並不是 merge 失敗。
-</div>
-
-<h3>5.0.2 本研究目前收集到的 VD sensors</h3>
-
-<table>
-<tr>
-    <th>方向</th>
-    <th>目前 raw data 中的 VDID</th>
-    <th>數量</th>
-</tr>
-<tr>
-    <td>N3 北向</td>
-    <td>
-        VD-N3-N-61.000-M-LOOP<br>
-        VD-N3-N-61.670-M-RS<br>
-        VD-N3-N-63.990-M-LOOP<br>
-        VD-N3-N-65.990-M-RS<br>
-        VD-N3-N-69.510-M-LOOP
-    </td>
-    <td>5</td>
-</tr>
-<tr>
-    <td>N3 南向</td>
-    <td>
-        VD-N3-S-61.400-M-LOOP<br>
-        VD-N3-S-62.008-M-LOOP<br>
-        VD-N3-S-64.500-M-RS<br>
-        VD-N3-S-66.020-M-LOOP<br>
-        VD-N3-S-67.000-M-LOOP<br>
-        VD-N3-S-69.700-M-RS
-    </td>
-    <td>6（全期間 unique）</td>
-</tr>
-<tr>
-    <td>N5 北向</td>
-    <td>
-        VD-N5-N-28.420-M-LOOP<br>
-        VD-N5-N-29.000-M-LOOP
-    </td>
-    <td>2</td>
-</tr>
-<tr>
-    <td>N5 南向</td>
-    <td>
-        VD-N5-S-28.236-M-LOOP
-    </td>
-    <td>1</td>
-</tr>
-</table>
-
-<div class="note">
-<strong>重要限制：</strong>
-上表表示的是「目前團隊收集到的 raw VD dataset 中包含的 sensor」，
-不是宣稱高速公路局在該實體路段只設置這些 VD。
-若要判斷道路上實際完整 VD 數量，
-應另外以高速公路局 VD 靜態資訊（VDID、RoadDirection、LocationMile 等）
-做 inventory check。
-</div>
-
-<h3>5.0.3 VD sensor availability</h3>
-
-<p>
-    N3 南向的 sensor 並非全期間固定同一組。
-    例如 <code>VD-N3-S-62.008-M-LOOP</code>
-    在目前資料中只出現到 2024-03-25，
-    而 <code>VD-N3-S-64.500-M-RS</code> 與
-    <code>VD-N3-S-66.020-M-LOOP</code>
-    自 2024-04-11 起出現。
-    因此程式使用 Dynamic Primary VD，而不假設兩年間永遠固定同一支 sensor。
-</p>
-
-<h3>5.0.4 VD time / stale QC</h3>
-
-<p>
-    多數 sensor 的絕對時間差中位數約 1–2 分鐘，
-    95th percentile 約 2–3 分鐘。
-    超過 ±4 分鐘者標記為 stale，不作為有效 VD traffic state。
-    QC 另保留極端時間差及 speed &gt; 180 km/h 的 REVIEW 清單。
-</p>
-
-<hr>
-
-<h3>以下保留 V1 Core Master 的既有 QC</h3>
-
-
-<p>
-    在正式進行 EDA 與建模前，
-    先針對四個 V1 Core Master 進行資料品質檢查。
-    QC 原則為：
-    <strong>
-        先標記、再判斷，不因極端值自動刪除資料。
-    </strong>
-</p>
-
-
-<div class="qc-summary">
-
-    <div class="qc-card qc-pass">
-
-        <strong>
-            QC Status
-        </strong>
-
-        <span class="qc-big">
-            PASS
-        </span>
-
-        <p>
-            未發現需要大規模刪除的系統性資料錯誤。
-        </p>
-
-    </div>
-
-
-    <div class="qc-card">
-
-        <strong>
-            Master Files
-        </strong>
-
-        <span class="qc-big">
-            4
-        </span>
-
-        <p>
-            N3 / N5 × 南北方向。
-        </p>
-
-    </div>
-
-
-    <div class="qc-card">
-
-        <strong>
-            Exact Duplicate
-        </strong>
-
-        <span class="qc-big">
-            0
-        </span>
-
-        <p>
-            四個方向皆未發現完全重複旅次。
-        </p>
-
-    </div>
-
-
-    <div class="qc-card">
-
-        <strong>
-            QC Decision
-        </strong>
-
-        <span class="qc-big">
-            KEEP
-        </span>
-
-        <p>
-            目前不進行大規模 row deletion。
-        </p>
-
-    </div>
-
-</div>
-
-
-
-<h3>
-    5.1 QC 檢查原則
-</h3>
-
-<p>
-    本研究將 QC 問題區分為三類：
-</p>
-
-<table>
-
-<tr>
-    <th>類型</th>
-    <th>定義</th>
-    <th>處理方式</th>
-</tr>
-
-<tr>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-
-    <td>
-        檢查結果符合資料定義，
-        未發現異常。
-    </td>
-
-    <td>
-        保留原始資料。
-    </td>
-</tr>
-
-<tr>
-    <td>
-        <span class="status-structural">
-            Structural NA
-        </span>
-    </td>
-
-    <td>
-        欄位在該筆紀錄本來就不適用，
-        因此產生 NA。
-    </td>
-
-    <td>
-        保留 NA，
-        不補值、不刪除。
-    </td>
-</tr>
-
-<tr>
-    <td>
-        <span class="status-review">
-            REVIEW
-        </span>
-    </td>
-
-    <td>
-        數值較極端，
-        但不能直接判定為錯誤。
-    </td>
-
-    <td>
-        回查原始路徑與時間，
-        再決定是否處理。
-    </td>
-</tr>
-
-</table>
-
-
-
-<h3>
-    5.2 Missing Value 檢查
-</h3>
-
-<p>
-    大部分核心欄位皆無缺失。
-    Missing value 主要集中於假期名稱類欄位，
-    以及少量由資料定義自然產生的欄位。
-</p>
-
-
-<table>
-
-<tr>
-    <th>欄位</th>
-    <th>QC 判定</th>
-    <th>原因</th>
-    <th>處理方式</th>
-</tr>
-
-<tr>
-
-    <td>
-        HolidayName
-    </td>
-
-    <td>
-        <span class="status-structural">
-            Structural NA
-        </span>
-    </td>
-
-    <td>
-        非連假日期本來就沒有 HolidayName。
-    </td>
-
-    <td>
-        保留 NA。
-    </td>
-
-</tr>
-
-
-<tr>
-
-    <td>
-        PreLongHolidayName
-    </td>
-
-    <td>
-        <span class="status-structural">
-            Structural NA
-        </span>
-    </td>
-
-    <td>
-        只有連假前一天才有值。
-    </td>
-
-    <td>
-        保留 NA。
-    </td>
-
-</tr>
-
-
-<tr>
-
-    <td>
-        StandaloneHolidayName
-    </td>
-
-    <td>
-        <span class="status-structural">
-            Structural NA
-        </span>
-    </td>
-
-    <td>
-        只有單日國定假日才有值。
-    </td>
-
-    <td>
-        保留 NA。
-    </td>
-
-</tr>
-
-
-<tr>
-
-    <td>
-        HolidayEventName /
-        HolidayEventStart /
-        HolidayEventEnd
-    </td>
-
-    <td>
-        <span class="status-structural">
-            Structural NA
-        </span>
-    </td>
-
-    <td>
-        只有落在 Holiday Event Window
-        的日期才具有假期事件資訊。
-    </td>
-
-    <td>
-        保留 NA。
-    </td>
-
-</tr>
-
-
-<tr>
-
-    <td>
-        HolidayDayIndex
-    </td>
-
-    <td>
-        <span class="status-structural">
-            Structural NA
-        </span>
-    </td>
-
-    <td>
-        只有正式假期期間才有
-        Holiday Day Index。
-    </td>
-
-    <td>
-        保留 NA。
-    </td>
-
-</tr>
-
-</table>
-
-
-<div class="note">
-
-<strong>
-重要：
-</strong>
-
-上述 NA 並不代表資料遺失，
-而是該欄位在一般日期
-<strong>
-不適用（Not Applicable）
-</strong>。
-
-因此不應使用平均數、
-眾數或其他方式進行 imputation。
-
-</div>
-
-
-
-<h3>
-    5.3 M05_Speed_Weighted 缺值
-</h3>
-
-<p>
-    四個方向共有少量
-    <code>M05_Speed_Weighted</code>
-    缺值。
-</p>
-
-<table>
-
-<tr>
-    <th>路段方向</th>
-    <th>NA 筆數</th>
-    <th>NA 比例</th>
-    <th>QC 結果</th>
-</tr>
-
-<tr>
-    <td>N3 大溪－龍潭 北向</td>
-    <td>1,952</td>
-    <td>0.0043%</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-</tr>
-
-<tr>
-    <td>N3 大溪－龍潭 南向</td>
-    <td>3,655</td>
-    <td>0.0079%</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-</tr>
-
-<tr>
-    <td>N5 坪林－頭城 北向</td>
-    <td>10,335</td>
-    <td>0.0466%</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-</tr>
-
-<tr>
-    <td>N5 坪林－頭城 南向</td>
-    <td>4,401</td>
-    <td>0.0194%</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-</tr>
-
-</table>
-
-
-<p>
-    檢查結果顯示，
-    所有
-    <code>M05_Speed_Weighted = NA</code>
-    的紀錄皆同時滿足：
-</p>
-
-<div class="formula">
-
-M05_Volume_Total = 0
-
-</div>
-
-
-<p>
-    因加權速度定義為：
-</p>
-
-<div class="formula">
-
-V<sub>t</sub><sup>(w)</sup>
-=
-Σ(
-Speed<sub>k,t</sub>
-×
-Volume<sub>k,t</sub>
-)
-/
-Σ Volume<sub>k,t</sub>
-
-</div>
-
-
-<p>
-    當總交通量為 0 時，
-    分母為 0，
-    因此加權速度無法定義。
-</p>
-
-
-<div class="note">
-
-<strong>
-處理方式：
-</strong>
-
-保留
-<code>M05_Speed_Weighted = NA</code>。
-
-不可將其補為 0，
-因為速度 0 會被誤解為嚴重壅塞。
-
-</div>
-
-
-
-<h3>
-    5.4 VehicleType = 0
-</h3>
-
-<p>
-    原始 M06B 中發現極少數
-    <code>VehicleType = 0</code>
-    紀錄。
-</p>
-
-
-<table>
-
-<tr>
-    <th>路段方向</th>
-    <th>VehicleType = 0</th>
-    <th>QC 結果</th>
-</tr>
-
-<tr>
-    <td>N3 北向</td>
-    <td>103</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-</tr>
-
-<tr>
-    <td>N3 南向</td>
-    <td>69</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-</tr>
-
-<tr>
-    <td>N5 北向</td>
-    <td>36</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-</tr>
-
-<tr>
-    <td>N5 南向</td>
-    <td>37</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-</tr>
-
-</table>
-
-
-<p>
-    總計：
-    <strong>
-        245 筆
-    </strong>
-</p>
-
-
-<p>
-    這些紀錄的
-    <code>M05_Speed_OwnType</code>
-    與
-    <code>M05_Volume_OwnType</code>
-    皆為 NA。
-</p>
-
-
-<p>
-    原因是目前 M05A 車種分類僅包含：
-</p>
-
-<pre>
-31 = 小客車
-32 = 小貨車
-41 = 大客車
-42 = 大貨車
-5  = 聯結車
-</pre>
-
-
-<div class="note">
-
-<strong>
-處理方式：
-</strong>
-
-將
-<code>VehicleType = 0</code>
-視為
-<strong>UNKNOWN</strong>。
-
-保留該筆旅次，
-不因車種未知而刪除整筆資料。
-
-</div>
-
-
-
-<h3>
-    5.5 TripLength 極端值
-</h3>
-
-<p>
-    第一輪 QC 將
-    <code>TripLength &gt; 500 km</code>
-    標記為 REVIEW，
-    進一步檢查其旅次時間與
-    <code>TripInformation</code>。
-</p>
-
-
-<table>
-
-<tr>
-    <th>路段方向</th>
-    <th>&gt; 500 km</th>
-    <th>比例</th>
-    <th>最大 TripLength</th>
-</tr>
-
-<tr>
-    <td>N3 北向</td>
-    <td>5,899</td>
-    <td>0.0131%</td>
-    <td>928.65 km</td>
-</tr>
-
-<tr>
-    <td>N3 南向</td>
-    <td>6,738</td>
-    <td>0.0146%</td>
-    <td>987.00 km</td>
-</tr>
-
-<tr>
-    <td>N5 北向</td>
-    <td>204</td>
-    <td>0.00092%</td>
-    <td>899.10 km</td>
-</tr>
-
-<tr>
-    <td>N5 南向</td>
-    <td>173</td>
-    <td>0.00076%</td>
-    <td>899.10 km</td>
-</tr>
-
-</table>
-
-
-<p>
-    進一步依不同門檻統計：
-</p>
-
-<table>
-
-<tr>
-    <th>TripLength</th>
-    <th>筆數</th>
-</tr>
-
-<tr>
-    <td>&gt; 500 km</td>
-    <td>13,014</td>
-</tr>
-
-<tr>
-    <td>&gt; 600 km</td>
-    <td>6,948</td>
-</tr>
-
-<tr>
-    <td>&gt; 700 km</td>
-    <td>1,650</td>
-</tr>
-
-<tr>
-    <td>&gt; 800 km</td>
-    <td>170</td>
-</tr>
-
-<tr>
-    <td>&gt; 900 km</td>
-    <td>3</td>
-</tr>
-
-</table>
-
-
-<p>
-    進一步檢視極端旅次之
-    DetectionTime、
-    TripDuration 與
-    TripInformation，
-    可觀察到其路徑通常包含大量連續門架，
-    並具有相對應的長旅次時間。
-</p>
-
-
-<p>
-    因此目前沒有足夠證據將
-    TripLength &gt; 500 km
-    視為錯誤資料。
-</p>
-
-
-<div class="note">
-
-<strong>
-QC Decision：
-</strong>
-
-Extreme but internally coherent trip。
-
-保留原始資料，
-但後續分析可建立：
-
-<code>IsVeryLongTrip = 1(TripLength &gt; 500)</code>
-
-進行 sensitivity analysis。
-
-</div>
-
-
-
-<h3>
-    5.6 Exact Duplicate
-</h3>
-
-<p>
-    Exact duplicate 使用以下 M06B 核心欄位共同判定：
-</p>
-
-<pre>
-VehicleID
-DetectionTimeO
-GantryO
-DetectionTimeD
-GantryD
-TripLength
-TripEnd
-TripInformation
-</pre>
-
-
-<table>
-
-<tr>
-    <th>路段方向</th>
-    <th>Candidate Groups</th>
-    <th>Exact Duplicate Groups</th>
-    <th>Duplicate Extra Rows</th>
-</tr>
-
-<tr>
-    <td>N3 北向</td>
-    <td>0</td>
-    <td>0</td>
-    <td>0</td>
-</tr>
-
-<tr>
-    <td>N3 南向</td>
-    <td>0</td>
-    <td>0</td>
-    <td>0</td>
-</tr>
-
-<tr>
-    <td>N5 北向</td>
-    <td>0</td>
-    <td>0</td>
-    <td>0</td>
-</tr>
-
-<tr>
-    <td>N5 南向</td>
-    <td>0</td>
-    <td>0</td>
-    <td>0</td>
-</tr>
-
-</table>
-
-
-<div class="qc-conclusion">
-<h3>
-    5.7 QC Scripts
-</h3>
-
-<p>
-    QC 分為兩階段：
-</p>
-
-<table>
-
-<tr>
-    <th>程式</th>
-    <th>用途</th>
-</tr>
-
-<tr>
-    <td>
-        qc_master_v1.py
-    </td>
-
-    <td>
-        第一輪 QC：
-        Missing Value、
-        數值範圍、
-        時間一致性、
-        M05A / Weather / Calendar merge、
-        Gantry、
-        Weighted Speed 等基本檢查。
-    </td>
-</tr>
-
-<tr>
-    <td>
-        qc_followup_v1.py
-    </td>
-
-    <td>
-        第二輪 QC：
-        Weighted Speed NA、
-        VehicleType=0、
-        TripLength &gt; 500 km
-        與 Exact Duplicate 深入檢查。
-    </td>
-</tr>
-
-</table>
-<h3>
-    5.8 Final QC Decision
-</h3>
-
-<p>
-    綜合 Missing Value、
-    時間一致性、
-    Merge、
-    M05A、
-    Weather、
-    Calendar、
-    TripLength
-    與 Duplicate 檢查後，
-    V1 Core Master 未發現需要進行
-    大規模資料刪除的系統性錯誤。
-</p>
-
-
-<table>
-
-<tr>
-    <th>QC 項目</th>
-    <th>結果</th>
-    <th>最終處理</th>
-</tr>
-
-<tr>
-    <td>核心欄位缺失</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-    <td>保留</td>
-</tr>
-
-<tr>
-    <td>時間順序與時間對齊</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-    <td>保留</td>
-</tr>
-
-<tr>
-    <td>M05A Merge</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-    <td>保留</td>
-</tr>
-
-<tr>
-    <td>Weather Merge</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-    <td>保留</td>
-</tr>
-
-<tr>
-    <td>Calendar Merge</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-    <td>保留</td>
-</tr>
-
-<tr>
-    <td>Holiday 欄位 NA</td>
-    <td>
-        <span class="status-structural">
-            Structural NA
-        </span>
-    </td>
-    <td>保留 NA</td>
-</tr>
-
-<tr>
-    <td>M05_Speed_Weighted NA</td>
-    <td>
-        <span class="status-structural">
-            Structural NA
-        </span>
-    </td>
-    <td>保留 NA</td>
-</tr>
-
-<tr>
-    <td>VehicleType = 0</td>
-    <td>
-        <span class="status-review">
-            UNKNOWN
-        </span>
-    </td>
-    <td>保留旅次，車種視為 UNKNOWN</td>
-</tr>
-
-<tr>
-    <td>TripLength &gt; 500 km</td>
-    <td>
-        <span class="status-review">
-            EXTREME
-        </span>
-    </td>
-    <td>保留並建立 flag</td>
-</tr>
-
-<tr>
-    <td>Exact Duplicate</td>
-    <td>
-        <span class="status-pass">
-            PASS
-        </span>
-    </td>
-    <td>0 筆，不需刪除</td>
-</tr>
-
-</table>
-
-
-<div class="qc-final-box">
-
-<strong>
-V1 Core Master — QC PASS
-</strong>
-
-<p>
-    V1 Core Master 可進入正式
-    Exploratory Data Analysis（EDA）
-    與後續 5-minute Modeling Dataset 建置階段。
-</p>
-
-</div>
-
-</div>
-
-
-</section>
-
-<!-- ===================================================== -->
-<!-- Read -->
-<!-- ===================================================== -->
-
-<section id="read">
-
-<h2>
-    6. 如何讀取資料
-</h2>
-
-<h3>Python：讀取 V2</h3>
-
-<pre>
-import pandas as pd
-
-file = r"D:\統計實務\Data\MASTER_V2_2024_2025\N3_Daxi_Longtan_N_2024_2025_MASTER_V2.parquet"
-
-df = pd.read_parquet(file)
-
-print(df.shape)
-print(df.columns.tolist())
-print(df.head())
-</pre>
-
-<h3>Python：只讀需要欄位</h3>
-
-<pre>
-cols = [
-    "VehicleID",
-    "VehicleType",
-    "BottleneckTime",
-    "Time5",
-    "GantryO",
-    "GantryD",
-    "TripLength",
-
-    "M03_Volume_Total",
-
-    "M05_Speed_Weighted",
-    "M05_Volume_Total",
-
-    "VD_PrimarySensorID",
-    "VD_PrimarySpeed",
-    "VD_PrimaryOccupancy",
-    "VD_ValidSensorCount",
-    "VD_MinSpeed",
-    "VD_AnyCongested40",
-
-    "Weather_Precipitation_mm",
-    "DayType",
-    "HolidayPhase"
-]
-
-df = pd.read_parquet(
-    file,
-    columns=cols
-)
-</pre>
-
-<h3>R</h3>
-
-<pre>
-library(arrow)
-
-file &lt;- "D:/統計實務/Data/MASTER_V2_2024_2025/N3_Daxi_Longtan_N_2024_2025_MASTER_V2.parquet"
-
-df &lt;- read_parquet(file)
-
-dim(df)
-names(df)
-head(df)
-</pre>
-
-<div class="note">
-因 MASTER_V2 仍為大型 trip-level parquet，
-若分析只需要少數欄位，
-建議使用 column projection，只讀入所需 columns。
-</div>
-
-</section>
-
-
-
-<!-- ===================================================== -->
-<!-- Version -->
-<!-- ===================================================== -->
-
-<section id="version">
-
-<h2>
-    7. Version History
-</h2>
+<div class="table-wrap">
 
 <table>
 
 <tr>
     <th>版本</th>
-    <th>內容</th>
+    <th>主要內容</th>
+    <th>用途</th>
     <th>狀態</th>
 </tr>
 
-<tr>
-    <td>V1 Core Master</td>
-    <td>
-        M06B + M05A + Weather + Calendar / Holiday
-    </td>
-    <td>
-        Stable / Archived
-    </td>
-</tr>
 
 <tr>
-    <td>V1 + M03A</td>
-    <td>
-        V1 + bottleneck eTag 5-minute traffic volume
-    </td>
-    <td>
-        Intermediate
-    </td>
+
+<td>
+    <strong>V1</strong>
+</td>
+
+<td>
+    M06B + M05A +
+    Weather + Calendar +
+    M03A
+</td>
+
+<td>
+    完整 trip-level Master
+</td>
+
+<td>
+    <span class="status-pass">
+        Stable
+    </span>
+</td>
+
 </tr>
 
-<tr>
-    <td><strong>V2 Enriched Trip Master</strong></td>
-    <td>
-        V1 + M03A + VD 5-minute snapshot traffic context
-    </td>
-    <td>
-        <strong>Current</strong>
-    </td>
-</tr>
 
 <tr>
-    <td>MODEL_5MIN_V1</td>
-    <td>
-        將 M06B / VehicleID / OD 特徵聚合至
-        Route × Direction × Time5，
-        用於 CongestionNow / Next15 / Next30 / Next60。
-    </td>
-    <td>
+
+<td>
+    <strong>V1_LITE</strong>
+</td>
+
+<td>
+    國道三號，
+    精簡為 15 個核心欄位
+</td>
+
+<td>
+    EDA /
+    一般分析 /
+    快速讀取
+</td>
+
+<td>
+    <span class="status-current">
+        Current
+    </span>
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+    <strong>V2</strong>
+</td>
+
+<td>
+    V1 + VD traffic state
+</td>
+
+<td>
+    壅塞狀態與後續預測
+</td>
+
+<td>
+    <span class="status-current">
+        Current
+    </span>
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+    MODEL_5MIN_V1
+</td>
+
+<td>
+    Route × Direction × Time5
+</td>
+
+<td>
+    15 / 30 / 60 分鐘預警模型
+</td>
+
+<td>
+    <span class="status-planned">
         Planned
-    </td>
-</tr>
+    </span>
+</td>
 
-<tr>
-    <td>Future Extension</td>
-    <td>
-        Incident / Traffic Control / additional external information
-    </td>
-    <td>
-        Planned
-    </td>
 </tr>
 
 </table>
 
+</div>
+
+
 </section>
 
 
+
+<section>
+
+<h2>
+    Data Sources
+</h2>
+
+
+<div class="card-grid">
+
+
+<div class="card">
+
+<strong>
+    M06B
+</strong>
+
+ETC OD trip-level data
+
+</div>
+
+
+<div class="card">
+
+<strong>
+    M05A
+</strong>
+
+5-minute section
+speed / volume
+
+</div>
+
+
+<div class="card">
+
+<strong>
+    M03A
+</strong>
+
+5-minute bottleneck
+gantry volume
+
+</div>
+
+
+<div class="card">
+
+<strong>
+    VD
+</strong>
+
+Local traffic-state
+snapshot
+
+</div>
+
+
+<div class="card">
+
+<strong>
+    Weather
+</strong>
+
+Hourly meteorological
+variables
+
+</div>
+
+
+<div class="card">
+
+<strong>
+    Calendar
+</strong>
+
+Weekend / holiday /
+summer information
+
+</div>
+
+
+</div>
+
+</section>
+
+
+
 </main>
+
+</div>
 
 
 <footer>
@@ -2377,7 +601,6 @@ Freeway Bottleneck OD Analysis Project
 
 
 <script src="script.js"></script>
-
 
 </body>
 
