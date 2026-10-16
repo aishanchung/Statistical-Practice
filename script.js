@@ -1,22 +1,43 @@
-function filterFields() {
-    const input = document
-        .getElementById("fieldSearch")
-        .value
-        .toLowerCase();
+function toggleSidebar() {
 
-    const rows = document.querySelectorAll(
-        ".field-row"
+    const sidebar =
+        document.getElementById(
+            "sidebar"
+        );
+
+    sidebar.classList.toggle(
+        "open"
     );
-
-    rows.forEach(row => {
-        const text = row
-            .innerText
-            .toLowerCase();
-
-        if (text.includes(input)) {
-            row.style.display = "";
-        } else {
-            row.style.display = "none";
-        }
-    });
 }
+
+
+document.addEventListener(
+    "click",
+    function (event) {
+
+        const sidebar =
+            document.getElementById(
+                "sidebar"
+            );
+
+        const button =
+            document.querySelector(
+                ".mobile-menu-button"
+            );
+
+        if (
+            window.innerWidth <= 850 &&
+            sidebar &&
+            sidebar.classList.contains("open") &&
+            !sidebar.contains(event.target) &&
+            !button.contains(event.target)
+        ) {
+
+            sidebar.classList.remove(
+                "open"
+            );
+
+        }
+
+    }
+);
