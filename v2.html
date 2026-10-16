@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+V2 Enriched Master
+</title>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+
+</head>
+
+
+<body>
+
+
+<button
+    class="mobile-menu-button"
+    onclick="toggleSidebar()"
+>
+☰
+</button>
+
+
+<aside
+    class="sidebar"
+    id="sidebar"
+>
+
+<div class="sidebar-brand">
+
+<h1>
+國道瓶頸資料專案
+</h1>
+
+<p>
+Statistical Practice
+</p>
+
+</div>
+
+
+<div class="sidebar-section-title">
+DATA
+</div>
+
+<a href="index.html">
+Overview
+</a>
+
+<a href="v1.html">
+V1 Full Master
+</a>
+
+<a href="v1_lite.html">
+V1_LITE
+</a>
+
+<a
+    href="v2.html"
+    class="active"
+>
+V2 Enriched Master
+</a>
+
+
+<div class="sidebar-section-title">
+PROJECT
+</div>
+
+<a href="progress_2026_10_week1.html">
+研究進度
+</a>
+
+</aside>
+
+
+
+<div class="main">
+
+
+<header class="page-header">
+
+<h1>
+V2 — VD Enriched Trip Master
+</h1>
+
+<p>
+在 V1 基礎上加入
+VD local traffic-state snapshot，
+保留 trip-level Master 結構。
+</p>
+
+</header>
+
+
+
+<main class="content">
+
+
+<section>
+
+<h2>
+Architecture
+</h2>
+
+
+<div class="pipeline">
+
+V1
+
+<br>
+
+M06B
++
+M05A
++
+M03A
++
+Weather
++
+Calendar
+
+<br><br>
+
++
+
+<br><br>
+
+VD Traffic State
+
+<br>
+
+↓
+
+<br>
+
+<strong>
+V2 Enriched Trip Master
+</strong>
+
+</div>
+
+
+<div class="note">
+
+V2 的 observation unit
+仍然是
+<strong>一列 = 一筆 M06B trip</strong>。
+
+同一 Time5 的多筆 trip
+會共享相同的 VD traffic context。
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+VD Time Definition
+</h2>
+
+
+<p>
+
+VD 並不是 5-minute average。
+
+本研究使用五分鐘 Target Time，
+並以鄰近的一分鐘 VD observation
+作為該時間格點的 traffic snapshot。
+
+</p>
+
+
+<div class="note">
+
+有效 Snapshot：
+
+<code>
+|Target Time - DataCollectTime|
+≤ 4 minutes
+</code>
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+VD Sensors in Collected Dataset
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>方向</th>
+<th>Unique VD</th>
+<th>數量</th>
+</tr>
+
+
+<tr>
+
+<td>N3 North</td>
+
+<td>
+
+VD-N3-N-61.000-M-LOOP<br>
+VD-N3-N-61.670-M-RS<br>
+VD-N3-N-63.990-M-LOOP<br>
+VD-N3-N-65.990-M-RS<br>
+VD-N3-N-69.510-M-LOOP
+
+</td>
+
+<td>5</td>
+
+</tr>
+
+
+<tr>
+
+<td>N3 South</td>
+
+<td>
+
+VD-N3-S-61.400-M-LOOP<br>
+VD-N3-S-62.008-M-LOOP<br>
+VD-N3-S-64.500-M-RS<br>
+VD-N3-S-66.020-M-LOOP<br>
+VD-N3-S-67.000-M-LOOP<br>
+VD-N3-S-69.700-M-RS
+
+</td>
+
+<td>6 unique</td>
+
+</tr>
+
+
+<tr>
+
+<td>N5 North</td>
+
+<td>
+
+VD-N5-N-28.420-M-LOOP<br>
+VD-N5-N-29.000-M-LOOP
+
+</td>
+
+<td>2</td>
+
+</tr>
+
+
+<tr>
+
+<td>N5 South</td>
+
+<td>
+VD-N5-S-28.236-M-LOOP
+</td>
+
+<td>1</td>
+
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="warning">
+
+上述數量表示
+<strong>
+目前團隊收集到的 VD raw dataset
+</strong>
+包含的 sensor，
+
+並不表示高速公路局在該實體路段
+只設置這些 VD。
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+VD Merge QC
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>方向</th>
+<th>VD Observation</th>
+<th>Valid VD</th>
+<th>Row Count</th>
+</tr>
+
+
+<tr>
+<td>N3 North</td>
+<td>97.68%</td>
+<td>97.63%</td>
+<td>
+<span class="status-pass">
+PASS
+</span>
+</td>
+</tr>
+
+
+<tr>
+<td>N3 South</td>
+<td>97.71%</td>
+<td>97.65%</td>
+<td>
+<span class="status-pass">
+PASS
+</span>
+</td>
+</tr>
+
+
+<tr>
+<td>N5 North</td>
+<td>99.45%</td>
+<td>99.31%</td>
+<td>
+<span class="status-pass">
+PASS
+</span>
+</td>
+</tr>
+
+
+<tr>
+<td>N5 South</td>
+<td>99.30%</td>
+<td>98.92%</td>
+<td>
+<span class="status-pass">
+PASS
+</span>
+</td>
+</tr>
+
+</table>
+
+</div>
+
+
+<p>
+
+VD coverage 未達 100%
+並不代表 merge failure。
+
+可能原因包括：
+
+</p>
+
+
+<div class="note">
+
+某個 Time5 沒有 VD observation；
+
+或雖然存在 observation，
+但因 lag 過大、沒有可用 speed、
+或設備狀態異常而未通過 ValidSnapshot QC。
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+VD Data Quality Rules
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>問題</th>
+<th>處理方式</th>
+</tr>
+
+
+<tr>
+
+<td>
+|Lag| &gt; 4 min
+</td>
+
+<td>
+ValidSnapshot = FALSE
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+沒有 usable speed
+</td>
+
+<td>
+Speed = NA
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+All lane Speed = 0
+且 Occupancy = 0
+</td>
+
+<td>
+NoTrafficLike flag，
+不直接判定為壅塞
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+Missing VD
+</td>
+
+<td>
+Congestion = NA，
+不直接視為 non-congestion
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+Speed &gt; 180 km/h
+</td>
+
+<td>
+REVIEW flag，
+不自動刪除
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+Dynamic Primary VD
+</h2>
+
+
+<p>
+
+每個 Time5
+從當下有效 VD 中，
+選擇距離研究瓶頸 eTag
+最近的一支 sensor。
+
+</p>
+
+
+<div class="note">
+
+因此 Primary VD
+不是永久固定同一支。
+
+若最近的 VD 當下 invalid，
+可改用下一支距離較近的有效 VD。
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+Future Modeling Dataset
+</h2>
+
+
+<div class="pipeline">
+
+V2 Trip Master
+
+<br>
+
+↓
+
+<br>
+
+Aggregate M06B / OD / Vehicle features
+
+<br>
+
+↓
+
+<br>
+
+<strong>
+MODEL_5MIN_V1
+</strong>
+
+<br>
+
+Route × Direction × Time5
+
+</div>
+
+
+<p>
+
+後續壅塞預測不直接把
+trip rows 當成獨立交通狀態 observation，
+而會另外建立五分鐘層級 modeling table。
+
+</p>
+
+</section>
+
+
+
+</main>
+
+</div>
+
+
+<footer>
+
+Statistical Practice —
+V2 Enriched Master
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
