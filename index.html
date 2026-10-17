@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+國道瓶頸資料專案
+</title>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+
+</head>
+
+
+<body>
+
+
+<button
+    class="mobile-menu-button"
+    onclick="toggleSidebar()"
+>
+☰
+</button>
+
+
+<!-- =====================================================
+     Sidebar
+========================================================= -->
+
+<aside
+    class="sidebar"
+    id="sidebar"
+>
+
+
+<div class="sidebar-brand">
+
+<h1>
+國道瓶頸資料專案
+</h1>
+
+<p>
+統計實務
+</p>
+
+</div>
+
+
+<div class="sidebar-section-title">
+首頁
+</div>
+
+<a
+    href="index.html"
+    class="active"
+>
+專案概述
+</a>
+
+
+<div class="sidebar-section-title">
+資料
+</div>
+
+<a href="v1_full.html">
+V1_FULL
+</a>
+
+<a href="v1_lite.html">
+V1_LITE
+</a>
+
+<a href="vd.html">
+VD
+</a>
+
+<a href="v2_lite.html">
+V2_LITE
+</a>
+
+
+<div class="sidebar-section-title">
+進度與報告
+</div>
+
+<a href="progress.html">
+研究進度
+</a>
+
+<a href="reports.html">
+報告簡報
+</a>
+
+
+</aside>
+
+
+
+<!-- =====================================================
+     Main
+========================================================= -->
+
+<div class="main">
+
+
+<header class="page-header">
+
+<h1>
+國道瓶頸路段 OD 旅次分析與預測
+</h1>
+
+<p>
+以國道電子收費旅次資料為核心，
+整合交通狀態、VD、氣象與日期資訊，
+建立後續 OD 分析與壅塞預測使用的資料。
+</p>
+
+</header>
+
+
+
+<main class="content">
+
+
+<!-- =====================================================
+     專案概述
+========================================================= -->
+
+<section>
+
+<h2>
+專案概述
+</h2>
+
+
+<p>
+本專案研究國道瓶頸路段的旅次特性、
+OD 結構與交通壅塞情形，
+並進一步建立後續壅塞預測分析架構。
+</p>
+
+<p>
+原始研究範圍包含國道 3 號大溪－龍潭
+及國道 5 號坪林－頭城雙向路段。
+目前正式資料分析流程先集中於
+<strong>國道 3 號大溪－龍潭北向</strong>，
+完成一套穩定的資料整理與分析流程後，
+再評估其他方向與路段。
+</p>
+
+</section>
+
+
+
+<!-- =====================================================
+     研究路段
+========================================================= -->
+
+<section>
+
+<h2>
+研究路段
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>國道</th>
+<th>方向</th>
+<th>研究區間</th>
+<th>瓶頸位置</th>
+<th>目前狀態</th>
+</tr>
+
+
+<tr>
+
+<td>
+國道 3 號
+</td>
+
+<td>
+大溪 → 龍潭
+</td>
+
+<td>
+約 62K → 68K
+</td>
+
+<td>
+約 64.8K
+</td>
+
+<td>
+保留資料
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+國道 3 號
+</td>
+
+<td>
+龍潭 → 大溪
+</td>
+
+<td>
+約 68K → 62K
+</td>
+
+<td>
+約 64.8K
+</td>
+
+<td>
+<strong>
+目前正式分析
+</strong>
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+國道 5 號
+</td>
+
+<td>
+坪林 → 頭城
+</td>
+
+<td>
+約 14K → 30K
+</td>
+
+<td>
+約 28.7K
+</td>
+
+<td>
+後續評估
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+國道 5 號
+</td>
+
+<td>
+頭城 → 坪林
+</td>
+
+<td>
+約 30K → 14K
+</td>
+
+<td>
+約 28.7K
+</td>
+
+<td>
+後續評估
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     資料架構
+========================================================= -->
+
+<section>
+
+<h2>
+資料架構
+</h2>
+
+
+<div class="pipeline">
+
+<strong>
+V1_FULL
+</strong>
+
+<br>
+
+完整保存版本
+
+<br><br>
+
+↓
+
+<br><br>
+
+<strong>
+V1_LITE
+</strong>
+
+<br>
+
+國道 3 號核心旅次資料
+
+<br><br>
+
+＋
+
+<br><br>
+
+<strong>
+VD_N3_N_LITE
+</strong>
+
+<br>
+
+國道 3 號北向五分鐘 VD 資料
+
+<br><br>
+
+↓
+
+<br><br>
+
+<strong>
+V2_LITE
+</strong>
+
+<br>
+
+正式分析資料
+
+<br><br>
+
+↓
+
+<br><br>
+
+<strong>
+重新進行正式 EDA
+</strong>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     資料版本
+========================================================= -->
+
+<section>
+
+<h2>
+資料版本
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>版本</th>
+<th>範圍</th>
+<th>內容</th>
+<th>用途</th>
+<th>狀態</th>
+</tr>
+
+
+<tr>
+
+<td>
+<a href="v1_full.html">
+V1_FULL
+</a>
+</td>
+
+<td>
+N3 / N5
+</td>
+
+<td>
+M06B、M05A、M03A、
+氣象與日期資料
+</td>
+
+<td>
+完整保存資料
+</td>
+
+<td>
+<strong>
+已完成
+</strong>
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<a href="v1_lite.html">
+V1_LITE
+</a>
+</td>
+
+<td>
+N3
+</td>
+
+<td>
+核心旅次、
+氣象與日期欄位
+</td>
+
+<td>
+OD 與基礎分析
+</td>
+
+<td>
+<strong>
+已完成
+</strong>
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<a href="vd.html">
+VD
+</a>
+</td>
+
+<td>
+N3 北向
+</td>
+
+<td>
+五分鐘速度、
+佔有率與資料狀態
+</td>
+
+<td>
+描述交通狀態
+</td>
+
+<td>
+<strong>
+已完成
+</strong>
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<a href="v2_lite.html">
+V2_LITE
+</a>
+</td>
+
+<td>
+N3 北向
+</td>
+
+<td>
+V1_LITE +
+整理完成的 VD
+</td>
+
+<td>
+正式 EDA 與後續建模
+</td>
+
+<td>
+<strong>
+已完成
+</strong>
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     目前進度
+========================================================= -->
+
+<section>
+
+<h2>
+目前進度
+</h2>
+
+
+<div class="card-grid">
+
+
+<div class="card">
+
+<strong>
+V1_FULL
+</strong>
+
+<div class="big-number">
+完成
+</div>
+
+<p>
+完整資料保存版本
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+V1_LITE
+</strong>
+
+<div class="big-number">
+完成
+</div>
+
+<p>
+國道 3 號精簡資料
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+VD
+</strong>
+
+<div class="big-number">
+完成
+</div>
+
+<p>
+國道 3 號北向 VD
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+V2_LITE
+</strong>
+
+<div class="big-number">
+完成
+</div>
+
+<p>
+正式分析資料完成
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+正式 EDA
+</strong>
+
+<div class="big-number">
+下一步
+</div>
+
+<p>
+重新建立正式分析
+</p>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     下一階段
+========================================================= -->
+
+<section>
+
+<h2>
+下一階段
+</h2>
+
+
+<div class="note">
+
+目前資料整理階段已完成。
+
+後續將不直接沿用前期探索性分析結果，
+而是以新的 V2_LITE 為基礎，
+重新進行正式 EDA。
+
+</div>
+
+
+<p>
+後續分析將重新從交通量時間分布、
+VD 壅塞狀態、旅次特性、OD 結構、
+日期型態、氣象因素及其與壅塞的關係開始整理。
+</p>
+
+</section>
+
+
+
+</main>
+
+</div>
+
+
+
+<footer>
+
+統計實務 —
+國道瓶頸資料專案
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
