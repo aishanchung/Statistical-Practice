@@ -11,14 +11,14 @@
 <a href="v1_lite.html">V1_LITE</a>
 <a href="vd.html">VD</a>
 <a href="v2_lite.html">V2_LITE</a>
+<div class="sidebar-section-title">研究方法與分析</div>
+<a href="eda.html" class="active">EDA 探索分析</a>
+<a href="od_clustering.html">OD 分群</a>
+<a href="statistical_models.html">傳統統計模型</a>
+<a href="machine_learning.html">機器學習模型</a>
 <div class="sidebar-section-title">進度與報告</div>
 <a href="progress.html">研究進度</a>
 <a href="reports.html">報告簡報</a>
-<div class="sidebar-section-title">研究方法與分析</div>
-<a href="eda.html">EDA 探索分析</a>
-<a href="od_clustering.html">OD 分群</a>
-<a href="statistical_models.html">傳統統計模型</a>
-<a href="machine_learning.html" class="active">機器學習模型</a>
 </aside>
 <div class="main"><header class="page-header"><h1>機器學習模型</h1><p>XGBoost、LightGBM 與非線性短期壅塞預測</p></header><main class="content"><section class="research-section"><h2>模型定位</h2><p class="page-intro">使用 <strong>XGBoost</strong> 與 <strong>LightGBM</strong> 作為候選的非線性預測模型，處理 OD 需求、時段、氣象與交通狀態間可能的非線性及交互作用。</p><div class="research-note research-warning"><strong>目前進度：</strong>已完成原理、差異與選用理由的整理；尚未進行兩模型的預測效能實證比較。</div></section><section class="research-section"><h2>共同基礎：Gradient Boosting Decision Trees</h2><p>兩者皆使用序列式加入決策樹、逐步降低損失的方式學習。二元分類中，模型分數可經 logistic 函數轉為低速事件預測機率。</p><div class="research-note"><code>Fₘ(x) = Fₘ₋₁(x) + η fₘ(x)</code><br><code>p(x) = 1 / [1 + exp(−Fₘ(x))]</code><br>η 為學習率，fₘ 為第 m 棵樹。</div></section><section class="research-section"><h2>兩種模型重點</h2><div class="research-scroll"><table class="research-table"><thead><tr><th>比較面向</th><th>XGBoost</th><th>LightGBM</th></tr></thead><tbody><tr><td>主要特色</td><td>樹提升系統與正則化</td><td>Histogram 與葉優先樹生長</td></tr><tr><td>生長策略</td><td>常用 depthwise；可使用 lossguide</td><td>leaf-wise，優先選擇最大分裂增益的葉</td></tr><tr><td>切點處理</td><td>支援 hist、approx、exact 等方法</td><td>以 histogram 為核心</td></tr><tr><td>複雜度控制</td><td>深度、葉數、正則化、早停</td><td>葉數、每葉樣本數、正則化、早停</td></tr></tbody></table></div><p>兩者的功能並非互斥；例如 XGBoost 也支援 histogram，LightGBM 也有 L1／L2 正則化。速度與準確率必須經由相同資料與合理調參實測。</p></section><section class="research-section"><h2>後續實驗規劃</h2><ol><li>建立每五分鐘一筆的模型資料與未來 15／30／60 分鐘低速標籤。</li><li>以時間順序切分訓練、驗證、測試集，避免資訊洩漏。</li><li>比較不含 OD 群組的基準特徵，與加入 OD 群組後的預測表現。</li><li>記錄運算時間、分類效能及重要變數，並與 Logistic Regression 比較。</li></ol><p class="research-muted">方法參考：Chen &amp; Guestrin (2016), XGBoost；Ke et al. (2017), LightGBM；XGBoost 與 LightGBM 官方文件。</p></section>
 <div class="research-note"><strong>資料基準：</strong>2026/10/22 統計實務研究進度簡報。<a class="research-link" href="reports.html">查看每週報告簡報</a>。</div>
