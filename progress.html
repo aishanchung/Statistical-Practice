@@ -260,6 +260,17 @@
 
 }
 
+
+/* 2026/10/22 weekly update: keep existing visual system */
+.weekly-update { background: #fff; border: 1px solid #dce3e9; border-radius: 12px; padding: 24px; margin: 24px 0; line-height: 1.8; }
+.weekly-date { color: #245c8a; font-weight: 700; font-size: .9rem; }
+.weekly-update h3 { color: #245c8a; margin-top: 24px; }
+.weekly-update li { margin-bottom: 8px; }
+.weekly-update table { width: 100%; border-collapse: collapse; }
+.weekly-update th, .weekly-update td { border: 1px solid #dce3e9; padding: 10px; text-align: left; }
+.weekly-update th { background: #eef5fb; }
+.weekly-note { background: #eef5fb; border-left: 4px solid #245c8a; padding: 14px 18px; margin-top: 20px; }
+
 </style>
 
 </head>
@@ -369,127 +380,21 @@ V2_LITE
 <!-- =====================================================
      目前研究狀態
 ========================================================= -->
-
 <section>
-
-<h2>
-目前研究狀態
-</h2>
-
-
-<div class="progress-summary">
-
-<h3>
-資料整理階段已完成，
-正式 EDA 將重新開始
-</h3>
-
-<p>
-前期曾進行部分探索性資料分析，
-但當時資料來源、資料版本及 VD 缺失狀況
-尚未完全確認，
-因此部分舊版 EDA
-不再視為正式研究結果。
-</p>
-
-<p>
-目前已完成
-<strong>國道 3 號北向 VD 整理</strong>
-及
-<strong>V2_LITE 建置</strong>。
-
-後續將以 V2_LITE
-作為新的正式分析基礎，
-重新建立 EDA。
-</p>
-
-</div>
-
-
-
-<div class="progress-status-grid">
-
-
-<div class="progress-status-card">
-
-<strong>
-V1_FULL
-</strong>
-
-<span class="progress-status-value">
-已完成
-</span>
-
-完整保存版本
-
-</div>
-
-
-<div class="progress-status-card">
-
-<strong>
-V1_LITE
-</strong>
-
-<span class="progress-status-value">
-已完成
-</span>
-
-核心旅次資料
-
-</div>
-
-
-<div class="progress-status-card">
-
-<strong>
-VD
-</strong>
-
-<span class="progress-status-value">
-已完成
-</span>
-
-國道 3 號北向
-
-</div>
-
-
-<div class="progress-status-card">
-
-<strong>
-V2_LITE
-</strong>
-
-<span class="progress-status-value">
-已完成
-</span>
-
-正式分析資料
-
-</div>
-
-
-<div class="progress-status-card">
-
-<strong>
-正式 EDA
-</strong>
-
-<span class="progress-status-value">
-下一階段
-</span>
-
-重新開始分析
-
-</div>
-
-
-</div>
-
+  <h2>目前研究狀態</h2>
+  <div class="progress-summary">
+    <h3>正式 EDA 已取得階段性成果，接續規劃 OD 分群與壅塞預測</h3>
+    <p>目前以國道三號大溪－龍潭北向為主要分析對象，使用完成整理的 V2_LITE 進行 2024–2025 年交通需求探索。資料整合階段的版本和品質檢查紀錄予以保留；早期尚未確認資料品質的舊版 EDA 不直接作為正式研究結果。</p>
+    <p>截至 2026/10/22，已整理時間、假期、氣象、車種、距離及 OD 長尾分布等探索性成果；OD 分群與 Logistic Regression、XGBoost、LightGBM 仍處於方法設計階段，尚未完成正式模型比較。</p>
+  </div>
+  <div class="progress-status-grid">
+    <div class="progress-status-card"><strong>V1_FULL / V1_LITE</strong><span class="progress-status-value">已完成</span>完整保存與核心旅次版本</div>
+    <div class="progress-status-card"><strong>北向 VD / V2_LITE</strong><span class="progress-status-value">已完成</span>五分鐘 VD 與分析整合資料</div>
+    <div class="progress-status-card"><strong>正式 EDA</strong><span class="progress-status-value">階段性完成</span>需求時間、車種、距離與 OD 結構</div>
+    <div class="progress-status-card"><strong>OD 分群</strong><span class="progress-status-value">方法規劃</span>尚待特徵建構、實作及驗證</div>
+    <div class="progress-status-card"><strong>壅塞預測</strong><span class="progress-status-value">方法規劃</span>尚未完成模型訓練與效能比較</div>
+  </div>
 </section>
-
-
 
 <!-- =====================================================
      EDA 重做
@@ -846,7 +751,7 @@ VD 詳細結構與品質定義
 <div class="timeline-item">
 
 <h3>
-重新開始正式 EDA
+啟動正式 EDA（已取得階段性成果）
 </h3>
 
 <p>
@@ -855,9 +760,7 @@ VD 詳細結構與品質定義
 </p>
 
 <p>
-接下來不沿用舊版 EDA 結果，
-改由 V2_LITE
-重新建立正式分析流程。
+後續改由 V2_LITE 重新產生正式 EDA；截至 2026/10/22，已完成階段性需求探索，持續進行異常日期與資料品質檢查。
 </p>
 
 </div>
@@ -868,6 +771,50 @@ VD 詳細結構與品質定義
 </section>
 
 
+
+<!-- =====================================================
+     2026-10-22 weekly research update
+========================================================= -->
+<section class="weekly-update" id="update-20261022">
+  <div class="weekly-date">2026 / 10 / 22｜每週研究紀錄</div>
+  <h2>正式 EDA 階段成果與後續方法規劃</h2>
+  <p>研究範圍為國道三號大溪－龍潭北向瓶頸路段。本週整理 V2_LITE 的正式 EDA 階段成果，並明確規劃 OD 分群與短期低速風險預測的後續流程。</p>
+  <h3>一、資料規模及需求特徵</h3>
+  <p>分析涵蓋 2024–2025 年共 <strong>731 天</strong>、<strong>45,150,592 筆旅次紀錄</strong>、<strong>16,350 組 OD</strong>。目前主要觀察結果如下：</p>
+  <ul>
+    <li><strong>時間與日期：</strong>星期日需求最高且尖峰約為 14:00；平日尖峰約為 17:00。連假平均每日需求較高，且較長時段維持高檔。</li>
+    <li><strong>連假階段：</strong>最後一天北向需求較高，於 2024、2025 暫定分組下尖峰均約為 13:00。</li>
+    <li><strong>氣象：</strong>比較氣溫、露點、降雨及風速與需求的關聯；控制時間條件後，部分關聯方向有所改變。此處為觀察關聯，非因果推論。</li>
+    <li><strong>車種：</strong>相較平日，週末小客車需求增加較多，大貨車與聯結車平均需求則降低。</li>
+    <li><strong>距離：</strong>100–500 公里組在週末需求增加中占有重要比例，且增量主要來自小客車；目前仍屬探索性距離分類，後續需檢查距離門檻及異常資料。</li>
+  </ul>
+  <h3>二、OD 長尾分布與篩選規劃</h3>
+  <p>16,350 組 OD 中，有 <strong>9,266 組（56.7%）</strong> 的旅次不超過 10 筆，顯示明顯長尾分布。本週初步比較 2024 年不同最低旅次門檻對 2025 年需求的涵蓋情況：</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>2024 年最低旅次門檻</th><th>符合 OD 組數</th><th>涵蓋 2025 年需求</th></tr></thead>
+    <tbody>
+      <tr><td>30 筆</td><td>4,256</td><td>97.80%</td></tr>
+      <tr><td>100 筆</td><td>3,103</td><td>97.51%</td></tr>
+      <tr><td>300 筆</td><td>2,182</td><td>96.76%</td></tr>
+      <tr><td>500 筆</td><td>1,813</td><td>96.14%</td></tr>
+      <tr><td>1,000 筆</td><td>1,314</td><td>94.55%</td></tr>
+    </tbody>
+  </table></div>
+  <p>以上是門檻敏感度的初步探索，<strong>尚未選定正式分群門檻</strong>。</p>
+  <h3>三、OD 分群：完成方法整理，尚未實作</h3>
+  <p>規劃以旅次量、距離、時間型態、DayType、車種組成及空間特徵建立 OD 特徵。已整理四種候選方法：</p>
+  <ul>
+    <li><strong>K-means：</strong>以群內平方距離最小化作為基準。</li>
+    <li><strong>Hierarchical clustering：</strong>以階層合併與 dendrogram 檢視群組結構。</li>
+    <li><strong>DBSCAN：</strong>依密度分群，允許孤立點保留為 noise。</li>
+    <li><strong>GMM：</strong>以機率分布描述群組隸屬程度，保留模糊邊界。</li>
+  </ul>
+  <p>後續比較分群穩定性、群組大小與交通需求解釋性，並將群組需求轉為預測模型的時間特徵。</p>
+  <h3>四、預測方法：候選模型與研究問題</h3>
+  <p>已整理 <strong>Logistic Regression</strong>（可解釋基準模型）、<strong>XGBoost</strong>（正則化梯度提升樹）及 <strong>LightGBM</strong>（Histogram／Leaf-wise）的使用理由。後續考慮在五分鐘時間尺度上預測未來 <strong>15／30／60 分鐘</strong>的低速事件風險。</p>
+  <p>核心研究問題：<strong>在控制時間、天氣、歷史 VD 狀態與總需求後，OD 群組組成是否能提供額外的未來低速風險預測資訊？</strong></p>
+  <div class="weekly-note"><strong>進度界線：</strong>目前為 EDA 階段結果與分群／預測方法設計；尚無正式分群標籤、模型訓練結果或準確率比較。EDA 中的部分 QC 日期及距離分類仍待敏感度檢查。</div>
+</section>
 
 <!-- =====================================================
      Decisions
@@ -964,156 +911,16 @@ Primary VD 等資訊，
 <!-- =====================================================
      Next
 ========================================================= -->
-
 <section>
-
-<h2>
-接下來的工作
-</h2>
-
-
-<div class="next-step">
-
-<div class="step-number">
-1
-</div>
-
-<div>
-
-<strong>
-重新建立正式 EDA
-</strong>
-
-<br>
-
-先重新確認整體時間趨勢、
-旅次量與 VD 交通狀態。
-
-</div>
-
-</div>
-
-
-
-<div class="next-step">
-
-<div class="step-number">
-2
-</div>
-
-<div>
-
-<strong>
-重新整理 OD 結構
-</strong>
-
-<br>
-
-分析不同日期型態與時段下，
-通過瓶頸路段的旅次來源與目的地。
-
-</div>
-
-</div>
-
-
-
-<div class="next-step">
-
-<div class="step-number">
-3
-</div>
-
-<div>
-
-<strong>
-分析 VD 與旅次量的關係
-</strong>
-
-<br>
-
-確認速度、佔有率、
-旅次量與壅塞發生之間的關聯。
-
-</div>
-
-</div>
-
-
-
-<div class="next-step">
-
-<div class="step-number">
-4
-</div>
-
-<div>
-
-<strong>
-加入日期與氣象條件
-</strong>
-
-<br>
-
-比較平日、週末、連假，
-以及降雨等氣象條件
-對交通狀態的影響。
-
-</div>
-
-</div>
-
-
-
-<div class="next-step">
-
-<div class="step-number">
-5
-</div>
-
-<div>
-
-<strong>
-建立五分鐘分析資料
-</strong>
-
-<br>
-
-將 trip-level V2_LITE
-彙整成後續壅塞預測使用的
-五分鐘資料表。
-
-</div>
-
-</div>
-
-
-
-<div class="next-step">
-
-<div class="step-number">
-6
-</div>
-
-<div>
-
-<strong>
-再評估南向資料
-</strong>
-
-<br>
-
-待北向分析流程穩定後，
-再回頭處理南向
-VD 測站組成變化問題。
-
-</div>
-
-</div>
-
+  <h2>接下來的工作</h2>
+  <div class="next-step"><div class="step-number">1</div><div><strong>完成 EDA 品質與敏感度檢查</strong><br>檢查異常日期、特殊 VD 狀態及距離分組門檻，確認結果穩健性。</div></div>
+  <div class="next-step"><div class="step-number">2</div><div><strong>建立 OD 分群特徵</strong><br>彙整 OD 的需求量、時段、DayType、距離與車種結構，妥善處理尺度差異。</div></div>
+  <div class="next-step"><div class="step-number">3</div><div><strong>執行並評估 OD 分群</strong><br>比較候選方法的穩定性與解釋性，選定可用於建模的需求群組。</div></div>
+  <div class="next-step"><div class="step-number">4</div><div><strong>建置五分鐘預測資料</strong><br>將 OD 群組需求與歷史 VD、日期及天氣對齊；嚴格避免使用預測當下尚不可得的資訊。</div></div>
+  <div class="next-step"><div class="step-number">5</div><div><strong>定義未來低速標籤與時間切分</strong><br>設定 15／30／60 分鐘預測目標，採時間順序劃分訓練、驗證及測試資料。</div></div>
+  <div class="next-step"><div class="step-number">6</div><div><strong>比較有無 OD 特徵的預測表現</strong><br>以 Logistic Regression、XGBoost 與 LightGBM 檢驗 OD 群組的增額預測價值。</div></div>
+  <div class="next-step"><div class="step-number">7</div><div><strong>評估延伸路段</strong><br>待北向流程穩定後，再處理國道三號南向 VD 測站組成差異及其他瓶頸。</div></div>
 </section>
-
-
 
 <!-- =====================================================
      Website role
