@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+    V1_LITE｜國道瓶頸資料專案
+</title>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+
+</head>
+
+
+<body>
+
+
+<button
+    class="mobile-menu-button"
+    onclick="toggleSidebar()"
+>
+    ☰
+</button>
+
+<aside class="sidebar" id="sidebar"><div class="sidebar-brand"><h1>國道瓶頸資料專案</h1><p>統計實務</p></div>
+<div class="sidebar-section-title">首頁</div>
+<a href="index.html">專案概述</a>
+<div class="sidebar-section-title">資料</div>
+<a href="v1_full.html">V1_FULL</a>
+<a href="v1_lite.html"  class="active">V1_LITE</a>
+<a href="vd.html">VD</a>
+<a href="v2_lite.html">V2_LITE</a>
+<div class="sidebar-section-title">研究方法與分析</div>
+<a href="eda.html">EDA 探索分析</a>
+<a href="od_clustering.html">OD 分群</a>
+<a href="statistical_models.html">傳統統計模型</a>
+<a href="machine_learning.html">機器學習模型</a>
+<div class="sidebar-section-title">進度與報告</div>
+<a href="progress.html">研究進度</a>
+<a href="reports.html">報告簡報</a>
+</aside>
+
+
+<div class="main">
+
+
+<header class="page-header">
+
+<h1>
+V1_LITE — 國道 3 號精簡資料
+</h1>
+
+<p>
+由 V1_FULL 衍生，
+僅保留國道 3 號大溪－龍潭
+分析所需的 15 個核心欄位，
+用於後續 EDA、OD 分析與快速資料讀取。
+</p>
+
+</header>
+
+
+
+<main class="content">
+
+
+<!-- ===================================================== -->
+<!-- 資料概述 -->
+<!-- ===================================================== -->
+
+<section>
+
+<h2>
+資料概述
+</h2>
+
+
+<div class="card-grid">
+
+
+<div class="card">
+
+<strong>
+研究道路
+</strong>
+
+<div class="big-number">
+國道 3 號
+</div>
+
+<p>
+大溪－龍潭
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+方向
+</strong>
+
+<div class="big-number">
+2
+</div>
+
+<p>
+北向與南向
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+欄位數
+</strong>
+
+<div class="big-number">
+15
+</div>
+
+<p>
+由 78 欄精簡至 15 欄
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+檔案格式
+</strong>
+
+<div class="big-number">
+Parquet
+</div>
+
+<p>
+不另外輸出 CSV
+</p>
+
+</div>
+
+
+</div>
+
+
+<div class="note">
+
+<strong>
+V1_LITE 不取代 V1_FULL。
+</strong>
+
+V1_FULL 仍保留完整欄位，
+V1_LITE 只是從完整資料中
+挑選目前分析需要的欄位，
+讓資料更容易讀取與使用。
+
+</div>
+
+</section>
+
+
+
+<!-- ===================================================== -->
+<!-- 資料範圍 -->
+<!-- ===================================================== -->
+
+<section>
+
+<h2>
+資料範圍
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+    <th>道路</th>
+    <th>方向</th>
+    <th>研究路段里程</th>
+    <th>研究瓶頸門架</th>
+    <th>瓶頸位置</th>
+</tr>
+
+
+<tr>
+
+<td>
+國道 3 號
+</td>
+
+<td>
+大溪 → 龍潭
+</td>
+
+<td>
+約 62K → 68K
+</td>
+
+<td>
+03F0648S
+</td>
+
+<td>
+約 64.8K
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+國道 3 號
+</td>
+
+<td>
+龍潭 → 大溪
+</td>
+
+<td>
+約 68K → 62K
+</td>
+
+<td>
+03F0648N
+</td>
+
+<td>
+約 64.8K
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<!-- ===================================================== -->
+<!-- 保留欄位 -->
+<!-- ===================================================== -->
+
+<section>
+
+<h2>
+保留欄位
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>#</th>
+<th>欄位</th>
+<th>內容</th>
+</tr>
+
+
+<tr>
+<td>01</td>
+<td><code>VehicleID</code></td>
+<td>匿名化車輛識別碼</td>
+</tr>
+
+
+<tr>
+<td>02</td>
+<td><code>VehicleType</code></td>
+<td>車種</td>
+</tr>
+
+
+<tr>
+<td>03</td>
+<td><code>DetectionTimeO</code></td>
+<td>旅次起點門架偵測時間</td>
+</tr>
+
+
+<tr>
+<td>04</td>
+<td><code>GantryO</code></td>
+<td>旅次起點門架</td>
+</tr>
+
+
+<tr>
+<td>05</td>
+<td><code>DetectionTimeD</code></td>
+<td>旅次終點門架偵測時間</td>
+</tr>
+
+
+<tr>
+<td>06</td>
+<td><code>GantryD</code></td>
+<td>旅次終點門架</td>
+</tr>
+
+
+<tr>
+<td>07</td>
+<td><code>TripLength</code></td>
+<td>旅次距離</td>
+</tr>
+
+
+<tr>
+<td>08</td>
+<td><code>TripInformation</code></td>
+<td>該筆旅次完整門架路徑資訊</td>
+</tr>
+
+
+<tr>
+<td>09</td>
+<td><code>BottleneckTime</code></td>
+<td>車輛通過研究瓶頸的時間</td>
+</tr>
+
+
+<tr>
+<td>10</td>
+<td><code>Weather_Temperature_C</code></td>
+<td>氣溫，單位 °C</td>
+</tr>
+
+
+<tr>
+<td>11</td>
+<td><code>Weather_Dewpoint_C</code></td>
+<td>露點溫度，單位 °C</td>
+</tr>
+
+
+<tr>
+<td>12</td>
+<td><code>Weather_Precipitation_mm</code></td>
+<td>降雨量，單位 mm</td>
+</tr>
+
+
+<tr>
+<td>13</td>
+<td><code>Weather_WindSpeed_mps</code></td>
+<td>風速，單位 m/s</td>
+</tr>
+
+
+<tr>
+<td>14</td>
+<td><code>WeekdayNum</code></td>
+<td>星期一 = 1 ～ 星期日 = 7</td>
+</tr>
+
+
+<tr>
+<td>15</td>
+<td><code>DayType</code></td>
+<td>日期類型</td>
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<!-- ===================================================== -->
+<!-- DayType -->
+<!-- ===================================================== -->
+
+<section>
+
+<h2>
+DayType 分類方式
+</h2>
+
+
+<p>
+為了讓後續分析較簡單，
+V1_LITE 將日期重新整理為四種主要類型。
+</p>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>優先順序</th>
+<th>判定條件</th>
+<th>DayType</th>
+<th>說明</th>
+</tr>
+
+
+<tr>
+
+<td>1</td>
+
+<td>
+<code>IsLongHoliday = 1</code>
+</td>
+
+<td>
+<code>LONGHOLIDAY</code>
+</td>
+
+<td>
+連假正式期間
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>2</td>
+
+<td>
+<code>IsStandaloneHoliday = 1</code>
+</td>
+
+<td>
+<code>STANDALONEHOLIDAY</code>
+</td>
+
+<td>
+單日國定假日
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>3</td>
+
+<td>
+<code>IsWeekend = 1</code>
+</td>
+
+<td>
+<code>WEEKEND</code>
+</td>
+
+<td>
+一般週六、週日
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>4</td>
+
+<td>
+其他日期
+</td>
+
+<td>
+<code>WEEKDAY</code>
+</td>
+
+<td>
+一般平日
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="warning">
+
+原本 V1_FULL 中的
+<code>PRE_LONG_HOLIDAY</code>
+不再另外保留為一種類別。
+
+連假前的日期會依照該日本身
+是否為週末，
+重新歸入
+<code>WEEKDAY</code>
+或
+<code>WEEKEND</code>。
+
+</div>
+
+</section>
+
+
+
+<!-- ===================================================== -->
+<!-- 檔案 -->
+<!-- ===================================================== -->
+
+<section>
+
+<h2>
+檔案位置
+</h2>
+
+
+<pre>
+D:\統計實務\Data\MASTER_V1_N3_LITE_2024_2025\
+
+N3_Daxi_Longtan_N_2024_2025_MASTER_V1_LITE.parquet
+
+N3_Daxi_Longtan_S_2024_2025_MASTER_V1_LITE.parquet
+</pre>
+
+
+<div class="note">
+
+北向與南向分成兩份 Parquet，
+因此精簡版中不另外保留方向欄位。
+
+檔名本身即可辨識資料方向。
+
+</div>
+
+</section>
+
+
+
+<!-- ===================================================== -->
+<!-- Python / R -->
+<!-- ===================================================== -->
+
+<section>
+
+<h2>
+讀取方式
+</h2>
+
+
+<h3>
+Python
+</h3>
+
+
+<pre>
+import pandas as pd
+
+file = r"D:\統計實務\Data\MASTER_V1_N3_LITE_2024_2025\N3_Daxi_Longtan_N_2024_2025_MASTER_V1_LITE.parquet"
+
+df = pd.read_parquet(file)
+
+print(df.shape)
+
+print(df.columns)
+
+print(df.head())
+</pre>
+
+
+<h3>
+R
+</h3>
+
+
+<pre>
+library(arrow)
+
+file &lt;- "D:/統計實務/Data/MASTER_V1_N3_LITE_2024_2025/N3_Daxi_Longtan_N_2024_2025_MASTER_V1_LITE.parquet"
+
+df &lt;- read_parquet(file)
+
+dim(df)
+
+names(df)
+
+head(df)
+</pre>
+
+</section>
+
+
+
+</main>
+
+</div>
+
+
+
+<footer>
+
+統計實務 —
+V1_LITE 國道 3 號精簡資料
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>

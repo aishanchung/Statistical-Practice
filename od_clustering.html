@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OD 分群｜國道瓶頸資料專案</title><link rel="stylesheet" href="style.css"><style>
+.page-intro{max-width:920px;line-height:1.85}.research-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:16px;margin:20px 0}.research-card{padding:20px;background:#fff;border:1px solid #dce3e9;border-radius:10px}.research-card h3{margin:0 0 10px;color:#245c8a}.research-card p{margin:0;line-height:1.8}.research-metric{font-weight:750;font-size:27px;color:#245c8a}.research-muted{color:#627282;font-size:14px}.research-table{width:100%;border-collapse:collapse;min-width:560px}.research-table th,.research-table td{border:1px solid #dce3e9;padding:12px;text-align:left;vertical-align:top}.research-table th{background:#eef5fb;color:#245c8a}.research-scroll{overflow-x:auto}.research-note{background:#eef5fb;border-left:4px solid #245c8a;padding:16px 20px;margin:16px 0;border-radius:6px;line-height:1.8}.research-warning{background:#fff8e8;border-left-color:#c18a1c}.research-section{margin:30px 0}.research-section p,.research-section li{line-height:1.85}.research-section li{margin-bottom:7px}.research-pills{display:flex;flex-wrap:wrap;gap:9px;margin:15px 0}.research-pill{background:#eaf3fb;border-radius:30px;padding:5px 13px;font-size:13px;color:#245c8a}.research-link{color:#245c8a;font-weight:600}
+</style></head>
+<body><button class="mobile-menu-button" onclick="toggleSidebar()">☰</button>
+<aside class="sidebar" id="sidebar"><div class="sidebar-brand"><h1>國道瓶頸資料專案</h1><p>統計實務</p></div>
+<div class="sidebar-section-title">首頁</div>
+<a href="index.html">專案概述</a>
+<div class="sidebar-section-title">資料</div>
+<a href="v1_full.html">V1_FULL</a>
+<a href="v1_lite.html">V1_LITE</a>
+<a href="vd.html">VD</a>
+<a href="v2_lite.html">V2_LITE</a>
+<div class="sidebar-section-title">研究方法與分析</div>
+<a href="eda.html">EDA 探索分析</a>
+<a href="od_clustering.html"  class="active">OD 分群</a>
+<a href="statistical_models.html">傳統統計模型</a>
+<a href="machine_learning.html">機器學習模型</a>
+<div class="sidebar-section-title">進度與報告</div>
+<a href="progress.html">研究進度</a>
+<a href="reports.html">報告簡報</a>
+</aside>
+<div class="main"><header class="page-header"><h1>OD 分群</h1><p>從 16,350 組 OD 提取可解釋的交通需求模式</p></header><main class="content"><section class="research-section"><h2>為什麼需要 OD 分群？</h2><p class="page-intro">OD 組合眾多且具有長尾分布。希望將不同起訖點的需求特徵歸納成較少數、可解釋的需求模式，並作為後續短期低速風險預測的輸入。</p><div class="research-note research-warning"><strong>目前進度：</strong>已完成方法原理及比較方向整理，尚未產出實際分群結果；下方內容不代表已選定最佳演算法或群數。</div></section><section class="research-section"><h2>可能納入的分群特徵</h2><div class="research-pills"><span class="research-pill">OD 空間位置</span><span class="research-pill">旅次量</span><span class="research-pill">旅次距離</span><span class="research-pill">時間型態</span><span class="research-pill">DayType</span><span class="research-pill">車種組成</span></div></section><section class="research-section"><h2>四種主要分群方法</h2><div class="research-grid"><div class="research-card"><h3>K-means｜中心距離</h3><p>指定 K，反覆將 OD 分配至最近群中心並更新平均中心，以縮小群內平方距離；作為 baseline。</p></div><div class="research-card"><h3>Hierarchical｜階層關係</h3><p>透過逐步合併建立 dendrogram，探索資料是否有自然階層；可比較不同切割群數。</p></div><div class="research-card"><h3>DBSCAN｜資料密度</h3><p>由高密度區域形成群組，將孤立資料保留為 noise，不需預先固定群數。</p></div><div class="research-card"><h3>GMM｜機率分布</h3><p>以高斯混合分布估計各 OD 對不同群的隸屬機率，允許模糊邊界。</p></div></div><p>K-medoids 可作為較不受極端值影響的中心式分群比較；HDBSCAN 可在不同群密度差異明顯時作為延伸方法。</p></section><section class="research-section"><h2>如何比較與使用結果？</h2><ol><li>以 2024 年資料建構 OD 特徵，先評估低頻 OD 的篩選方式及資料標準化。</li><li>比較群組大小、穩定性、可解釋性與特殊 OD 的處理方式。</li><li>檢查群組是否對應尖峰型、假日型等需求特徵；這些群名僅為可能解釋，尚非實際結果。</li><li>將群組需求量／占比彙整到五分鐘尺度，作為未來低速預測特徵。</li></ol></section>
+<div class="research-note"><strong>資料基準：</strong>2026/10/22 統計實務研究進度簡報。<a class="research-link" href="reports.html">查看每週報告簡報</a>。</div>
+</main></div><footer>統計實務 — OD 分群</footer><script src="script.js"></script></body></html>

@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+    V1｜國道瓶頸資料專案
+</title>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+
+</head>
+
+
+<body>
+
+
+<button
+    class="mobile-menu-button"
+    onclick="toggleSidebar()"
+>
+    ☰
+</button>
+
+<aside class="sidebar" id="sidebar"><div class="sidebar-brand"><h1>國道瓶頸資料專案</h1><p>統計實務</p></div>
+<div class="sidebar-section-title">首頁</div>
+<a href="index.html">專案概述</a>
+<div class="sidebar-section-title">資料</div>
+<a href="v1_full.html"  class="active">V1_FULL</a>
+<a href="v1_lite.html">V1_LITE</a>
+<a href="vd.html">VD</a>
+<a href="v2_lite.html">V2_LITE</a>
+<div class="sidebar-section-title">研究方法與分析</div>
+<a href="eda.html">EDA 探索分析</a>
+<a href="od_clustering.html">OD 分群</a>
+<a href="statistical_models.html">傳統統計模型</a>
+<a href="machine_learning.html">機器學習模型</a>
+<div class="sidebar-section-title">進度與報告</div>
+<a href="progress.html">研究進度</a>
+<a href="reports.html">報告簡報</a>
+</aside>
+
+
+
+<div class="main">
+
+<header class="page-header">
+
+<h1>
+V1_FULL — 完整旅次資料
+</h1>
+
+<p>
+完整保留 M06B 旅次資料，
+並整合 M05A、M03A、
+氣象與日曆資訊。
+</p>
+
+</header>
+
+
+
+<main class="content">
+
+
+<section>
+
+<h2>
+資料概述
+</h2>
+
+
+<div class="card-grid">
+
+
+<div class="card">
+
+<strong>
+Rows
+</strong>
+
+<div class="big-number">
+≈ 136.3 M
+</div>
+
+<p>
+四方向合計 trip rows
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+Columns
+</strong>
+
+<div class="big-number">
+78
+</div>
+
+<p>
+Full Master
+</p>
+
+</div>
+
+
+<div class="card">
+<strong>資料筆數</strong>
+<div class="big-number">約 1.36 億筆</div>
+<p>四個方向合計</p>
+</div>
+
+
+<div class="card">
+<strong>欄位數</strong>
+<div class="big-number">78</div>
+<p>完整版本</p>
+</div>
+
+
+<div class="card">
+<strong>觀測單位</strong>
+<div class="big-number">旅次</div>
+<p>一列代表一筆 M06B 旅次</p>
+</div>
+
+
+<div class="card">
+<strong>檔案格式</strong>
+<div class="big-number">Parquet</div>
+<p>ZSTD 壓縮</p>
+</div>
+
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+資料組成
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>資料來源</th>
+<th>主要內容</th>
+</tr>
+
+
+<tr>
+<td>M06B</td>
+<td>
+VehicleID、OD、Detection Time、
+TripLength、TripInformation
+</td>
+</tr>
+
+
+<tr>
+<td>M05A</td>
+<td>
+站間 5 分鐘速度與交通量
+</td>
+</tr>
+
+
+<tr>
+<td>Weather</td>
+<td>
+Temperature、Dewpoint、
+Precipitation、Wind Speed
+</td>
+</tr>
+
+
+<tr>
+<td>Calendar</td>
+<td>
+Weekday、Weekend、
+Holiday、Summer 等
+</td>
+</tr>
+
+
+<tr>
+<td>M03A</td>
+<td>
+瓶頸門架 5 分鐘車種交通量
+</td>
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+欄位分組
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>欄位範圍</th>
+<th>類別</th>
+<th>內容</th>
+</tr>
+
+
+<tr>
+<td>01–20</td>
+<td>M06B / Master</td>
+<td>
+Trip、OD、瓶頸時間、
+來源檔與研究方向資訊
+</td>
+</tr>
+
+
+<tr>
+<td>21–37</td>
+<td>M05A</td>
+<td>
+5 車種 speed / volume、
+weighted speed、
+own-type 指標
+</td>
+</tr>
+
+
+<tr>
+<td>38–42</td>
+<td>Weather</td>
+<td>
+Temperature、
+Dewpoint、
+Precipitation、
+Wind Speed
+</td>
+</tr>
+
+
+<tr>
+<td>43–67</td>
+<td>Calendar</td>
+<td>
+Weekday、Holiday、
+Holiday Phase、
+Summer、Hour / Minute
+</td>
+</tr>
+
+
+<tr>
+<td>68–78</td>
+<td>M03A</td>
+<td>
+瓶頸門架 5 分鐘
+vehicle-class volume
+</td>
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="note">
+
+V1 Full Master 為完整保存版本。
+即使某些欄位之後不進入模型，
+本版本仍不刪除，
+以保留資料可追溯性。
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>
+檔案位置
+</h2>
+
+
+<pre>
+D:\統計實務\Data\MASTER_V1_M03A_2024_2025\
+
+N3_Daxi_Longtan_N_2024_2025_MASTER_V1_M03A.parquet
+N3_Daxi_Longtan_S_2024_2025_MASTER_V1_M03A.parquet
+N5_Pinglin_Toucheng_N_2024_2025_MASTER_V1_M03A.parquet
+N5_Pinglin_Toucheng_S_2024_2025_MASTER_V1_M03A.parquet
+</pre>
+
+</section>
+
+
+
+<section>
+
+<h2>
+注意事項
+</h2>
+
+
+<div class="note">
+
+<strong>
+M03A 與 Time5：
+</strong>
+
+M03A 使用與 Master 相同的五分鐘時間鍵，
+因此
+<code>M03_Time5</code>
+與
+<code>Time5</code>
+具有高度重複性。
+
+</div>
+
+
+<div class="note">
+
+<strong>
+Trip-level Master：
+</strong>
+
+同一個 Time5 內可能存在大量 M06B trips，
+因此 M03A、M05A、Weather 等 context
+會在多筆 trip row 中重複出現。
+這是預期資料結構，不是 duplicate error。
+
+</div>
+
+</section>
+<!-- =====================================================
+     M06B Data Quality
+========================================================= -->
+
+<section>
+
+<h2>
+M06B 資料品質與例外處理
+</h2>
+
+
+<p>
+M06B 為本研究的核心旅次資料。
+
+在建立 V1_FULL 前，
+除了確認每日及每小時檔案是否存在，
+也進一步檢查原始檔案大小、
+各時段旅次筆數，
+以及每筆原始資料是否符合
+M06B 正常的 9 欄結構。
+</p>
+
+
+<!-- =====================================================
+     Confirmed Source Gap
+========================================================= -->
+
+<h3>
+1. 已確認的來源資料中斷
+</h3>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>日期</th>
+<th>時間區段</th>
+<th>原始資料狀況</th>
+<th>處理方式</th>
+</tr>
+
+
+<tr>
+
+<td>
+2024/01/16
+</td>
+
+<td>
+<strong>
+13:00–14:59
+</strong>
+</td>
+
+<td>
+13:00 與 14:00
+兩個原始 M06B CSV
+皆為 0 byte。
+
+回查原始來源後確認，
+檔案本身即為空檔。
+</td>
+
+<td>
+標記為
+<code>SOURCE_EMPTY</code>。
+
+不人工建立旅次，
+也不使用前後時段進行插補。
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="note">
+
+2024/01/16 的異常並不只出現在
+13:00–14:59。
+
+當日 12:00 時段僅約 244 筆旅次，
+15:00 時段僅約 106 筆旅次。
+
+因此 QC 時將
+
+<strong>
+2024/01/16 12:00–15:59
+</strong>
+
+視為需特別注意的異常時間窗。
+
+其中只有
+<strong>13:00–14:59</strong>
+已確認屬於原始來源空檔；
+12:00 與 15:00
+僅屬於異常低量時段，
+不直接認定為資料遺失。
+
+</div>
+
+
+
+<!-- =====================================================
+     Malformed physical rows
+========================================================= -->
+
+<h3>
+2. 原始資料列格式異常
+</h3>
+
+
+<p>
+2025/02/28
+原始 M06B 檔案中發現
+<strong>25 筆 malformed physical rows</strong>。
+</p>
+
+
+<p>
+正常 M06B 每筆紀錄應包含 9 個欄位，
+但這些異常列出現
+1、4、5、6、7、13、15 或 17 欄等情況，
+顯示部分資料列可能遭截斷，
+或多筆紀錄發生黏接。
+</p>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>Hour</th>
+<th>Malformed rows</th>
+</tr>
+
+<tr><td>00</td><td>1</td></tr>
+<tr><td>05</td><td>1</td></tr>
+<tr><td>06</td><td>1</td></tr>
+<tr><td>07</td><td>1</td></tr>
+<tr><td>08</td><td>1</td></tr>
+<tr><td>09</td><td>2</td></tr>
+<tr><td>10</td><td>1</td></tr>
+<tr><td>11</td><td>1</td></tr>
+<tr><td>12</td><td>2</td></tr>
+<tr><td>13</td><td>1</td></tr>
+<tr><td>14</td><td>1</td></tr>
+<tr><td>15</td><td>2</td></tr>
+<tr><td>16</td><td>1</td></tr>
+<tr><td>17</td><td>2</td></tr>
+<tr><td>18</td><td>1</td></tr>
+<tr><td>19</td><td>2</td></tr>
+<tr><td>20</td><td>2</td></tr>
+<tr><td>21</td><td>1</td></tr>
+<tr><td>22</td><td>1</td></tr>
+
+<tr>
+<th>
+總計
+</th>
+
+<th>
+25
+</th>
+</tr>
+
+</table>
+
+</div>
+
+
+<p>
+01:00–04:59 與 23:00–23:59
+未發現此類 malformed rows。
+</p>
+
+
+<div class="note">
+
+2025/02/28 的問題與
+2024/01/16 不同。
+
+這一天不是整段資料消失，
+而是在大致正常的原始檔案中
+混入少量格式異常資料列。
+
+因此處理方式為：
+
+<strong>
+只隔離並排除 25 筆異常列，
+其他正常旅次全部保留。
+</strong>
+
+</div>
+
+
+
+<!-- =====================================================
+     Low-volume candidates
+========================================================= -->
+
+<h3>
+3. 每日旅次量異常候選
+</h3>
+
+
+<p>
+另外以每日旅次量進行 QC 時，
+曾發現少數日期的 Trips
+明顯低於同月份一般水準。
+</p>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>日期</th>
+<th>Trips</th>
+<th>目前判定</th>
+</tr>
+
+
+<tr>
+<td>2024/07/24</td>
+<td>19,574</td>
+<td>低旅次異常候選</td>
+</tr>
+
+
+<tr>
+<td>2024/07/25</td>
+<td>18,868</td>
+<td>低旅次異常候選</td>
+</tr>
+
+
+<tr>
+<td>2024/10/02</td>
+<td>22,144</td>
+<td>低旅次異常候選</td>
+</tr>
+
+
+<tr>
+<td>2024/10/03</td>
+<td>17,194</td>
+<td>低旅次異常候選</td>
+</tr>
+
+
+<tr>
+<td>2024/10/31</td>
+<td>14,481</td>
+<td>低旅次異常候選</td>
+</tr>
+
+
+</table>
+
+</div>
+
+
+<div class="warning">
+
+上述低旅次日期目前只視為
+<strong>QC 警示</strong>。
+
+除非進一步回查原始資料後
+確認存在缺檔、格式損壞或其他來源問題，
+否則不直接將這些日期視為錯誤資料，
+也不直接刪除。
+
+</div>
+
+
+
+<!-- =====================================================
+     QC Principle
+========================================================= -->
+
+<h3>
+4. M06B QC 處理原則
+</h3>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>資料狀況</th>
+<th>處理方式</th>
+</tr>
+
+
+<tr>
+
+<td>
+原始資料正常
+</td>
+
+<td>
+正常納入後續資料整理
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+原始檔案為 0 byte
+</td>
+
+<td>
+保留來源缺失事實，
+標記為 SOURCE_EMPTY，
+不人工產生旅次
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+少量 physical rows 格式損壞
+</td>
+
+<td>
+只排除格式異常紀錄，
+其他正常旅次繼續保留
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+旅次量異常高或異常低
+</td>
+
+<td>
+先列為 QC 候選，
+回查來源後再決定是否處理
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="note">
+
+本研究的原則為：
+
+<strong>
+「異常」不等於「錯誤」。
+</strong>
+
+只有能確認為來源空檔、
+資料格式損壞或其他明確問題時，
+才進行排除或特殊標記。
+
+</div>
+
+</section>
+
+
+</main>
+
+</div>
+
+
+<footer>
+
+Statistical Practice —
+V1 Full Master
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>

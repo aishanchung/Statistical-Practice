@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+研究進度｜國道瓶頸資料專案
+</title>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+
+
+<style>
+
+.progress-summary {
+
+    background: #eef5fb;
+
+    border: 1px solid #d3e2ee;
+
+    border-radius: 12px;
+
+    padding: 24px;
+
+    margin: 20px 0 30px 0;
+
+}
+
+
+.progress-summary h3 {
+
+    margin-top: 0;
+
+    color: #245c8a;
+
+}
+
+
+.progress-status-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(210px, 1fr)
+        );
+
+    gap: 16px;
+
+    margin: 22px 0 30px 0;
+
+}
+
+
+.progress-status-card {
+
+    background: white;
+
+    border: 1px solid #dce3e9;
+
+    border-radius: 10px;
+
+    padding: 20px;
+
+}
+
+
+.progress-status-card strong {
+
+    display: block;
+
+    color: #667788;
+
+    margin-bottom: 6px;
+
+}
+
+
+.progress-status-value {
+
+    display: block;
+
+    font-size: 24px;
+
+    font-weight: 700;
+
+    color: #245c8a;
+
+    margin-bottom: 7px;
+
+}
+
+
+.timeline {
+
+    position: relative;
+
+    margin: 25px 0;
+
+    padding-left: 28px;
+
+}
+
+
+.timeline::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 7px;
+
+    top: 5px;
+
+    bottom: 5px;
+
+    width: 2px;
+
+    background: #cfd9e2;
+
+}
+
+
+.timeline-item {
+
+    position: relative;
+
+    margin-bottom: 28px;
+
+}
+
+
+.timeline-item::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: -27px;
+
+    top: 8px;
+
+    width: 12px;
+
+    height: 12px;
+
+    border-radius: 50%;
+
+    background: #245c8a;
+
+    border: 3px solid #eaf3fb;
+
+}
+
+
+.timeline-item h3 {
+
+    margin: 0 0 7px 0;
+
+}
+
+
+.timeline-item p {
+
+    margin: 5px 0;
+
+}
+
+
+.decision-box {
+
+    background: white;
+
+    border: 1px solid #dce3e9;
+
+    border-radius: 10px;
+
+    padding: 20px;
+
+    margin: 16px 0;
+
+}
+
+
+.decision-box strong {
+
+    color: #245c8a;
+
+}
+
+
+.old-eda-box {
+
+    background: #fff7d6;
+
+    border-left: 5px solid #b78a00;
+
+    border-radius: 7px;
+
+    padding: 18px 20px;
+
+    margin: 20px 0;
+
+}
+
+
+.next-step {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 14px;
+
+    padding: 16px 0;
+
+    border-bottom: 1px solid #e2e7eb;
+
+}
+
+
+.next-step:last-child {
+
+    border-bottom: none;
+
+}
+
+
+.step-number {
+
+    min-width: 34px;
+
+    height: 34px;
+
+    border-radius: 50%;
+
+    background: #245c8a;
+
+    color: white;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-weight: 700;
+
+}
+
+
+/* 2026/10/22 weekly update: keep existing visual system */
+.weekly-update { background: #fff; border: 1px solid #dce3e9; border-radius: 12px; padding: 24px; margin: 24px 0; line-height: 1.8; }
+.weekly-date { color: #245c8a; font-weight: 700; font-size: .9rem; }
+.weekly-update h3 { color: #245c8a; margin-top: 24px; }
+.weekly-update li { margin-bottom: 8px; }
+.weekly-update table { width: 100%; border-collapse: collapse; }
+.weekly-update th, .weekly-update td { border: 1px solid #dce3e9; padding: 10px; text-align: left; }
+.weekly-update th { background: #eef5fb; }
+.weekly-note { background: #eef5fb; border-left: 4px solid #245c8a; padding: 14px 18px; margin-top: 20px; }
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<button
+    class="mobile-menu-button"
+    onclick="toggleSidebar()"
+>
+☰
+</button>
+
+
+<aside class="sidebar" id="sidebar"><div class="sidebar-brand"><h1>國道瓶頸資料專案</h1><p>統計實務</p></div>
+<div class="sidebar-section-title">首頁</div>
+<a href="index.html">專案概述</a>
+<div class="sidebar-section-title">資料</div>
+<a href="v1_full.html">V1_FULL</a>
+<a href="v1_lite.html">V1_LITE</a>
+<a href="vd.html">VD</a>
+<a href="v2_lite.html">V2_LITE</a>
+<div class="sidebar-section-title">研究方法與分析</div>
+<a href="eda.html">EDA 探索分析</a>
+<a href="od_clustering.html">OD 分群</a>
+<a href="statistical_models.html">傳統統計模型</a>
+<a href="machine_learning.html">機器學習模型</a>
+<div class="sidebar-section-title">進度與報告</div>
+<a href="progress.html"  class="active">研究進度</a>
+<a href="reports.html">報告簡報</a>
+</aside>
+
+
+<div class="main">
+
+
+<header class="page-header">
+
+<h1>
+研究進度
+</h1>
+
+<p>
+記錄研究過程中的資料問題、
+處理決策、研究方向調整與下一階段工作。
+</p>
+
+</header>
+
+
+
+<main class="content">
+
+
+<!-- =====================================================
+     目前研究狀態
+========================================================= -->
+<section>
+  <h2>目前研究狀態</h2>
+  <div class="progress-summary">
+    <h3>正式 EDA 已取得階段性成果，接續規劃 OD 分群與壅塞預測</h3>
+    <p>目前以國道三號大溪－龍潭北向為主要分析對象，使用完成整理的 V2_LITE 進行 2024–2025 年交通需求探索。資料整合階段的版本和品質檢查紀錄予以保留；早期尚未確認資料品質的舊版 EDA 不直接作為正式研究結果。</p>
+    <p>截至 2026/10/22，已整理時間、假期、氣象、車種、距離及 OD 長尾分布等探索性成果；OD 分群與 Logistic Regression、XGBoost、LightGBM 仍處於方法設計階段，尚未完成正式模型比較。</p>
+  </div>
+  <div class="progress-status-grid">
+    <div class="progress-status-card"><strong>V1_FULL / V1_LITE</strong><span class="progress-status-value">已完成</span>完整保存與核心旅次版本</div>
+    <div class="progress-status-card"><strong>北向 VD / V2_LITE</strong><span class="progress-status-value">已完成</span>五分鐘 VD 與分析整合資料</div>
+    <div class="progress-status-card"><strong>正式 EDA</strong><span class="progress-status-value">階段性完成</span>需求時間、車種、距離與 OD 結構</div>
+    <div class="progress-status-card"><strong>OD 分群</strong><span class="progress-status-value">方法規劃</span>尚待特徵建構、實作及驗證</div>
+    <div class="progress-status-card"><strong>壅塞預測</strong><span class="progress-status-value">方法規劃</span>尚未完成模型訓練與效能比較</div>
+  </div>
+</section>
+
+<!-- =====================================================
+     EDA 重做
+========================================================= -->
+
+<section>
+
+<h2>
+為什麼重新開始 EDA？
+</h2>
+
+
+<div class="old-eda-box">
+
+<strong>
+前期 EDA 暫不作為正式研究結果。
+</strong>
+
+<br><br>
+
+早期分析是在資料架構仍持續調整的情況下進行，
+部分資料尚未完整，
+VD 的缺失原因及時間對應方式
+也尚未完全確認。
+
+因此過去圖表可作為探索過程參考，
+但正式研究結果將使用
+重新整理完成的 V2_LITE
+重新產生。
+
+</div>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>問題</th>
+<th>影響</th>
+<th>目前處理</th>
+</tr>
+
+
+<tr>
+
+<td>
+資料版本持續變動
+</td>
+
+<td>
+不同階段圖表
+可能使用不同資料定義
+</td>
+
+<td>
+固定 V1_FULL、
+V1_LITE、VD 與 V2_LITE
+版本關係
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+VD 缺失原因尚未確認
+</td>
+
+<td>
+可能將不同資料問題
+全部視為一般缺值
+</td>
+
+<td>
+重新查詢官方歷史資料，
+區分不同缺失來源
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+南向 VD 組成存在變動
+</td>
+
+<td>
+不同期間測站組成
+並不一致
+</td>
+
+<td>
+正式流程先集中
+國道 3 號北向
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+早期分析方向較分散
+</td>
+
+<td>
+產生部分與核心研究問題
+關聯較低的結果
+</td>
+
+<td>
+重新由研究問題
+規劃 EDA
+</td>
+
+</tr>
+
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     Timeline
+========================================================= -->
+
+<section>
+
+<h2>
+資料整理與研究決策歷程
+</h2>
+
+
+<p>
+本區只記錄
+<strong>
+影響研究方向的重要問題與決策
+</strong>。
+
+詳細欄位、VD 測站及特殊值定義，
+統一放在資料頁面，
+不在此重複。
+</p>
+
+
+<div class="timeline">
+
+
+<div class="timeline-item">
+
+<h3>
+建立 V1_FULL
+</h3>
+
+<p>
+整合 M06B 旅次資料與
+M05A、M03A、氣象及日期資料，
+建立完整保存版本。
+</p>
+
+<p>
+此版本主要用途為保存原始整合成果，
+並作為後續精簡資料的來源。
+</p>
+
+</div>
+
+
+
+<div class="timeline-item">
+
+<h3>
+建立 V1_LITE
+</h3>
+
+<p>
+由於完整資料欄位數量較多，
+且後續分析不需要所有工程與合併欄位，
+因此另外建立精簡版。
+</p>
+
+<p>
+V1_LITE 保留核心旅次、
+氣象與日期資訊，
+降低大量資料分析時的負擔。
+</p>
+
+</div>
+
+
+
+<div class="timeline-item">
+
+<h3>
+發現 VD 資料需要重新確認
+</h3>
+
+<p>
+檢查原始 VD 抓取及整理流程後，
+發現整理後資料中的缺失
+不能直接解讀為官方原始資料不存在。
+</p>
+
+<p>
+因此暫停直接使用既有 VD 結果，
+改為重新檢查原始歷史資料。
+</p>
+
+</div>
+
+
+
+<div class="timeline-item">
+
+<h3>
+重新查詢官方 VD 歷史資料
+</h3>
+
+<p>
+針對國道 3 號北向
+原本缺失的時間與 VD，
+重新查詢官方歷史 XML。
+</p>
+
+<p>
+確認缺失可能來自多種不同原因，
+而非單純隨機缺值。
+</p>
+
+</div>
+
+
+
+<div class="timeline-item">
+
+<h3>
+確認 VD 缺失具有結構
+</h3>
+
+<p>
+部分缺失會連續數小時甚至數日，
+並可能同時發生於多支 VD。
+</p>
+
+<p>
+因此不採用
+「所有缺值直接插補」
+的處理方式，
+而是保留不同缺失狀態。
+</p>
+
+</div>
+
+
+
+<div class="timeline-item">
+
+<h3>
+重新取得部分 VD 資料
+</h3>
+
+<p>
+經由官方歷史資料回查，
+部分原先缺失的資料
+可以在原時間或前後一分鐘重新取得。
+</p>
+
+<p>
+這些資料重新放回正式 VD，
+並另外保留來源狀態，
+避免與原始直接觀測混淆。
+</p>
+
+</div>
+
+
+
+<div class="timeline-item">
+
+<h3>
+暫停南向正式分析
+</h3>
+
+<p>
+國道 3 號南向在研究期間內
+存在 VD 測站組成變化，
+部分測站只存在於特定期間。
+</p>
+
+<p>
+為避免同時處理過多資料問題，
+目前先將正式分析集中於
+國道 3 號北向。
+</p>
+
+</div>
+
+
+
+<div class="timeline-item">
+
+<h3>
+完成 VD_N3_N_LITE
+</h3>
+
+<p>
+將國道 3 號北向 VD
+整理成固定五分鐘網格，
+並保留速度、
+佔有率與資料狀態。
+</p>
+
+<p>
+VD 詳細結構與品質定義
+請見
+<a href="vd.html">VD 資料頁</a>。
+</p>
+
+</div>
+
+
+
+<div class="timeline-item">
+
+<h3>
+完成 V2_LITE
+</h3>
+
+<p>
+將 V1_LITE 與整理完成的
+北向 VD 合併，
+正式建立 V2_LITE。
+</p>
+
+<p>
+合併前後皆為
+<strong>45,150,592 筆旅次</strong>，
+且所有旅次皆能找到
+對應五分鐘 VD 時間，
+資料列數檢查通過。
+</p>
+
+</div>
+
+
+
+<div class="timeline-item">
+
+<h3>
+啟動正式 EDA（已取得階段性成果）
+</h3>
+
+<p>
+資料版本及主要資料品質問題
+目前已完成確認。
+</p>
+
+<p>
+後續改由 V2_LITE 重新產生正式 EDA；截至 2026/10/22，已完成階段性需求探索，持續進行異常日期與資料品質檢查。
+</p>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     2026-10-22 weekly research update
+========================================================= -->
+<section class="weekly-update" id="update-20261022">
+  <div class="weekly-date">2026 / 10 / 22｜每週研究紀錄</div>
+  <h2>正式 EDA 階段成果與後續方法規劃</h2>
+  <p>研究範圍為國道三號大溪－龍潭北向瓶頸路段。本週整理 V2_LITE 的正式 EDA 階段成果，並明確規劃 OD 分群與短期低速風險預測的後續流程。</p>
+  <h3>一、資料規模及需求特徵</h3>
+  <p>分析涵蓋 2024–2025 年共 <strong>731 天</strong>、<strong>45,150,592 筆旅次紀錄</strong>、<strong>16,350 組 OD</strong>。目前主要觀察結果如下：</p>
+  <ul>
+    <li><strong>時間與日期：</strong>星期日需求最高且尖峰約為 14:00；平日尖峰約為 17:00。連假平均每日需求較高，且較長時段維持高檔。</li>
+    <li><strong>連假階段：</strong>最後一天北向需求較高，於 2024、2025 暫定分組下尖峰均約為 13:00。</li>
+    <li><strong>氣象：</strong>比較氣溫、露點、降雨及風速與需求的關聯；控制時間條件後，部分關聯方向有所改變。此處為觀察關聯，非因果推論。</li>
+    <li><strong>車種：</strong>相較平日，週末小客車需求增加較多，大貨車與聯結車平均需求則降低。</li>
+    <li><strong>距離：</strong>100–500 公里組在週末需求增加中占有重要比例，且增量主要來自小客車；目前仍屬探索性距離分類，後續需檢查距離門檻及異常資料。</li>
+  </ul>
+  <h3>二、OD 長尾分布與篩選規劃</h3>
+  <p>16,350 組 OD 中，有 <strong>9,266 組（56.7%）</strong> 的旅次不超過 10 筆，顯示明顯長尾分布。本週初步比較 2024 年不同最低旅次門檻對 2025 年需求的涵蓋情況：</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>2024 年最低旅次門檻</th><th>符合 OD 組數</th><th>涵蓋 2025 年需求</th></tr></thead>
+    <tbody>
+      <tr><td>30 筆</td><td>4,256</td><td>97.80%</td></tr>
+      <tr><td>100 筆</td><td>3,103</td><td>97.51%</td></tr>
+      <tr><td>300 筆</td><td>2,182</td><td>96.76%</td></tr>
+      <tr><td>500 筆</td><td>1,813</td><td>96.14%</td></tr>
+      <tr><td>1,000 筆</td><td>1,314</td><td>94.55%</td></tr>
+    </tbody>
+  </table></div>
+  <p>以上是門檻敏感度的初步探索，<strong>尚未選定正式分群門檻</strong>。</p>
+  <h3>三、OD 分群：完成方法整理，尚未實作</h3>
+  <p>規劃以旅次量、距離、時間型態、DayType、車種組成及空間特徵建立 OD 特徵。已整理四種候選方法：</p>
+  <ul>
+    <li><strong>K-means：</strong>以群內平方距離最小化作為基準。</li>
+    <li><strong>Hierarchical clustering：</strong>以階層合併與 dendrogram 檢視群組結構。</li>
+    <li><strong>DBSCAN：</strong>依密度分群，允許孤立點保留為 noise。</li>
+    <li><strong>GMM：</strong>以機率分布描述群組隸屬程度，保留模糊邊界。</li>
+  </ul>
+  <p>後續比較分群穩定性、群組大小與交通需求解釋性，並將群組需求轉為預測模型的時間特徵。</p>
+  <h3>四、預測方法：候選模型與研究問題</h3>
+  <p>已整理 <strong>Logistic Regression</strong>（可解釋基準模型）、<strong>XGBoost</strong>（正則化梯度提升樹）及 <strong>LightGBM</strong>（Histogram／Leaf-wise）的使用理由。後續考慮在五分鐘時間尺度上預測未來 <strong>15／30／60 分鐘</strong>的低速事件風險。</p>
+  <p>核心研究問題：<strong>在控制時間、天氣、歷史 VD 狀態與總需求後，OD 群組組成是否能提供額外的未來低速風險預測資訊？</strong></p>
+  <div class="weekly-note"><strong>進度界線：</strong>目前為 EDA 階段結果與分群／預測方法設計；尚無正式分群標籤、模型訓練結果或準確率比較。EDA 中的部分 QC 日期及距離分類仍待敏感度檢查。</div>
+</section>
+
+<!-- =====================================================
+     Decisions
+========================================================= -->
+
+<section>
+
+<h2>
+目前確定的研究決策
+</h2>
+
+
+<div class="decision-box">
+
+<strong>
+1. 正式分析先集中國道 3 號北向
+</strong>
+
+<p>
+先完成單一方向完整流程，
+再評估南向及其他研究路段。
+</p>
+
+</div>
+
+
+<div class="decision-box">
+
+<strong>
+2. 舊版 EDA 不直接沿用
+</strong>
+
+<p>
+早期圖表可保留作為探索紀錄，
+但正式研究成果將重新由
+V2_LITE 產生。
+</p>
+
+</div>
+
+
+<div class="decision-box">
+
+<strong>
+3. VD 缺失不視為單一類型
+</strong>
+
+<p>
+不同缺失來源分開保留，
+避免以單一插補方式
+掩蓋資料品質差異。
+</p>
+
+</div>
+
+
+<div class="decision-box">
+
+<strong>
+4. V2_LITE 保持精簡
+</strong>
+
+<p>
+詳細 QC 及資料來源狀態
+保留於獨立 VD 資料，
+V2_LITE 只加入分析真正需要的
+速度與佔有率。
+</p>
+
+</div>
+
+
+<div class="decision-box">
+
+<strong>
+5. 衍生分析變數不寫死在 Master Data
+</strong>
+
+<p>
+壅塞門檻、
+平均速度、
+有效 VD 數量、
+Primary VD 等資訊，
+於 EDA 或建模階段
+依分析目的動態產生。
+</p>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     Next
+========================================================= -->
+<section>
+  <h2>接下來的工作</h2>
+  <div class="next-step"><div class="step-number">1</div><div><strong>完成 EDA 品質與敏感度檢查</strong><br>檢查異常日期、特殊 VD 狀態及距離分組門檻，確認結果穩健性。</div></div>
+  <div class="next-step"><div class="step-number">2</div><div><strong>建立 OD 分群特徵</strong><br>彙整 OD 的需求量、時段、DayType、距離與車種結構，妥善處理尺度差異。</div></div>
+  <div class="next-step"><div class="step-number">3</div><div><strong>執行並評估 OD 分群</strong><br>比較候選方法的穩定性與解釋性，選定可用於建模的需求群組。</div></div>
+  <div class="next-step"><div class="step-number">4</div><div><strong>建置五分鐘預測資料</strong><br>將 OD 群組需求與歷史 VD、日期及天氣對齊；嚴格避免使用預測當下尚不可得的資訊。</div></div>
+  <div class="next-step"><div class="step-number">5</div><div><strong>定義未來低速標籤與時間切分</strong><br>設定 15／30／60 分鐘預測目標，採時間順序劃分訓練、驗證及測試資料。</div></div>
+  <div class="next-step"><div class="step-number">6</div><div><strong>比較有無 OD 特徵的預測表現</strong><br>以 Logistic Regression、XGBoost 與 LightGBM 檢驗 OD 群組的增額預測價值。</div></div>
+  <div class="next-step"><div class="step-number">7</div><div><strong>評估延伸路段</strong><br>待北向流程穩定後，再處理國道三號南向 VD 測站組成差異及其他瓶頸。</div></div>
+</section>
+
+<!-- =====================================================
+     Website role
+========================================================= -->
+
+<section>
+
+<h2>
+網站內容分工
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>頁面</th>
+<th>主要內容</th>
+</tr>
+
+
+<tr>
+
+<td>
+<a href="v1_full.html">
+V1_FULL
+</a>
+</td>
+
+<td>
+完整整合資料與來源
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<a href="v1_lite.html">
+V1_LITE
+</a>
+</td>
+
+<td>
+精簡資料與保留欄位
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<a href="vd.html">
+VD
+</a>
+</td>
+
+<td>
+VD 測站、
+資料品質與特殊值定義
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<a href="v2_lite.html">
+V2_LITE
+</a>
+</td>
+
+<td>
+正式分析資料與合併 QC
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<strong>
+研究進度
+</strong>
+</td>
+
+<td>
+資料問題、
+研究決策、
+方向調整與下一步
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+<a href="reports.html">
+報告簡報
+</a>
+</td>
+
+<td>
+實際報告使用的 PDF / PPT
+</td>
+
+</tr>
+
+
+</table>
+
+</div>
+
+
+<div class="note">
+
+研究進度頁主要回答：
+
+<strong>
+研究過程發生什麼問題、
+為什麼調整方向、
+如何處理，
+以及下一步要做什麼。
+</strong>
+
+詳細資料定義則統一放在各資料頁面。
+
+</div>
+
+</section>
+
+
+
+</main>
+
+</div>
+
+
+
+<footer>
+
+統計實務 —
+研究進度
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>

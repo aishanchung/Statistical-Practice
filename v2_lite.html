@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+V2_LITE｜國道瓶頸資料專案
+</title>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+
+</head>
+
+
+<body>
+
+
+<button
+    class="mobile-menu-button"
+    onclick="toggleSidebar()"
+>
+☰
+</button>
+
+
+<aside class="sidebar" id="sidebar"><div class="sidebar-brand"><h1>國道瓶頸資料專案</h1><p>統計實務</p></div>
+<div class="sidebar-section-title">首頁</div>
+<a href="index.html">專案概述</a>
+<div class="sidebar-section-title">資料</div>
+<a href="v1_full.html">V1_FULL</a>
+<a href="v1_lite.html">V1_LITE</a>
+<a href="vd.html">VD</a>
+<a href="v2_lite.html"  class="active">V2_LITE</a>
+<div class="sidebar-section-title">研究方法與分析</div>
+<a href="eda.html">EDA 探索分析</a>
+<a href="od_clustering.html">OD 分群</a>
+<a href="statistical_models.html">傳統統計模型</a>
+<a href="machine_learning.html">機器學習模型</a>
+<div class="sidebar-section-title">進度與報告</div>
+<a href="progress.html">研究進度</a>
+<a href="reports.html">報告簡報</a>
+</aside>
+
+
+
+<div class="main">
+
+
+<header class="page-header">
+
+<h1>
+V2_LITE
+</h1>
+
+<p>
+國道 3 號大溪－龍潭北向
+正式分析資料。
+</p>
+
+</header>
+
+
+
+<main class="content">
+
+
+<!-- =====================================================
+     Overview
+========================================================= -->
+
+<section>
+
+<h2>
+資料概述
+</h2>
+
+
+<div class="card-grid">
+
+
+<div class="card">
+
+<strong>
+研究路段
+</strong>
+
+<div class="big-number">
+N3 北向
+</div>
+
+<p>
+龍潭 → 大溪
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+資料筆數
+</strong>
+
+<div class="big-number">
+45,150,592
+</div>
+
+<p>
+一列一筆旅次
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+欄位數
+</strong>
+
+<div class="big-number">
+25
+</div>
+
+<p>
+V1_LITE + VD
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+期間
+</strong>
+
+<div class="big-number">
+2024–2025
+</div>
+
+<p>
+完整兩年
+</p>
+
+</div>
+
+
+<div class="card">
+
+<strong>
+狀態
+</strong>
+
+<div class="big-number">
+完成
+</div>
+
+<p>
+Merge QC 已通過
+</p>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     Architecture
+========================================================= -->
+
+<section>
+
+<h2>
+資料架構
+</h2>
+
+
+<div class="pipeline">
+
+<strong>
+V1_LITE
+</strong>
+
+<br>
+
+15 個核心旅次、
+氣象與日期欄位
+
+<br><br>
+
+＋
+
+<br><br>
+
+<strong>
+VD_N3_N_LITE
+</strong>
+
+<br>
+
+5 支 VD
+
+<br>
+
+Speed + Occupancy
+
+<br>
+
+共 10 欄
+
+<br><br>
+
+↓
+
+<br><br>
+
+<strong>
+V2_LITE
+</strong>
+
+<br>
+
+25 欄
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     Observation unit
+========================================================= -->
+
+<section>
+
+<h2>
+觀測單位
+</h2>
+
+
+<p>
+V2_LITE 仍維持與 M06B 相同的觀測單位：
+</p>
+
+
+<div class="pipeline">
+
+<strong>
+一列 = 一筆 M06B 旅次
+</strong>
+
+</div>
+
+
+<p>
+VD 的五分鐘交通狀態會依照旅次的
+<code>BottleneckTime</code>
+對應至五分鐘時間，
+再將相同時間的 VD 資訊加入旅次資料。
+</p>
+
+
+<p>
+五分鐘合併鍵只用於資料建置過程，
+最終 V2_LITE 不額外保留 Time5 欄位。
+</p>
+
+</section>
+
+
+
+<!-- =====================================================
+     VD columns
+========================================================= -->
+
+<section>
+
+<h2>
+新增 VD 欄位
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>VD</th>
+<th>速度欄位</th>
+<th>佔有率欄位</th>
+</tr>
+
+
+<tr>
+
+<td>
+61.000K
+</td>
+
+<td>
+<code>VD_61p000_Speed</code>
+</td>
+
+<td>
+<code>VD_61p000_Occupancy</code>
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+61.670K
+</td>
+
+<td>
+<code>VD_61p670_Speed</code>
+</td>
+
+<td>
+<code>VD_61p670_Occupancy</code>
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+63.990K
+</td>
+
+<td>
+<code>VD_63p990_Speed</code>
+</td>
+
+<td>
+<code>VD_63p990_Occupancy</code>
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+65.990K
+</td>
+
+<td>
+<code>VD_65p990_Speed</code>
+</td>
+
+<td>
+<code>VD_65p990_Occupancy</code>
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+69.510K
+</td>
+
+<td>
+<code>VD_69p510_Speed</code>
+</td>
+
+<td>
+<code>VD_69p510_Occupancy</code>
+</td>
+
+</tr>
+
+
+</table>
+
+</div>
+
+
+<p>
+研究瓶頸位置約為
+<strong>64.8K</strong>。
+
+各 VD 與瓶頸位置的關係
+可於後續 EDA 中依研究問題使用，
+不另外在 Master Data 中建立 Primary VD 欄位。
+</p>
+
+</section>
+
+
+
+<!-- =====================================================
+     Not included
+========================================================= -->
+
+<section>
+
+<h2>
+刻意不加入的欄位
+</h2>
+
+
+<p>
+為保持 V2_LITE 精簡，
+以下資訊不直接加入旅次資料：
+</p>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>不加入的資訊</th>
+<th>原因</th>
+</tr>
+
+
+<tr>
+
+<td>
+VDType
+</td>
+
+<td>
+保留於獨立 VD 資料進行追蹤，
+避免在大量旅次中重複文字欄位
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+Lane-level Speed / Occupancy
+</td>
+
+<td>
+後續主要分析使用測站層級代表值
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+Primary VD
+</td>
+
+<td>
+可依不同分析目的動態決定
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+有效 VD 數量
+</td>
+
+<td>
+屬於可即時計算的衍生變數
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+壅塞旗標
+</td>
+
+<td>
+可依不同速度門檻重新定義
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+Min / Mean / Median Speed
+</td>
+
+<td>
+屬於 EDA 或建模階段的衍生特徵
+</td>
+
+</tr>
+
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     QC
+========================================================= -->
+
+<section>
+
+<h2>
+合併品質檢查
+</h2>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>檢查項目</th>
+<th>結果</th>
+</tr>
+
+
+<tr>
+
+<td>
+V1_LITE 合併前資料筆數
+</td>
+
+<td>
+45,150,592
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+V2_LITE 合併後資料筆數
+</td>
+
+<td>
+45,150,592
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+V1_LITE 欄位數
+</td>
+
+<td>
+15
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+V2_LITE 欄位數
+</td>
+
+<td>
+25
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+VD 五分鐘時間點
+</td>
+
+<td>
+210,528
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+無法匹配 VD 時間的旅次
+</td>
+
+<td>
+0
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+BottleneckTime 缺值
+</td>
+
+<td>
+0
+</td>
+
+</tr>
+
+
+<tr>
+
+<th>
+Row Count Check
+</th>
+
+<th>
+PASS
+</th>
+
+</tr>
+
+
+</table>
+
+</div>
+
+
+<div class="note">
+
+合併前後皆為
+<strong>45,150,592 筆旅次</strong>，
+
+表示 VD 合併沒有造成
+many-to-many 資料膨脹，
+也沒有造成旅次遺失。
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     Special values
+========================================================= -->
+
+<section>
+
+<h2>
+VD 特殊值注意事項
+</h2>
+
+
+<p>
+V2_LITE 中的 VD Speed
+保留原 VD_LITE 的特殊狀態碼。
+</p>
+
+
+<div class="table-wrap">
+
+<table>
+
+<tr>
+<th>Speed</th>
+<th>意義</th>
+</tr>
+
+
+<tr>
+<td>-1</td>
+<td>沒有偵測到車輛</td>
+</tr>
+
+
+<tr>
+<td>-99</td>
+<td>官方速度資料無效</td>
+</tr>
+
+
+<tr>
+<td>-999</td>
+<td>XML 有，但該 VD 不存在</td>
+</tr>
+
+
+<tr>
+<td>-9999</td>
+<td>該分鐘官方 XML 無法取得</td>
+</tr>
+
+
+</table>
+
+</div>
+
+
+<div class="warning">
+
+進行速度平均、
+壅塞門檻判定或模型分析前，
+
+必須先將這些狀態碼
+與正常速度值分開處理。
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     Role
+========================================================= -->
+
+<section>
+
+<h2>
+後續用途
+</h2>
+
+
+<p>
+V2_LITE 將作為目前
+國道 3 號北向正式分析的主要資料來源。
+</p>
+
+
+<div class="pipeline">
+
+V2_LITE
+
+<br><br>
+
+↓
+
+<br><br>
+
+正式 EDA
+
+<br><br>
+
+↓
+
+<br><br>
+
+OD 特性與壅塞關係
+
+<br><br>
+
+↓
+
+<br><br>
+
+五分鐘資料彙整
+
+<br><br>
+
+↓
+
+<br><br>
+
+壅塞預測模型
+
+</div>
+
+</section>
+
+
+
+</main>
+
+</div>
+
+
+
+<footer>
+
+統計實務 —
+V2_LITE
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
