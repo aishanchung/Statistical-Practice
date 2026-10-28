@@ -206,6 +206,8 @@ VD 測站
 <tr>
 <th>VDID</th>
 <th>里程位置</th>
+<th>緯度（WGS84）</th>
+<th>經度（WGS84）</th>
 <th>方向</th>
 </tr>
 
@@ -213,6 +215,8 @@ VD 測站
 <tr>
 <td>VD-N3-N-61.000-M-LOOP</td>
 <td>61.000K</td>
+<td>24.9042661</td>
+<td>121.2741315</td>
 <td>北向</td>
 </tr>
 
@@ -220,6 +224,8 @@ VD 測站
 <tr>
 <td>VD-N3-N-61.670-M-RS</td>
 <td>61.670K</td>
+<td>24.9001467</td>
+<td>121.2694041</td>
 <td>北向</td>
 </tr>
 
@@ -227,6 +233,8 @@ VD 測站
 <tr>
 <td>VD-N3-N-63.990-M-LOOP</td>
 <td>63.990K</td>
+<td>24.8822705</td>
+<td>121.2575460</td>
 <td>北向</td>
 </tr>
 
@@ -234,6 +242,8 @@ VD 測站
 <tr>
 <td>VD-N3-N-65.990-M-RS</td>
 <td>65.990K</td>
+<td>24.8720604</td>
+<td>121.2416327</td>
 <td>北向</td>
 </tr>
 
@@ -241,6 +251,8 @@ VD 測站
 <tr>
 <td>VD-N3-N-69.510-M-LOOP</td>
 <td>69.510K</td>
+<td>24.8579342</td>
+<td>121.2113518</td>
 <td>北向</td>
 </tr>
 
@@ -248,6 +260,8 @@ VD 測站
 </table>
 
 </div>
+
+<p class="note">經緯度採 WGS84 十進位座標，依完整 VDID 對照交通部高速公路局官方 <a href="https://tisvcloud.freeway.gov.tw/history/motc20/VD.xml" target="_blank" rel="noopener noreferrer">VD 靜態資訊 XML</a>（<a href="https://data.gov.tw/dataset/37661" target="_blank" rel="noopener noreferrer">資料集說明</a>）；查核日期：2026-10-29。數值為設備登錄座標，非依里程推估。</p>
 
 </section>
 
@@ -819,6 +833,114 @@ RECOVERED_P1 使用的是目標時間後 1 分鐘資料。
 </section>
 
 
+
+
+<!-- =====================================================
+     2024–2025 缺漏稽核：依五支 VD 長格式重新計算
+========================================================= -->
+
+<section id="vd-missing-audit">
+
+<h2>2024–2025 VD 缺漏稽核</h2>
+
+<p>
+以獨立 VD 長格式資料的 <code>TargetTime × VDID</code> 為分析單位。
+每支測站理論上有 210,528 個五分鐘時點，五支合計 1,052,640 筆。
+已確認時間網格完整且無重複鍵；但「時間列存在」不代表速度一定可用。
+</p>
+
+<div class="card-grid">
+<div class="card"><strong>真正缺漏</strong><div class="big-number">29,592</div><p>占所有測站時間格 2.811%</p></div>
+<div class="card"><strong>五站同時缺漏</strong><div class="big-number">4,570</div><p>五分鐘時點，共 380.83 小時</p></div>
+<div class="card"><strong>共同缺漏事件</strong><div class="big-number">47</div><p>其中 3 段持續至少 24 小時</p></div>
+<div class="card"><strong>無車通過（Speed=-1）</strong><div class="big-number">3,903</div><p>觀測狀態，不列入真正缺漏</p></div>
+</div>
+
+<h3>缺漏判定與原因</h3>
+
+<p>
+「真正缺漏」只計算 <code>VD_ABSENT</code>（20,826 筆）、
+<code>OFFICIAL_NA</code>（6,876 筆）、<code>FILE_UNAVAILABLE</code>（1,890 筆）。
+<code>Speed=-1</code> 表示無車流，不能當作 0 km/h，也不列入真正缺漏。
+若分析需要有效速度，還需排除這 3,903 筆，因此「沒有可用速度」共 33,495 筆（3.182%）。
+</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>測站（北向）</th><th>真正缺漏</th><th>缺漏率</th><th>2024 缺漏</th><th>2025 缺漏</th><th>Speed=-1</th><th>連續缺漏段數</th><th>長達 6 小時以上</th><th>非五站共同缺漏</th></tr>
+<tr><td>61.000K</td><td>5,432</td><td>2.580%</td><td>4,668</td><td>764</td><td>2,706</td><td>63</td><td>8</td><td>862</td></tr>
+<tr><td>61.670K</td><td>6,582</td><td>3.126%</td><td>4,640</td><td>1,942</td><td>91</td><td>59</td><td>10</td><td>2,012</td></tr>
+<tr><td>63.990K</td><td>7,053</td><td>3.350%</td><td>5,848</td><td>1,205</td><td>250</td><td>82</td><td>12</td><td>2,483</td></tr>
+<tr><td>65.990K</td><td>5,133</td><td>2.438%</td><td>4,041</td><td>1,092</td><td>324</td><td>70</td><td>8</td><td>563</td></tr>
+<tr><td>69.510K</td><td>5,392</td><td>2.561%</td><td>4,551</td><td>841</td><td>532</td><td>361</td><td>7</td><td>822</td></tr>
+<tr><th>總計</th><th>29,592</th><th>2.811%</th><th>23,748</th><th>5,844</th><th>3,903</th><th>635</th><th>45</th><th>6,742</th></tr>
+</table>
+</div>
+
+<div class="note">
+<p><strong>判讀重點：</strong>63.990K 的真正缺漏最多（7,053 筆）；61.670K 與 63.990K 有較多測站個別的缺漏。
+69.510K 雖有 361 段連續缺漏，但多為短暫中斷，不能只用「段數」比較資料品質。
+五站同時缺漏佔所有真正缺漏的 22,850／29,592 筆（77.22%），處理時應視為共同來源或系統性中斷的可能訊號。</p>
+</div>
+
+<h3>五站同時缺漏：最長六個時段</h3>
+
+<p>以下「最後缺漏」仍是缺漏的五分鐘時間點，並非下一個有效資料點；持續時數依缺漏格數 × 5 分鐘計算。</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>開始時間</th><th>最後缺漏時間</th><th>五分鐘格數</th><th>持續時數</th><th>主因</th></tr>
+<tr><td>2024-11-27 08:05</td><td>2024-12-03 15:30</td><td>1,818</td><td>151.50</td><td>VD_ABSENT</td></tr>
+<tr><td>2024-12-05 08:05</td><td>2024-12-09 11:05</td><td>1,189</td><td>99.08</td><td>VD_ABSENT</td></tr>
+<tr><td>2024-11-24 02:05</td><td>2024-11-25 11:55</td><td>407</td><td>33.92</td><td>VD_ABSENT</td></tr>
+<tr><td>2025-12-16 15:05</td><td>2025-12-17 10:35</td><td>235</td><td>19.58</td><td>VD_ABSENT</td></tr>
+<tr><td>2025-03-16 07:35</td><td>2025-03-16 23:55</td><td>197</td><td>16.42</td><td>FILE_UNAVAILABLE</td></tr>
+<tr><td>2024-01-11 15:25</td><td>2024-01-11 23:55</td><td>103</td><td>8.58</td><td>FILE_UNAVAILABLE</td></tr>
+</table>
+</div>
+
+<h3>各 VD 額外需要注意的長缺漏</h3>
+
+<p>下表著重於 <code>OFFICIAL_NA</code>：官方 XML 有該 VD，卻沒有有效速度。這類事件與五站同時消失的 <code>VD_ABSENT</code> 應分開處理。</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>測站</th><th>開始</th><th>最後缺漏</th><th>連續時數</th><th>類型</th></tr>
+<tr><td>61.000K</td><td>2024-08-25 12:50</td><td>2024-08-27 11:40</td><td>46.92</td><td>OFFICIAL_NA</td></tr>
+<tr><td>61.000K</td><td>2025-12-12 00:05</td><td>2025-12-12 06:20</td><td>6.33</td><td>OFFICIAL_NA</td></tr>
+<tr><td>61.670K</td><td>2025-05-09 10:40</td><td>2025-05-12 15:25</td><td>76.83</td><td>OFFICIAL_NA</td></tr>
+<tr><td>61.670K</td><td>2024-08-25 13:00</td><td>2024-08-27 11:40</td><td>46.75</td><td>OFFICIAL_NA</td></tr>
+<tr><td>61.670K</td><td>2025-02-04 13:55</td><td>2025-02-05 14:05</td><td>24.25</td><td>OFFICIAL_NA</td></tr>
+<tr><td>63.990K</td><td>2024-01-27 12:30</td><td>2024-02-01 15:30</td><td>123.08</td><td>OFFICIAL_NA</td></tr>
+<tr><td>63.990K</td><td>2025-06-25 14:55</td><td>2025-06-26 11:00</td><td>20.17</td><td>OFFICIAL_NA</td></tr>
+<tr><td>63.990K</td><td>2024-02-26 04:10</td><td>2024-02-26 12:45</td><td>8.67</td><td>OFFICIAL_NA</td></tr>
+<tr><td>65.990K</td><td>2025-06-10 01:20</td><td>2025-06-10 09:25</td><td>8.17</td><td>OFFICIAL_NA</td></tr>
+<tr><td>65.990K</td><td>2025-07-22 09:10</td><td>2025-07-22 15:50</td><td>6.75</td><td>OFFICIAL_NA</td></tr>
+<tr><td>69.510K</td><td>2025-06-10 01:20</td><td>2025-06-10 09:25</td><td>8.17</td><td>OFFICIAL_NA</td></tr>
+<tr><td>69.510K</td><td>2025-06-10 10:50</td><td>2025-06-10 16:15</td><td>5.50</td><td>OFFICIAL_NA</td></tr>
+</table>
+</div>
+
+<div class="warning">
+<strong>建模提醒：</strong>
+2024 年 11 月、12 月真正缺漏率分別約為 17.00% 和 22.64%，遠高於全年平均；
+若不先處理長段共同缺漏，插補、時間序列切窗與模型績效評估容易失真。
+進行任何速度平均、壅塞門檻或模型訓練前，應依 VDType 與 Speed 狀態篩選，
+並留意 <code>RECOVERED_P1</code> 的未來資訊使用風險。
+</div>
+
+<h3>下載完整缺漏時段</h3>
+
+<p>網頁列出重點時段；完整清單可下載 CSV，包含每一段的開始時間、最後缺漏時間、右開結束時間、五分鐘格數、時數與缺漏原因。</p>
+
+<ul>
+<li><a href="vd_audit/VD_missing_runs_2024_2025.csv" download>每支 VD 的所有連續真正缺漏（635 段，CSV）</a></li>
+<li><a href="vd_audit/VD_simultaneous_missing_runs_2024_2025.csv" download>至少 2／3／4／5 支同時缺漏的所有連續時段（CSV）</a></li>
+</ul>
+
+<p>資料稽核基準：<code>VD_N3_N_2024_2025_LITE.parquet</code>；範圍為 2024-01-01 至 2025-12-31 的五分鐘網格。時間以原始資料的臺灣當地時間表示，稽核整理日期：2026-10-29。</p>
+
+</section>
 
 <!-- =====================================================
      與 V2_LITE
