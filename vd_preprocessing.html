@@ -174,8 +174,40 @@
       <section id="results">
         <h2>四、不同缺漏長度的實測效果</h2>
         <p>同一情境中，<strong>最低 MAE</strong> 的方法和 <strong>最高壅塞 F1</strong> 的方法可能不同。兩者都必須看，因為研究最終關心 OD 和壅塞，而不只是速度曲線漂不漂亮。</p>
-        <div class="note"><strong>新增「筆數」的讀法：</strong>「測試 60 筆」表示人工遮罩後，原本有真實速度可供對照的 60 筆資料；「真塞 12 筆」表示其中有 12 筆真實速度低於 40 km/h；「找回 3／12」表示該列<strong>最高 F1 方法</strong>成功找回 3 筆真壅塞。這些是人工遮罩<strong>評估樣本</strong>，不是原始資料真正缺值的 29,592 筆；不同長度的評估樣本也不能簡單相加當作獨立資料。</div>
-        <h3>只有 1 支 VD 缺值</h3>
+        <div class="note"><strong>先分清楚「段數」與「筆數」：</strong>人工遮罩 1 段 15 分鐘只有 3 個五分鐘時點，1 段 72 小時則有 864 個時點。因此長缺漏的「測試筆數」雖然大，卻不代表有較多獨立事件。先前每種缺漏長度與取樣情境僅遮罩 <strong>4 段</strong>；新版短缺口增加到 <strong>50 段</strong>。兩批的遮罩日期不同，數字不能直接合併。</div>
+        <h3>新版：加大短缺口樣本（每種情境 50 段）</h3>
+        <p>固定以 <strong>2024 年訓練、2025 年人工遮罩評估</strong>，重跑九種補值方法。每個缺漏長度內，遮罩事件彼此至少相隔「缺漏長度＋一天」。下表主要看刻意納入較多壅塞時段的測試，並以<strong>整段遮罩為單位</strong>重抽樣 3,000 次計算 F1 的 95% 信賴區間。</p>
+        <div class="table-wrap"><table class="preprocess-table">
+          <thead><tr><th>缺漏長度</th><th>缺站</th><th>遮罩段數</th><th>測試／真塞</th><th>最低 MAE 方法（km/h）</th><th>最高 F1 方法</th><th>F1（95% 區間）</th><th>Recall／找回</th></tr></thead>
+          <tbody>
+            <tr><td>15 分鐘</td><td>1 站</td><td>50</td><td>750／213</td><td>線性插值（8.985）</td><td><strong>線性插值</strong></td><td><strong>0.702</strong>（0.608–0.784）</td><td>0.676；144／213 筆</td></tr>
+            <tr><td>15 分鐘</td><td>5 站</td><td>50</td><td>750／213</td><td>線性插值（8.985）</td><td><strong>線性插值</strong></td><td><strong>0.702</strong>（0.602–0.782）</td><td>0.676；144／213 筆</td></tr>
+            <tr><td>1 小時</td><td>1 站</td><td>50</td><td>2,999／644</td><td>時空 Ridge（10.939）</td><td><strong>線性插值</strong></td><td><strong>0.603</strong>（0.471–0.705）</td><td>0.539；347／644 筆</td></tr>
+            <tr><td>1 小時</td><td>5 站</td><td>50</td><td>2,999／644</td><td>線性插值（11.706）</td><td><strong>線性插值</strong></td><td><strong>0.603</strong>（0.471–0.702）</td><td>0.539；347／644 筆</td></tr>
+          </tbody>
+        </table></div>
+        <h3>同樣 50 段：一般時段的對照</h3>
+        <div class="table-wrap"><table class="preprocess-table">
+          <thead><tr><th>缺漏長度</th><th>缺站</th><th>測試／真塞</th><th>最低 MAE 方法（km/h）</th><th>最高 F1 方法</th><th>F1（95% 區間）</th><th>Recall／找回</th></tr></thead>
+          <tbody>
+            <tr><td>15 分鐘</td><td>1 站</td><td>750／42</td><td>Random Forest（5.916）</td><td>線性插值</td><td>0.732（0.381–0.909）</td><td>0.619；26／42 筆</td></tr>
+            <tr><td>15 分鐘</td><td>5 站</td><td>750／42</td><td>線性插值（5.917）</td><td>線性插值</td><td>0.732（0.375–0.913）</td><td>0.619；26／42 筆</td></tr>
+            <tr><td>1 小時</td><td>1 站</td><td>3,000／49</td><td>KNN（4.790）</td><td>ASM</td><td>0.822（0.000–0.863）</td><td>0.898；44／49 筆</td></tr>
+            <tr><td>1 小時</td><td>5 站</td><td>3,000／49</td><td>ASM（5.322）</td><td>ASM</td><td>0.824（0.000–0.866）</td><td>0.857；42／49 筆</td></tr>
+          </tbody>
+        </table></div>
+        <p class="table-note">一般時段與壅塞加強時段分別抽樣，不能直接合併成真實道路壅塞率。尤其一般時段 1 小時只有 49 筆真壅塞，F1 信賴區間很寬；高分不等於穩定。所有方法需同時檢查 Coverage。</p>
+        <p class="fine-print">可下載 <a href="analysis/vd_robust_short_20261029_metrics.csv">九方法完整數值與區間（CSV）</a>、<a href="analysis/vd_robust_short_20261029_pairwise.csv">KNN 與線性插值配對比較（CSV）</a>；重跑指令、版本與方法說明見 <a href="https://github.com/aishanchung/Statistical-Practice/blob/%E8%B3%87%E6%96%99%E6%AC%84%E4%BD%8D%E7%9B%B8%E9%97%9C%E6%96%87%E4%BB%B6/analysis/README.md" target="_blank" rel="noopener noreferrer">GitHub 實驗紀錄</a>。</p>
+        <h3>問題釐清：15 分鐘到底 KNN 還是線性插值比較好？</h3>
+        <div class="table-wrap"><table class="preprocess-table">
+          <thead><tr><th>壅塞加強測試</th><th>線性插值 F1</th><th>KNN F1</th><th>KNN − 線性 F1（95% 區間）</th><th>初步判斷</th></tr></thead>
+          <tbody>
+            <tr><td>15 分鐘，1 站缺</td><td><strong>0.702</strong></td><td>0.504</td><td>−0.198（−0.285～−0.127）</td><td>線性插值較佳</td></tr>
+            <tr><td>1 小時，1 站缺</td><td>0.603</td><td>0.598</td><td>−0.005（−0.073～0.073）</td><td>差異不明顯</td></tr>
+          </tbody>
+        </table></div>
+        <div class="note"><strong>新版小結：</strong>15 分鐘即使增加遮罩事件，離線線性插值仍比歷史相似 KNN 更容易找回壅塞；1 小時單站缺漏兩者非常接近，不應僅憑第一輪 4 段遮罩決定方法。這裡是<strong>九方法、短缺口的擴樣驗證</strong>，不是對 6–151.5 小時或 GP／Kriging 的全面重跑；挑選最高分方法仍是探索性結果，後續需再驗證壅塞事件起訖。</div>
+        <h3>第一輪探索性結果：只有 1 支 VD 缺值</h3>
         <div class="table-wrap"><table class="preprocess-table">
           <thead><tr><th>缺漏長度與測試筆數</th><th>最低 MAE 方法</th><th>MAE</th><th>最高 F1 方法</th><th>F1</th><th>Recall 與成功找回筆數</th></tr></thead>
           <tbody>
@@ -188,7 +220,7 @@
           </tbody>
         </table></div>
         <p class="table-note">MAE 單位 km/h；15 分鐘／1 小時／24 小時來自九方法測試，6／72／151.5 小時來自包含 GP、Kriging 的十一方法共同測試。</p>
-        <h3>五支 VD 同時缺值</h3>
+        <h3>第一輪探索性結果：五支 VD 同時缺值</h3>
         <div class="table-wrap"><table class="preprocess-table">
           <thead><tr><th>缺漏長度與測試筆數</th><th>最低 MAE 方法</th><th>MAE</th><th>最高 F1 方法</th><th>F1</th><th>Recall 與成功找回筆數</th></tr></thead>
           <tbody>
