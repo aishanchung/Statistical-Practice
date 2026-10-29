@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>傳統統計模型｜國道瓶頸資料專案</title><link rel="stylesheet" href="style.css"><style>
+.page-intro{max-width:920px;line-height:1.85}.research-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:16px;margin:20px 0}.research-card{padding:20px;background:#fff;border:1px solid #dce3e9;border-radius:10px}.research-card h3{margin:0 0 10px;color:#245c8a}.research-card p{margin:0;line-height:1.8}.research-metric{font-weight:750;font-size:27px;color:#245c8a}.research-muted{color:#627282;font-size:14px}.research-table{width:100%;border-collapse:collapse;min-width:560px}.research-table th,.research-table td{border:1px solid #dce3e9;padding:12px;text-align:left;vertical-align:top}.research-table th{background:#eef5fb;color:#245c8a}.research-scroll{overflow-x:auto}.research-note{background:#eef5fb;border-left:4px solid #245c8a;padding:16px 20px;margin:16px 0;border-radius:6px;line-height:1.8}.research-warning{background:#fff8e8;border-left-color:#c18a1c}.research-section{margin:30px 0}.research-section p,.research-section li{line-height:1.85}.research-section li{margin-bottom:7px}.research-pills{display:flex;flex-wrap:wrap;gap:9px;margin:15px 0}.research-pill{background:#eaf3fb;border-radius:30px;padding:5px 13px;font-size:13px;color:#245c8a}.research-link{color:#245c8a;font-weight:600}
+</style></head>
+<body><button class="mobile-menu-button" onclick="toggleSidebar()">☰</button>
+<aside class="sidebar" id="sidebar"><div class="sidebar-brand"><h1>國道瓶頸資料專案</h1><p>統計實務</p></div>
+<div class="sidebar-section-title">首頁</div>
+<a href="index.html">專案概述</a>
+<div class="sidebar-section-title">資料</div>
+<a href="v1_full.html">V1_FULL</a>
+<a href="v1_lite.html">V1_LITE</a>
+<a href="vd.html">VD</a>
+<a href="v2_lite.html">V2_LITE</a>
+<div class="sidebar-section-title">研究方法與分析</div>
+<a href="eda.html">EDA 探索分析</a>
+<a href="od_clustering.html">OD 分群</a>
+<a href="statistical_models.html"  class="active">傳統統計模型</a>
+<a href="machine_learning.html">機器學習模型</a>
+<div class="sidebar-section-title">進度與報告</div>
+<a href="progress.html">研究進度</a>
+<a href="reports.html">報告簡報</a>
+</aside>
+<div class="main"><header class="page-header"><h1>傳統統計模型</h1><p>Logistic Regression 與未來低速風險預測架構</p></header><main class="content"><section class="research-section"><h2>研究定位</h2><p class="page-intro">傳統統計模型將以 <strong>Logistic Regression（二元羅吉斯迴歸）</strong>作為低速事件預測的基準，重點是估計可解釋的條件關聯，並與後續樹模型比較。</p><div class="research-note research-warning"><strong>目前進度：</strong>已列入研究架構，尚未進行正式模型估計，也沒有係數、勝算比或模型效能結果。</div></section><section class="research-section"><h2>預測問題設計</h2><p>在時間點 t 使用截至該時點可取得的資訊，預測未來 15、30 或 60 分鐘是否發生低速事件。</p><div class="research-note"><strong>模型示意：</strong><code>logit[P(Y(t+h)=1 | X(t))] = β₀ + βᵀX(t)</code><br>其中 h 可為 15、30、60 分鐘；低速門檻及標籤定義仍待確認。</div></section><section class="research-section"><h2>候選解釋變數</h2><div class="research-grid"><div class="research-card"><h3>時間與日曆</h3><p>小時、星期、一般週末／連假、假期階段。</p></div><div class="research-card"><h3>歷史 VD</h3><p>已觀測的速度、佔有率與滯後交通狀態。</p></div><div class="research-card"><h3>需求與天氣</h3><p>總旅次量、降雨、氣溫及其他可於預測時取得的資訊。</p></div><div class="research-card"><h3>OD 群組</h3><p>各 OD 群組需求量、比例或變化率，用以衡量額外預測資訊。</p></div></div></section><section class="research-section"><h2>預計比較方式</h2><div class="research-scroll"><table class="research-table"><thead><tr><th>模型</th><th>特徵</th><th>目的</th></tr></thead><tbody><tr><td>基準模型</td><td>時間、日曆、氣象、總需求、歷史 VD</td><td>建立可解釋的低速預測基線</td></tr><tr><td>OD 擴充模型</td><td>基準模型 + OD 群組特徵</td><td>檢驗 OD 組成是否帶來額外預測價值</td></tr></tbody></table></div><p>評估時應按日期先後切分訓練與測試資料，避免使用未來資訊。模型係數代表控制其他條件後的關聯，不應直接解讀為因果效果。</p></section>
+<div class="research-note"><strong>資料基準：</strong>2026/10/22 統計實務研究進度簡報。<a class="research-link" href="reports.html">查看每週報告簡報</a>。</div>
+</main></div><footer>統計實務 — 傳統統計模型</footer><script src="script.js"></script></body></html>

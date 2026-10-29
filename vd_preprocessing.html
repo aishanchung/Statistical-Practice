@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="國道三號北向 VD 缺值處理、11 種補值方法最終擴樣比較、整段壅塞 Y 定義與 M0–M3 模型。">
+<title>VD 資料預處理｜國道瓶頸資料專案</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .sidebar a.subnav-link{padding-left:42px;font-size:.94rem;border-left-color:transparent}
+  .note-block{background:#eff5fa;border-left:4px solid #245c8a;border-radius:9px;padding:17px 22px;margin:12px 0 25px}
+  .note-block p{margin:5px 0}
+  .mini-toc{display:flex;flex-wrap:wrap;gap:8px 17px;margin:15px 0 28px}
+  .mini-toc a{text-decoration:none;color:#245c8a;font-weight:600}
+  section{margin:30px 0 38px}
+  section h2{margin-bottom:14px}
+  .statline{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:17px 0}
+  .statbox{background:white;border:1px solid #dce3e9;border-radius:9px;padding:15px 17px}
+  .statbox small{display:block;color:#667788}
+  .statbox strong{font-size:1.7rem;color:#245c8a}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:12px 0}
+  .compact{width:100%;border-collapse:collapse;font-size:.95rem;min-width:590px}
+  .compact th,.compact td{border:1px solid #dce3e9;padding:10px 12px;text-align:left;vertical-align:top}
+  .compact th{background:#eaf3fb;color:#24313d;font-weight:700}
+  .compact td.num,.compact th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .compact tbody tr:nth-child(even){background:#f8fafc}
+  .focusrow{background:#eaf7f0!important}
+  .small{font-size:.89rem;color:#667788}
+  .mathbox{overflow-x:auto;background:#fff;border:1px solid #dce3e9;border-radius:10px;padding:16px 20px;margin:13px 0 16px}
+  .formula{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:1.18rem;line-height:2;white-space:nowrap;text-align:center}
+  .formula.subline{font-size:1.05rem;text-align:left}
+  .formula small{font-size:.77em}
+  .formula sup,.formula sub{font-size:.68em}
+  .formula .summ{font-size:1.45em;vertical-align:middle}
+  .formula .frac{display:inline-flex;vertical-align:middle;flex-direction:column;align-items:stretch;text-align:center;line-height:1.2}
+  .formula .frac .top{border-bottom:1px solid currentColor;padding:0 8px 3px}
+  .formula .frac .bottom{padding:4px 8px 0}
+  .definition{background:#f8fafc;border:1px solid #dce3e9;border-radius:9px;padding:13px 17px;margin:12px 0}
+  .equation-key{display:grid;grid-template-columns:minmax(90px,130px) 1fr;gap:7px 14px;margin:10px 0}
+  .equation-key dt{font-weight:700;color:#245c8a}
+  .equation-key dd{margin:0}
+  .model-card{border:1px solid #dce3e9;border-radius:11px;background:white;margin:13px 0;padding:16px 18px}
+  .model-card h3{margin:0 0 5px;font-size:1.08rem}
+  .model-card p{margin:5px 0}
+  .model-card .formula{font-size:1.07rem;text-align:left}
+  .muted-label{display:inline-block;padding:2px 8px;border-radius:5px;background:#eaf3fb;color:#245c8a;font-size:.83rem;font-weight:700}
+  .section-note{font-size:.9rem;color:#667788}
+  @media(max-width:650px){
+    .compact{font-size:.85rem}
+    .compact th,.compact td{padding:9px 8px}
+    .statline{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .statbox strong{font-size:1.45rem}
+    .mathbox{padding:11px 12px}
+    .formula{font-size:1.04rem}
+    .model-card .formula{font-size:1.03rem}
+    .equation-key{grid-template-columns:1fr;gap:2px}
+  }
+  details.result-details{border:1px solid #dce3e9;border-radius:9px;margin:13px 0;background:#fff;overflow:hidden}
+  details.result-details summary{padding:13px 16px;cursor:pointer;font-size:.94rem;line-height:1.6;background:#f3f8fc}
+  details.result-details .table-wrap{margin:0;padding:8px}
+  .result-table{min-width:730px;font-size:.89rem}
+  .result-table th,.result-table td{padding:7px 9px}
+  .method-table{min-width:760px;font-size:.9rem}
+  .method-table th,.method-table td{padding:8px 10px}
+</style>
+</head>
+<body>
+<button class="mobile-menu-button" onclick="toggleSidebar()" aria-label="開啟選單">☰</button>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><h1>國道瓶頸資料專案</h1><p>統計實務</p></div>
+    <div class="sidebar-section-title">首頁</div>
+    <a href="index.html">專案概述</a>
+    <div class="sidebar-section-title">資料</div>
+    <a href="v1_full.html">V1_FULL</a><a href="v1_lite.html">V1_LITE</a><a href="vd.html">VD</a><a href="v2_lite.html">V2_LITE</a>
+    <div class="sidebar-section-title">研究方法與分析</div>
+    <a href="eda.html">EDA 探索分析</a><a href="od_clustering.html">OD 分群</a><a href="statistical_models.html">傳統統計模型</a><a href="machine_learning.html">機器學習模型</a>
+    <div class="sidebar-section-title">進度與報告</div>
+    <a href="progress.html">研究進度</a>
+    <a href="vd_preprocessing.html" class="active subnav-link" aria-current="page">↳ VD 資料預處理</a>
+    <a href="reports.html">報告簡報</a>
+  </aside>
+<div class="main">
+<header class="page-header">
+ <p class="small">2026 / 10 / 29 · 現行研究方案</p>
+ <h1>VD 資料預處理</h1>
+ <p>國道三號北向五站 VD：缺值處理、壅塞指標 Y 與 M0–M3 預測模型。</p>
+</header>
+<main class="content">
+<div class="note-block">
+ <strong>目前採用原則</strong>
+ <p>短缺口優先比較線性插值與 KNN；五站長時間同缺不強制補滿。保留原始缺值標記，並比較不補、選擇性補值、完整補值三個資料版本。若補值無法改善壅塞辨識或下游預測，就以不補值版本為主。</p>
+</div>
+<nav class="mini-toc" aria-label="本頁章節">
+ <a href="#missing">缺值統計</a><a href="#benchmark">補值實測</a><a href="#policy">處理方式</a><a href="#target">壅塞 Y</a><a href="#models">M0–M3 模型</a><a href="#validation">比較原則</a>
+</nav>
+
+<section id="missing">
+<h2>一、VD 缺值統計</h2>
+<p>2024–2025 年，每 5 分鐘一筆；五站里程：69.510K、65.990K、63.990K、61.670K、61.000K。</p>
+<div class="statline">
+ <div class="statbox"><small>完整資料網格</small><strong>1,052,640</strong><small>站 × 五分鐘</small></div>
+ <div class="statbox"><small>真正缺值</small><strong>29,592</strong><small>2.81%</small></div>
+ <div class="statbox"><small>五站同缺</small><strong>22,850</strong><small>占真正缺值 77.22%</small></div>
+ <div class="statbox"><small>最長共同缺漏</small><strong>151.5</strong><small>小時</small></div>
+</div>
+<div class="table-wrap"><table class="compact">
+ <thead><tr><th>同時缺值測站數</th><th class="num">五分鐘時點</th><th class="num">缺值筆數</th><th class="num">缺值比例</th></tr></thead>
+ <tbody>
+ <tr><td>1 站</td><td class="num">4,516</td><td class="num">4,516</td><td class="num">15.26%</td></tr>
+ <tr><td>2–4 站</td><td class="num">1,004</td><td class="num">2,226</td><td class="num">7.52%</td></tr>
+ <tr><td>5 站</td><td class="num">4,570</td><td class="num">22,850</td><td class="num">77.22%</td></tr>
+ <tr><th>合計</th><th class="num">10,090</th><th class="num">29,592</th><th class="num">100%</th></tr>
+ </tbody></table></div>
+<p class="section-note">「時點」是同一個五分鐘區間；「缺值筆數」是測站與時間的組合。原始「未提供資料」與「無車通過（例如速度 -1）」分開記錄，後者不得直接判成壅塞。</p>
+<p>缺漏長度橫跨 5 分鐘至 151.5 小時；其中兩段超過 72 小時的五站共同缺漏，合計 15,035 筆，已占所有真正缺值的 <strong>50.8%</strong>。詳細逐站及起訖事件可見 <a href="vd.html#vd-missing-audit">VD 資料稽核</a>。</p>
+</section>
+
+<section id="benchmark">
+<h2>二、11 種補值方法的擴樣實測</h2>
+<p>2024 年建立模型；在 2025 年已知真值資料上人工挖洞。短缺口每種取樣情境使用 <strong>50 段</strong>，下方顯示壅塞加強測試（壅塞：速度 &lt; 40 km/h）。</p>
+<div class="note-block"><p><strong>為什麼單站與五站的線性插值完全相同？</strong>這兩種實驗刻意使用相同時間區塊，並涵蓋相同五支目標 VD；線性插值只參考<strong>該站缺口前後</strong>的實測速度，不看其他站，所以結果相同。兩組不是獨立樣本，也不是誤貼。</p></div>
+<p class="section-note">展開以下各組可看到全部 11 種方法。MAE 越低越好；Recall、F1 越高越好。可補率 0% 代表無法推估，與 F1=0 不同。「找回／真塞」的分母按各方法可評分的觀測計算。</p>
+<details class="result-details" open><summary><strong>15 分鐘／1 站同缺</strong>｜測試 750 筆、真壅塞 213 筆｜最高 F1：線性插值 0.702</summary><div class="table-wrap"><table class="compact result-table"><thead><tr><th>補值方法</th><th class="num">有效筆數</th><th class="num">找回／真塞</th><th class="num">MAE↓</th><th class="num">Recall↑</th><th class="num">F1↑</th><th class="num">可補率</th></tr></thead><tbody><tr class="focusrow"><td><strong>線性插值</strong></td><td class="num">750</td><td class="num">144/213</td><td class="num">8.985</td><td class="num">0.676</td><td class="num">0.702</td><td class="num">100.0%</td></tr><tr><td>時空 Kriging</td><td class="num">750</td><td class="num">122/213</td><td class="num">9.895</td><td class="num">0.573</td><td class="num">0.652</td><td class="num">100.0%</td></tr><tr><td>多尺度 GP</td><td class="num">750</td><td class="num">96/213</td><td class="num">10.804</td><td class="num">0.451</td><td class="num">0.568</td><td class="num">100.0%</td></tr><tr><td>時空 Ridge</td><td class="num">750</td><td class="num">91/213</td><td class="num">11.280</td><td class="num">0.427</td><td class="num">0.555</td><td class="num">100.0%</td></tr><tr><td>Random Forest</td><td class="num">750</td><td class="num">82/213</td><td class="num">12.235</td><td class="num">0.385</td><td class="num">0.509</td><td class="num">100.0%</td></tr><tr><td>歷史相似 KNN</td><td class="num">750</td><td class="num">87/213</td><td class="num">13.614</td><td class="num">0.408</td><td class="num">0.504</td><td class="num">100.0%</td></tr><tr><td>ASM（實測觀測）</td><td class="num">750</td><td class="num">82/213</td><td class="num">13.520</td><td class="num">0.385</td><td class="num">0.503</td><td class="num">100.0%</td></tr><tr><td>ASM＋歷史備援</td><td class="num">750</td><td class="num">82/213</td><td class="num">13.520</td><td class="num">0.385</td><td class="num">0.503</td><td class="num">100.0%</td></tr><tr><td>距離加權 IDW</td><td class="num">750</td><td class="num">96/213</td><td class="num">15.789</td><td class="num">0.451</td><td class="num">0.501</td><td class="num">100.0%</td></tr><tr><td>空間 Ridge</td><td class="num">750</td><td class="num">50/213</td><td class="num">14.351</td><td class="num">0.235</td><td class="num">0.345</td><td class="num">100.0%</td></tr><tr><td>歷史同期中位數</td><td class="num">750</td><td class="num">21/213</td><td class="num">23.029</td><td class="num">0.099</td><td class="num">0.169</td><td class="num">100.0%</td></tr></tbody></table></div></details>
+<details class="result-details"><summary><strong>15 分鐘／5 站同缺</strong>｜測試 750 筆、真壅塞 213 筆｜最高 F1：線性插值 0.702</summary><div class="table-wrap"><table class="compact result-table"><thead><tr><th>補值方法</th><th class="num">有效筆數</th><th class="num">找回／真塞</th><th class="num">MAE↓</th><th class="num">Recall↑</th><th class="num">F1↑</th><th class="num">可補率</th></tr></thead><tbody><tr class="focusrow"><td><strong>線性插值</strong></td><td class="num">750</td><td class="num">144/213</td><td class="num">8.985</td><td class="num">0.676</td><td class="num">0.702</td><td class="num">100.0%</td></tr><tr><td>時空 Kriging</td><td class="num">750</td><td class="num">109/213</td><td class="num">9.780</td><td class="num">0.512</td><td class="num">0.614</td><td class="num">100.0%</td></tr><tr><td>多尺度 GP</td><td class="num">750</td><td class="num">84/213</td><td class="num">11.543</td><td class="num">0.394</td><td class="num">0.520</td><td class="num">100.0%</td></tr><tr><td>ASM（實測觀測）</td><td class="num">750</td><td class="num">82/213</td><td class="num">12.962</td><td class="num">0.385</td><td class="num">0.498</td><td class="num">100.0%</td></tr><tr><td>ASM＋歷史備援</td><td class="num">750</td><td class="num">82/213</td><td class="num">12.962</td><td class="num">0.385</td><td class="num">0.498</td><td class="num">100.0%</td></tr><tr><td>Random Forest</td><td class="num">750</td><td class="num">52/213</td><td class="num">16.618</td><td class="num">0.244</td><td class="num">0.375</td><td class="num">100.0%</td></tr><tr><td>時空 Ridge</td><td class="num">750</td><td class="num">39/213</td><td class="num">15.721</td><td class="num">0.183</td><td class="num">0.288</td><td class="num">100.0%</td></tr><tr><td>歷史同期中位數</td><td class="num">750</td><td class="num">21/213</td><td class="num">23.029</td><td class="num">0.099</td><td class="num">0.169</td><td class="num">100.0%</td></tr><tr><td>歷史相似 KNN</td><td class="num">750</td><td class="num">10/213</td><td class="num">20.841</td><td class="num">0.047</td><td class="num">0.087</td><td class="num">100.0%</td></tr><tr><td>距離加權 IDW</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0.0%</td></tr><tr><td>空間 Ridge</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0.0%</td></tr></tbody></table></div></details>
+<details class="result-details"><summary><strong>1 小時／1 站同缺</strong>｜測試 2,999 筆、真壅塞 644 筆｜最高 F1：線性插值 0.603</summary><div class="table-wrap"><table class="compact result-table"><thead><tr><th>補值方法</th><th class="num">有效筆數</th><th class="num">找回／真塞</th><th class="num">MAE↓</th><th class="num">Recall↑</th><th class="num">F1↑</th><th class="num">可補率</th></tr></thead><tbody><tr class="focusrow"><td><strong>線性插值</strong></td><td class="num">2,999</td><td class="num">347/644</td><td class="num">11.706</td><td class="num">0.539</td><td class="num">0.603</td><td class="num">100.0%</td></tr><tr><td>歷史相似 KNN</td><td class="num">2,999</td><td class="num">332/644</td><td class="num">11.632</td><td class="num">0.516</td><td class="num">0.598</td><td class="num">100.0%</td></tr><tr><td>時空 Kriging</td><td class="num">2,999</td><td class="num">288/644</td><td class="num">11.240</td><td class="num">0.447</td><td class="num">0.567</td><td class="num">100.0%</td></tr><tr><td>距離加權 IDW</td><td class="num">2,999</td><td class="num">340/644</td><td class="num">13.524</td><td class="num">0.528</td><td class="num">0.561</td><td class="num">100.0%</td></tr><tr><td>多尺度 GP</td><td class="num">2,999</td><td class="num">269/644</td><td class="num">11.183</td><td class="num">0.418</td><td class="num">0.540</td><td class="num">100.0%</td></tr><tr><td>Random Forest</td><td class="num">2,999</td><td class="num">253/644</td><td class="num">11.880</td><td class="num">0.393</td><td class="num">0.520</td><td class="num">100.0%</td></tr><tr><td>時空 Ridge</td><td class="num">2,999</td><td class="num">244/644</td><td class="num">10.938</td><td class="num">0.379</td><td class="num">0.520</td><td class="num">100.0%</td></tr><tr><td>ASM（實測觀測）</td><td class="num">2,999</td><td class="num">243/644</td><td class="num">13.004</td><td class="num">0.377</td><td class="num">0.499</td><td class="num">100.0%</td></tr><tr><td>ASM＋歷史備援</td><td class="num">2,999</td><td class="num">243/644</td><td class="num">13.004</td><td class="num">0.377</td><td class="num">0.499</td><td class="num">100.0%</td></tr><tr><td>空間 Ridge</td><td class="num">2,997</td><td class="num">192/643</td><td class="num">12.140</td><td class="num">0.299</td><td class="num">0.427</td><td class="num">99.9%</td></tr><tr><td>歷史同期中位數</td><td class="num">2,999</td><td class="num">129/644</td><td class="num">17.714</td><td class="num">0.200</td><td class="num">0.301</td><td class="num">100.0%</td></tr></tbody></table></div></details>
+<details class="result-details"><summary><strong>1 小時／5 站同缺</strong>｜測試 2,999 筆、真壅塞 644 筆｜最高 F1：線性插值 0.603</summary><div class="table-wrap"><table class="compact result-table"><thead><tr><th>補值方法</th><th class="num">有效筆數</th><th class="num">找回／真塞</th><th class="num">MAE↓</th><th class="num">Recall↑</th><th class="num">F1↑</th><th class="num">可補率</th></tr></thead><tbody><tr class="focusrow"><td><strong>線性插值</strong></td><td class="num">2,999</td><td class="num">347/644</td><td class="num">11.706</td><td class="num">0.539</td><td class="num">0.603</td><td class="num">100.0%</td></tr><tr><td>多尺度 GP</td><td class="num">2,999</td><td class="num">240/644</td><td class="num">12.673</td><td class="num">0.373</td><td class="num">0.499</td><td class="num">100.0%</td></tr><tr><td>ASM（實測觀測）</td><td class="num">2,999</td><td class="num">221/644</td><td class="num">12.697</td><td class="num">0.343</td><td class="num">0.475</td><td class="num">100.0%</td></tr><tr><td>ASM＋歷史備援</td><td class="num">2,999</td><td class="num">221/644</td><td class="num">12.697</td><td class="num">0.343</td><td class="num">0.475</td><td class="num">100.0%</td></tr><tr><td>時空 Kriging</td><td class="num">2,999</td><td class="num">201/644</td><td class="num">13.441</td><td class="num">0.312</td><td class="num">0.450</td><td class="num">100.0%</td></tr><tr><td>Random Forest</td><td class="num">2,999</td><td class="num">139/644</td><td class="num">15.588</td><td class="num">0.216</td><td class="num">0.333</td><td class="num">100.0%</td></tr><tr><td>時空 Ridge</td><td class="num">2,999</td><td class="num">141/644</td><td class="num">15.729</td><td class="num">0.219</td><td class="num">0.330</td><td class="num">100.0%</td></tr><tr><td>歷史同期中位數</td><td class="num">2,999</td><td class="num">129/644</td><td class="num">17.714</td><td class="num">0.200</td><td class="num">0.301</td><td class="num">100.0%</td></tr><tr><td>歷史相似 KNN</td><td class="num">2,999</td><td class="num">60/644</td><td class="num">17.047</td><td class="num">0.093</td><td class="num">0.164</td><td class="num">100.0%</td></tr><tr><td>距離加權 IDW</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0.0%</td></tr><tr><td>空間 Ridge</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0.0%</td></tr></tbody></table></div></details>
+<p><strong>目前結論：</strong>15 分鐘缺漏以線性插值的壅塞 F1 較佳；1 小時單站時，線性插值與 KNN 接近（0.603 對 0.598）。五站同缺時 KNN 明顯退步，IDW 與純空間 Ridge 不能使用；GP、Kriging 在本次設定下亦未改善壅塞 F1。</p>
+<p class="section-note">上方為已完成的 15 分鐘及 1 小時擴樣結果；長缺漏新結果另列於下方，彼此分開解讀。<a href="analysis/vd_robust_short_11methods_20261029_metrics.csv">完整 CSV（含 2–4 站、一般時段及信賴區間）</a>。</p>
+<h3 id="long-gap-results">6–151.5 小時長缺漏擴樣結果</h3>
+<p>已完成 11 方法的長缺口人工遮罩驗證：6／24／72／151.5 小時各於<strong>一般時段與壅塞加強時段</strong>抽取 12／8／6／4 段；下表列壅塞加強樣本。模型以 2024 年訓練，2025 年作遮罩測試，補值為離線推估。</p>
+<div class="table-wrap"><table class="compact"><thead><tr><th>缺漏時長</th><th class="num">每層遮罩段數</th><th>缺站數</th><th>最高 F1（可補率 ≥ 95%）</th><th class="num">Recall</th><th class="num">F1（95% CI）</th></tr></thead><tbody><tr><td>6 小時</td><td class="num">12</td><td>1 站</td><td>歷史相似 KNN</td><td class="num">0.486</td><td class="num">0.576（0.424–0.642）</td></tr><tr><td>6 小時</td><td class="num">12</td><td>5 站</td><td>多尺度 GP</td><td class="num">0.378</td><td class="num">0.473（0.071–0.583）</td></tr><tr><td>24 小時</td><td class="num">8</td><td>1 站</td><td>歷史相似 KNN</td><td class="num">0.553</td><td class="num">0.621（0.444–0.673）</td></tr><tr><td>24 小時</td><td class="num">8</td><td>5 站</td><td>多尺度 GP</td><td class="num">0.377</td><td class="num">0.501（0.245–0.573）</td></tr><tr><td>72 小時</td><td class="num">6</td><td>1 站</td><td>歷史相似 KNN</td><td class="num">0.515</td><td class="num">0.614（0.521–0.674）</td></tr><tr><td>72 小時</td><td class="num">6</td><td>5 站</td><td>多尺度 GP</td><td class="num">0.115</td><td class="num">0.200（0.069–0.414）</td></tr><tr><td>151.5 小時</td><td class="num">4</td><td>1 站</td><td>歷史相似 KNN</td><td class="num">0.438</td><td class="num">0.535（0.287–0.616）</td></tr><tr><td>151.5 小時</td><td class="num">4</td><td>5 站</td><td>Random Forest</td><td class="num">0.245</td><td class="num">0.362（0.135–0.432）</td></tr></tbody></table></div>
+<p class="section-note">F1 排名只採<strong>可補率 ≥ 95%</strong> 的方法，避免將只補出少量容易樣本的方法排在第一名。每筆是 VD × 五分鐘觀測，<strong>不是獨立事件數</strong>；95% CI 依遮罩區塊 bootstrap。尤其 151.5 小時只有 4 段，區間較不穩定。</p>
+<details class="result-details"><summary>6 小時／1 站同缺｜12 段、4,320 筆、真塞 389 筆｜最佳：歷史相似 KNN（F1 0.576）</summary><div class="table-wrap"><table class="compact result-table"><thead><tr><th>方法</th><th class="num">有效筆數</th><th class="num">MAE↓</th><th class="num">Recall↑</th><th class="num">F1↑</th><th class="num">可補率</th></tr></thead><tbody><tr class="focusrow"><td><strong>歷史相似 KNN</strong></td><td class="num">4,320</td><td class="num">7.313</td><td class="num">0.486</td><td class="num">0.576</td><td class="num">100.0%</td></tr>
+<tr><td>多尺度 GP</td><td class="num">4,320</td><td class="num">7.569</td><td class="num">0.424</td><td class="num">0.531</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Kriging</td><td class="num">4,320</td><td class="num">7.856</td><td class="num">0.409</td><td class="num">0.526</td><td class="num">100.0%</td></tr>
+<tr><td>距離加權 IDW</td><td class="num">4,320</td><td class="num">9.666</td><td class="num">0.499</td><td class="num">0.522</td><td class="num">100.0%</td></tr>
+<tr><td>Random Forest</td><td class="num">4,320</td><td class="num">8.020</td><td class="num">0.406</td><td class="num">0.515</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Ridge</td><td class="num">4,320</td><td class="num">7.730</td><td class="num">0.365</td><td class="num">0.499</td><td class="num">100.0%</td></tr>
+<tr><td>ASM（實測觀測）</td><td class="num">4,320</td><td class="num">9.298</td><td class="num">0.355</td><td class="num">0.447</td><td class="num">100.0%</td></tr>
+<tr><td>ASM＋歷史備援</td><td class="num">4,320</td><td class="num">9.298</td><td class="num">0.355</td><td class="num">0.447</td><td class="num">100.0%</td></tr>
+<tr><td>空間 Ridge</td><td class="num">4,320</td><td class="num">8.134</td><td class="num">0.293</td><td class="num">0.409</td><td class="num">100.0%</td></tr>
+<tr><td>歷史同期中位數</td><td class="num">4,320</td><td class="num">10.342</td><td class="num">0.208</td><td class="num">0.303</td><td class="num">100.0%</td></tr>
+<tr><td>線性插值</td><td class="num">4,320</td><td class="num">13.831</td><td class="num">0.154</td><td class="num">0.237</td><td class="num">100.0%</td></tr></tbody></table></div></details><details class="result-details"><summary>6 小時／5 站同缺｜12 段、4,320 筆、真塞 389 筆｜最佳：多尺度 GP（F1 0.473）</summary><div class="table-wrap"><table class="compact result-table"><thead><tr><th>方法</th><th class="num">有效筆數</th><th class="num">MAE↓</th><th class="num">Recall↑</th><th class="num">F1↑</th><th class="num">可補率</th></tr></thead><tbody><tr class="focusrow"><td><strong>多尺度 GP</strong></td><td class="num">4,320</td><td class="num">9.074</td><td class="num">0.378</td><td class="num">0.473</td><td class="num">100.0%</td></tr>
+<tr><td>ASM＋歷史備援</td><td class="num">4,320</td><td class="num">9.469</td><td class="num">0.319</td><td class="num">0.430</td><td class="num">100.0%</td></tr>
+<tr><td>Random Forest</td><td class="num">4,320</td><td class="num">10.420</td><td class="num">0.265</td><td class="num">0.367</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Kriging</td><td class="num">4,320</td><td class="num">9.926</td><td class="num">0.231</td><td class="num">0.336</td><td class="num">100.0%</td></tr>
+<tr><td>歷史相似 KNN</td><td class="num">4,320</td><td class="num">11.000</td><td class="num">0.211</td><td class="num">0.322</td><td class="num">100.0%</td></tr>
+<tr><td>歷史同期中位數</td><td class="num">4,320</td><td class="num">10.342</td><td class="num">0.208</td><td class="num">0.303</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Ridge</td><td class="num">4,320</td><td class="num">12.234</td><td class="num">0.162</td><td class="num">0.241</td><td class="num">100.0%</td></tr>
+<tr><td>線性插值</td><td class="num">4,320</td><td class="num">13.831</td><td class="num">0.154</td><td class="num">0.237</td><td class="num">100.0%</td></tr>
+<tr><td>ASM（實測觀測）</td><td class="num">1,440</td><td class="num">8.820</td><td class="num">0.384</td><td class="num">0.487</td><td class="num">33.3%</td></tr>
+<tr><td>距離加權 IDW</td><td class="num">0</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">0.0%</td></tr>
+<tr><td>空間 Ridge</td><td class="num">0</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">0.0%</td></tr></tbody></table></div></details><details class="result-details"><summary>24 小時／1 站同缺｜8 段、11,461 筆、真塞 459 筆｜最佳：歷史相似 KNN（F1 0.621）</summary><div class="table-wrap"><table class="compact result-table"><thead><tr><th>方法</th><th class="num">有效筆數</th><th class="num">MAE↓</th><th class="num">Recall↑</th><th class="num">F1↑</th><th class="num">可補率</th></tr></thead><tbody><tr class="focusrow"><td><strong>歷史相似 KNN</strong></td><td class="num">11,461</td><td class="num">5.625</td><td class="num">0.553</td><td class="num">0.621</td><td class="num">100.0%</td></tr>
+<tr><td>距離加權 IDW</td><td class="num">11,461</td><td class="num">7.535</td><td class="num">0.553</td><td class="num">0.575</td><td class="num">100.0%</td></tr>
+<tr><td>多尺度 GP</td><td class="num">11,461</td><td class="num">5.703</td><td class="num">0.449</td><td class="num">0.572</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Ridge</td><td class="num">11,461</td><td class="num">5.857</td><td class="num">0.427</td><td class="num">0.557</td><td class="num">100.0%</td></tr>
+<tr><td>ASM（實測觀測）</td><td class="num">11,461</td><td class="num">7.303</td><td class="num">0.464</td><td class="num">0.554</td><td class="num">100.0%</td></tr>
+<tr><td>ASM＋歷史備援</td><td class="num">11,461</td><td class="num">7.303</td><td class="num">0.464</td><td class="num">0.554</td><td class="num">100.0%</td></tr>
+<tr><td>Random Forest</td><td class="num">11,461</td><td class="num">5.774</td><td class="num">0.447</td><td class="num">0.551</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Kriging</td><td class="num">11,461</td><td class="num">5.772</td><td class="num">0.427</td><td class="num">0.548</td><td class="num">100.0%</td></tr>
+<tr><td>空間 Ridge</td><td class="num">11,355</td><td class="num">6.146</td><td class="num">0.347</td><td class="num">0.462</td><td class="num">99.1%</td></tr>
+<tr><td>歷史同期中位數</td><td class="num">11,461</td><td class="num">6.538</td><td class="num">0.314</td><td class="num">0.448</td><td class="num">100.0%</td></tr>
+<tr><td>線性插值</td><td class="num">11,461</td><td class="num">18.467</td><td class="num">0.144</td><td class="num">0.168</td><td class="num">100.0%</td></tr></tbody></table></div></details><details class="result-details"><summary>24 小時／5 站同缺｜8 段、11,461 筆、真塞 459 筆｜最佳：多尺度 GP（F1 0.501）</summary><div class="table-wrap"><table class="compact result-table"><thead><tr><th>方法</th><th class="num">有效筆數</th><th class="num">MAE↓</th><th class="num">Recall↑</th><th class="num">F1↑</th><th class="num">可補率</th></tr></thead><tbody><tr class="focusrow"><td><strong>多尺度 GP</strong></td><td class="num">11,461</td><td class="num">6.706</td><td class="num">0.377</td><td class="num">0.501</td><td class="num">100.0%</td></tr>
+<tr><td>ASM＋歷史備援</td><td class="num">11,461</td><td class="num">6.612</td><td class="num">0.364</td><td class="num">0.468</td><td class="num">100.0%</td></tr>
+<tr><td>Random Forest</td><td class="num">11,461</td><td class="num">6.880</td><td class="num">0.322</td><td class="num">0.453</td><td class="num">100.0%</td></tr>
+<tr><td>歷史同期中位數</td><td class="num">11,461</td><td class="num">6.538</td><td class="num">0.314</td><td class="num">0.448</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Kriging</td><td class="num">11,461</td><td class="num">6.540</td><td class="num">0.316</td><td class="num">0.448</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Ridge</td><td class="num">11,461</td><td class="num">8.883</td><td class="num">0.283</td><td class="num">0.387</td><td class="num">100.0%</td></tr>
+<tr><td>歷史相似 KNN</td><td class="num">11,461</td><td class="num">7.085</td><td class="num">0.227</td><td class="num">0.354</td><td class="num">100.0%</td></tr>
+<tr><td>線性插值</td><td class="num">11,461</td><td class="num">18.467</td><td class="num">0.144</td><td class="num">0.168</td><td class="num">100.0%</td></tr>
+<tr><td>ASM（實測觀測）</td><td class="num">958</td><td class="num">7.953</td><td class="num">0.812</td><td class="num">0.591</td><td class="num">8.4%</td></tr>
+<tr><td>距離加權 IDW</td><td class="num">0</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">0.0%</td></tr>
+<tr><td>空間 Ridge</td><td class="num">0</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">0.0%</td></tr></tbody></table></div></details><details class="result-details"><summary>72 小時／1 站同缺｜6 段、25,662 筆、真塞 1,406 筆｜最佳：歷史相似 KNN（F1 0.614）</summary><div class="table-wrap"><table class="compact result-table"><thead><tr><th>方法</th><th class="num">有效筆數</th><th class="num">MAE↓</th><th class="num">Recall↑</th><th class="num">F1↑</th><th class="num">可補率</th></tr></thead><tbody><tr class="focusrow"><td><strong>歷史相似 KNN</strong></td><td class="num">25,662</td><td class="num">5.936</td><td class="num">0.515</td><td class="num">0.614</td><td class="num">100.0%</td></tr>
+<tr><td>距離加權 IDW</td><td class="num">25,650</td><td class="num">8.001</td><td class="num">0.506</td><td class="num">0.556</td><td class="num">100.0%</td></tr>
+<tr><td>ASM（實測觀測）</td><td class="num">25,662</td><td class="num">7.810</td><td class="num">0.436</td><td class="num">0.536</td><td class="num">100.0%</td></tr>
+<tr><td>ASM＋歷史備援</td><td class="num">25,662</td><td class="num">7.810</td><td class="num">0.436</td><td class="num">0.536</td><td class="num">100.0%</td></tr>
+<tr><td>空間 Ridge</td><td class="num">25,442</td><td class="num">6.275</td><td class="num">0.310</td><td class="num">0.444</td><td class="num">99.1%</td></tr>
+<tr><td>時空 Ridge</td><td class="num">25,662</td><td class="num">6.096</td><td class="num">0.299</td><td class="num">0.440</td><td class="num">100.0%</td></tr>
+<tr><td>Random Forest</td><td class="num">25,662</td><td class="num">6.214</td><td class="num">0.284</td><td class="num">0.422</td><td class="num">100.0%</td></tr>
+<tr><td>多尺度 GP</td><td class="num">25,662</td><td class="num">6.199</td><td class="num">0.251</td><td class="num">0.374</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Kriging</td><td class="num">25,662</td><td class="num">6.355</td><td class="num">0.223</td><td class="num">0.341</td><td class="num">100.0%</td></tr>
+<tr><td>歷史同期中位數</td><td class="num">25,662</td><td class="num">9.125</td><td class="num">0.107</td><td class="num">0.188</td><td class="num">100.0%</td></tr>
+<tr><td>線性插值</td><td class="num">25,662</td><td class="num">16.719</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">100.0%</td></tr></tbody></table></div></details><details class="result-details"><summary>72 小時／5 站同缺｜6 段、25,662 筆、真塞 1,406 筆｜最佳：多尺度 GP（F1 0.200）</summary><div class="table-wrap"><table class="compact result-table"><thead><tr><th>方法</th><th class="num">有效筆數</th><th class="num">MAE↓</th><th class="num">Recall↑</th><th class="num">F1↑</th><th class="num">可補率</th></tr></thead><tbody><tr class="focusrow"><td><strong>多尺度 GP</strong></td><td class="num">25,662</td><td class="num">9.247</td><td class="num">0.115</td><td class="num">0.200</td><td class="num">100.0%</td></tr>
+<tr><td>ASM＋歷史備援</td><td class="num">25,662</td><td class="num">9.140</td><td class="num">0.107</td><td class="num">0.188</td><td class="num">100.0%</td></tr>
+<tr><td>歷史同期中位數</td><td class="num">25,662</td><td class="num">9.125</td><td class="num">0.107</td><td class="num">0.188</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Kriging</td><td class="num">25,662</td><td class="num">9.119</td><td class="num">0.107</td><td class="num">0.188</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Ridge</td><td class="num">25,662</td><td class="num">10.789</td><td class="num">0.097</td><td class="num">0.171</td><td class="num">100.0%</td></tr>
+<tr><td>Random Forest</td><td class="num">25,662</td><td class="num">8.942</td><td class="num">0.048</td><td class="num">0.092</td><td class="num">100.0%</td></tr>
+<tr><td>歷史相似 KNN</td><td class="num">25,662</td><td class="num">9.195</td><td class="num">0.021</td><td class="num">0.042</td><td class="num">100.0%</td></tr>
+<tr><td>線性插值</td><td class="num">25,662</td><td class="num">16.719</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">100.0%</td></tr>
+<tr><td>距離加權 IDW</td><td class="num">0</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">0.0%</td></tr>
+<tr><td>空間 Ridge</td><td class="num">0</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">0.0%</td></tr>
+<tr><td>ASM（實測觀測）</td><td class="num">717</td><td class="num">6.934</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">2.8%</td></tr></tbody></table></div></details><details class="result-details"><summary>151.5 小時／1 站同缺｜4 段、35,889 筆、真塞 837 筆｜最佳：歷史相似 KNN（F1 0.535）</summary><div class="table-wrap"><table class="compact result-table"><thead><tr><th>方法</th><th class="num">有效筆數</th><th class="num">MAE↓</th><th class="num">Recall↑</th><th class="num">F1↑</th><th class="num">可補率</th></tr></thead><tbody><tr class="focusrow"><td><strong>歷史相似 KNN</strong></td><td class="num">35,889</td><td class="num">5.392</td><td class="num">0.438</td><td class="num">0.535</td><td class="num">100.0%</td></tr>
+<tr><td>Random Forest</td><td class="num">35,889</td><td class="num">5.511</td><td class="num">0.403</td><td class="num">0.518</td><td class="num">100.0%</td></tr>
+<tr><td>距離加權 IDW</td><td class="num">35,889</td><td class="num">7.758</td><td class="num">0.458</td><td class="num">0.495</td><td class="num">100.0%</td></tr>
+<tr><td>多尺度 GP</td><td class="num">35,889</td><td class="num">5.386</td><td class="num">0.366</td><td class="num">0.490</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Kriging</td><td class="num">35,889</td><td class="num">5.539</td><td class="num">0.335</td><td class="num">0.460</td><td class="num">100.0%</td></tr>
+<tr><td>ASM（實測觀測）</td><td class="num">35,889</td><td class="num">7.367</td><td class="num">0.333</td><td class="num">0.441</td><td class="num">100.0%</td></tr>
+<tr><td>ASM＋歷史備援</td><td class="num">35,889</td><td class="num">7.367</td><td class="num">0.333</td><td class="num">0.441</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Ridge</td><td class="num">35,889</td><td class="num">5.726</td><td class="num">0.305</td><td class="num">0.432</td><td class="num">100.0%</td></tr>
+<tr><td>空間 Ridge</td><td class="num">35,775</td><td class="num">5.994</td><td class="num">0.249</td><td class="num">0.360</td><td class="num">99.7%</td></tr>
+<tr><td>歷史同期中位數</td><td class="num">35,889</td><td class="num">6.059</td><td class="num">0.198</td><td class="num">0.307</td><td class="num">100.0%</td></tr>
+<tr><td>線性插值</td><td class="num">27,244</td><td class="num">16.354</td><td class="num">0.041</td><td class="num">0.031</td><td class="num">75.9%</td></tr></tbody></table></div></details><details class="result-details"><summary>151.5 小時／5 站同缺｜4 段、35,889 筆、真塞 837 筆｜最佳：Random Forest（F1 0.362）</summary><div class="table-wrap"><table class="compact result-table"><thead><tr><th>方法</th><th class="num">有效筆數</th><th class="num">MAE↓</th><th class="num">Recall↑</th><th class="num">F1↑</th><th class="num">可補率</th></tr></thead><tbody><tr class="focusrow"><td><strong>Random Forest</strong></td><td class="num">35,889</td><td class="num">6.332</td><td class="num">0.245</td><td class="num">0.362</td><td class="num">100.0%</td></tr>
+<tr><td>ASM＋歷史備援</td><td class="num">35,889</td><td class="num">6.065</td><td class="num">0.202</td><td class="num">0.313</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Kriging</td><td class="num">35,889</td><td class="num">6.059</td><td class="num">0.201</td><td class="num">0.309</td><td class="num">100.0%</td></tr>
+<tr><td>歷史同期中位數</td><td class="num">35,889</td><td class="num">6.059</td><td class="num">0.198</td><td class="num">0.307</td><td class="num">100.0%</td></tr>
+<tr><td>多尺度 GP</td><td class="num">35,889</td><td class="num">6.107</td><td class="num">0.185</td><td class="num">0.298</td><td class="num">100.0%</td></tr>
+<tr><td>歷史相似 KNN</td><td class="num">35,889</td><td class="num">6.550</td><td class="num">0.159</td><td class="num">0.265</td><td class="num">100.0%</td></tr>
+<tr><td>時空 Ridge</td><td class="num">35,889</td><td class="num">8.991</td><td class="num">0.167</td><td class="num">0.250</td><td class="num">100.0%</td></tr>
+<tr><td>ASM（實測觀測）</td><td class="num">419</td><td class="num">7.569</td><td class="num">0.476</td><td class="num">0.426</td><td class="num">1.2%</td></tr>
+<tr><td>線性插值</td><td class="num">27,244</td><td class="num">16.354</td><td class="num">0.041</td><td class="num">0.031</td><td class="num">75.9%</td></tr>
+<tr><td>距離加權 IDW</td><td class="num">0</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">0.0%</td></tr>
+<tr><td>空間 Ridge</td><td class="num">0</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">0.0%</td></tr></tbody></table></div></details>
+<p><strong>主要發現：</strong>6–151.5 小時單站缺漏，歷史相似 KNN 在這批壅塞加強樣本中皆有最高 F1（0.535–0.621）。但五站同時缺漏 72 小時時，最佳 GP 的 Recall 只有 0.115、F1 = 0.200；151.5 小時最佳 Random Forest 的 Recall = 0.245，均不宜視為已可靠還原真實壅塞。</p>
+<p class="section-note">這些是最新長缺漏實驗結果，取代網站過去「長缺漏尚未擴樣」的說明。不同缺漏長度的遮罩可能取自不同時段，不能單憑各長度 F1 變化推論方法穩定進步或退步。<a href="analysis/vd_long_gap_11methods_enriched_1and5_20261029.csv">長缺漏 11 方法完整單站與五站比較 CSV</a>（2–4 站及一般時段另於本次原始結果檔保留）。</p>
+<h3>11 種方法簡介</h3>
+<div class="table-wrap"><table class="compact method-table"><thead><tr><th>方法</th><th>簡述原理</th><th>優點</th><th>限制</th></tr></thead><tbody><tr><td>線性插值</td><td>連接目標站缺口前後的實測速度</td><td>短缺口簡單有效</td><td>長缺口易抹平壅塞，僅適用離線補值</td></tr><tr><td>歷史同期中位數</td><td>參考歷史同星期、同時段的典型速度</td><td>五站全缺仍可估計</td><td>無法知道當天事故</td></tr><tr><td>距離加權 IDW</td><td>依測站距離加權其他站當下速度</td><td>不需訓練、容易解釋</td><td>五站全缺無法使用</td></tr><tr><td>空間 Ridge</td><td>用其他站當下速度建立線性關係</td><td>容易比較與解釋</td><td>缺少鄰站就無法推估</td></tr><tr><td>時空 Ridge</td><td>結合 VD 歷史速度、鄰站速度及時間特徵</td><td>同時利用時間與空間</td><td>全站缺漏時依賴歷史規律</td></tr><tr><td>歷史相似 KNN</td><td>找出其他 VD 交通情境相似的歷史時段</td><td>可表達非線性關係</td><td>全站缺漏失去即時空間資訊</td></tr><tr><td>Random Forest</td><td>利用多棵決策樹學交通型態</td><td>捕捉非線性交互作用</td><td>可能漏判少見的低速</td></tr><tr><td>ASM（實測觀測）</td><td>依交通狀態沿道路的傳播方向平滑估計</td><td>考慮壅塞波傳播</td><td>長缺漏缺乏實際觀測</td></tr><tr><td>ASM＋歷史備援</td><td>ASM 缺乏觀測時改用歷史同期推估</td><td>增加可補比例</td><td>備援無法還原當天事故</td></tr><tr><td>時空 Kriging</td><td>利用空間相關與單一時間尺度估計</td><td>提供預測不確定性</td><td>突發壅塞辨識不足</td></tr><tr><td>多尺度 GP</td><td>結合快、慢時間尺度的高斯過程</td><td>能估計速度分布與不確定性</td><td>壅塞召回率與區間校準仍不足</td></tr></tbody></table></div>
+<p class="section-note">ASM 與 ASM＋備援是兩種使用策略；Kriging 與 GP 同屬高斯過程家族，但模型時間相關結構不同。此處依 11 個實驗策略分列。</p>
+</section>
+
+<section id="policy">
+<h2>三、目前的 VD 缺值處理方式</h2>
+<div class="table-wrap"><table class="compact">
+<thead><tr><th>情境</th><th>採用原則</th><th>原因</th></tr></thead>
+<tbody>
+<tr><td>短缺口（尤其 15 分鐘）</td><td>優先測線性插值；其他方法作對照</td><td>缺口前後有實測速度，現有擴樣結果支持較佳壅塞 F1</td></tr>
+<tr><td>單站或部分站缺值</td><td>短缺口比較線性插值與 KNN；6 小時以上以 KNN 作主要候選並保留其他方法對照</td><td>仍可能利用其他 VD 的實測空間資訊</td></tr>
+<tr><td>五站長時間同缺</td><td>主要分析保留未知；歷史同期、GP 僅作候選／敏感度分析</td><td>最新長缺漏實驗中，72 小時五站全缺最佳 F1 僅 0.200，仍難可靠還原壅塞</td></tr>
+</tbody></table></div>
+<p class="section-note">以上為目前的候選政策，不等於所有缺值都已正式補完。線性插值屬離線方法，會使用缺口結束後的真實觀測，不能當成即時預測。</p>
+<h3>三種資料處理版本</h3>
+<div class="table-wrap"><table class="compact">
+<thead><tr><th>版本</th><th>處理</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td><strong>D0：原始</strong></td><td>不補 VD；無法辨識的 Y 保留未知</td><td>主要比較基準</td></tr>
+<tr><td><strong>D1：保守補值</strong></td><td>只補有充分驗證依據的缺口</td><td>優先評估</td></tr>
+<tr><td><strong>D2：完整候選</strong></td><td>盡可能補值；保留低信心與方法標記</td><td>敏感度分析</td></tr>
+</tbody></table></div>
+<p>每筆至少保存：<code>speed_original</code>、<code>was_missing_original</code>、<code>speed_filled</code>、<code>imputation_method</code>、<code>gap_duration_minutes</code>、<code>quality_flag</code>。不直接覆寫原始 VD。</p>
+</section>
+
+<section id="target">
+<h2>四、整段壅塞指標 Y</h2>
+<p>每支 VD 速度低於 <strong>40 km/h</strong> 視為該站壅塞；40–80 km/h 為車多，80 km/h 以上為暢通。整段 Y 則區分「無壅塞、局部壅塞、大範圍壅塞」，兩種分類層級不同。</p>
+<div class="mathbox">
+<div class="formula">
+C<sub>t</sub><sup>(w)</sup> =
+<span class="summ">∑</span><sub>j=1</sub><sup>5</sup>
+w<sub>j</sub> I(V<sub>j,t</sub> &lt; 40)
+</div></div>
+<div class="table-wrap"><table class="compact">
+<thead><tr><th>整段 Y</th><th>判定條件</th><th>解讀</th></tr></thead>
+<tbody>
+<tr><td><strong>Y<sub>t</sub> = 0</strong></td><td>C<sub>t</sub><sup>(w)</sup> = 0</td><td>未觀測到壅塞</td></tr>
+<tr><td><strong>Y<sub>t</sub> = 1</strong></td><td>0 &lt; C<sub>t</sub><sup>(w)</sup> &lt; c</td><td>局部壅塞</td></tr>
+<tr><td><strong>Y<sub>t</sub> = 2</strong></td><td>C<sub>t</sub><sup>(w)</sup> ≥ c</td><td>大範圍壅塞</td></tr>
+</tbody></table></div>
+<dl class="equation-key">
+<dt>w<sub>j</sub></dt><dd>第 j 支 VD 的代表路段長度權重，總和為 1。</dd>
+<dt>c</dt><dd>大範圍壅塞門檻，正式建模時需固定並比較敏感度。</dd>
+<dt>I(·)</dt><dd>條件成立為 1，否則為 0。</dd>
+</dl>
+<p><strong>空間邊界：</strong>五支 VD 涵蓋 61.000–69.510K（8.51 公里）；目前另以龍潭至大溪間的名義邊界 62–68K（6 公里）建立候選 Y。兩套權重都保留，避免把測站涵蓋範圍與交流道間範圍混為一談。</p>
+<div class="table-wrap"><table class="compact">
+<thead><tr><th>範圍／VD 里程</th><th class="num">69.510K</th><th class="num">65.990K</th><th class="num">63.990K</th><th class="num">61.670K</th><th class="num">61.000K</th></tr></thead>
+<tbody>
+<tr><td><strong>五站全範圍</strong><br><small>61.000–69.510K；8.51 km</small></td><td class="num">20.68%</td><td class="num">32.43%</td><td class="num">25.38%</td><td class="num">17.57%</td><td class="num">3.94%</td></tr>
+<tr class="focusrow"><td><strong>交流道間候選</strong><br><small>62–68K；6 km</small></td><td class="num">4.17%</td><td class="num">46.00%</td><td class="num">36.00%</td><td class="num">13.83%</td><td class="num">0%</td></tr>
+</tbody></table></div>
+<p class="section-note">兩套比例均依相鄰 VD 的<strong>里程中點劃分代表區間</strong>，再以各自總長度正規化；前者表示完整五站觀測範圍，後者截取名義交流道間路段。62–68K 不是已核定的匝道精確邊界，正式研究需再確認；缺值站不得直接當成「未壅塞」。</p>
+</section>
+
+<section id="models">
+<h2>五、M0–M3：預測模型（依 Word 原規劃）</h2>
+<p>預測未來 <strong>t+h</strong> 的三類整段交通狀態；四組模型差別在於加入哪些解釋變數。這裡的 <strong>M0–M3 是模型規格</strong>，和上一節的 D0–D2 資料版本不同。</p>
+<div class="mathbox">
+<div class="formula">
+log <span class="frac"><span class="top">P(Y<sub>t+h</sub>=k | X<sub>t</sub>)</span><span class="bottom">P(Y<sub>t+h</sub>=0 | X<sub>t</sub>)</span></span>
+= η<sub>k,t</sub><sup>(m)</sup>
+<small>，k = 1, 2；m = 0, 1, 2, 3</small>
+</div>
+</div>
+<p class="section-note">由於 Y 有三類，網站採與三分類一致的多項 Logistic 表示，以 Y=0 作基準類；若改採有序 Logistic，須另檢驗比例勝算假設。</p>
+
+<div class="model-card">
+ <h3>M0｜基準模型</h3>
+ <p>使用時間、天氣與 OD 總需求。</p>
+ <div class="mathbox"><div class="formula">η<sub>k,t</sub><sup>(0)</sup> = β<sub>0k</sub> + β<sub>Tk</sub><sup>⊤</sup>T<sub>t</sub> + β<sub>Wk</sub><sup>⊤</sup>W<sub>t</sub> + β<sub>Qk</sub>Q<sub>t</sub></div></div>
+</div>
+<div class="model-card">
+ <h3>M1｜M0 ＋ VD 歷史資訊</h3>
+ <p>加入五支 VD 過去的速度與占有率，檢驗歷史交通狀態的增額預測價值。</p>
+ <div class="mathbox"><div class="formula">η<sub>k,t</sub><sup>(1)</sup> = η<sub>k,t</sub><sup>(0)</sup> + γ<sub>k</sub><sup>⊤</sup>V<sub>t</sub><sup>hist</sup> + ξ<sub>k</sub><sup>⊤</sup>O<sub>t</sub><sup>hist</sup></div></div>
+</div>
+<div class="model-card">
+ <h3>M2｜M0 ＋ OD 需求組成</h3>
+ <p>在 OD 總需求之外，加入 K 組 OD 分群的流量比例；以 K−1 組入模避免完全共線。</p>
+ <div class="mathbox"><div class="formula">η<sub>k,t</sub><sup>(2)</sup> = η<sub>k,t</sub><sup>(0)</sup> + <span class="summ">∑</span><sub>g=1</sub><sup>K−1</sup> δ<sub>gk</sub>P<sub>g,t</sub></div></div>
+</div>
+<div class="model-card">
+ <h3>M3｜完整模型（VD ＋ OD）</h3>
+ <p>同時加入 VD 歷史資訊及 OD 需求組成，評估兩類資訊是否互補。</p>
+ <div class="mathbox"><div class="formula">η<sub>k,t</sub><sup>(3)</sup> = η<sub>k,t</sub><sup>(1)</sup> + <span class="summ">∑</span><sub>g=1</sub><sup>K−1</sup> δ<sub>gk</sub>P<sub>g,t</sub></div></div>
+</div>
+<dl class="equation-key">
+<dt>T<sub>t</sub>、W<sub>t</sub></dt><dd>時間特徵與已知天氣資訊。</dd>
+<dt>Q<sub>t</sub></dt><dd>該時段的 OD 總需求。</dd>
+<dt>V<sub>t</sub><sup>hist</sup>、O<sub>t</sub><sup>hist</sup></dt><dd>五支 VD 在 t 以前的速度與占有率歷史向量（不得使用預測目標時點的未來資訊）。</dd>
+<dt>P<sub>g,t</sub></dt><dd>第 g 群 OD 比例，等於 Q<sub>g,t</sub>/Q<sub>t</sub>；Q<sub>t</sub>=0 的時點須訂明處理規則。</dd>
+</dl>
+<p>演算法先比較 <strong>Multinomial Logistic Regression</strong>，再以 <strong>XGBoost、LightGBM</strong> 檢查非線性方法是否提升預測表現。</p>
+</section>
+
+<section id="validation">
+<h2>六、模型比較原則</h2>
+<p>依時間順序切分訓練、驗證與測試資料，統一比較 M0–M3 在 D0／D1／D2 下的 <strong>Macro-F1、壅塞 Recall、PR-AUC</strong> 等樣本外指標；另確認 OD 係數／特徵的重要性是否隨補值政策而改變。</p>
+<p><strong>研究決策：</strong>若保守補值或完整補值沒有穩定改善樣本外表現，就保留原始不補值版本。使用補值推得的 Y 必須有來源標記，不當作完全獨立的真實觀測。</p>
+<p class="section-note">完整人工遮罩結果與重跑程式留存於 <a href="https://github.com/aishanchung/Statistical-Practice/tree/%E8%B3%87%E6%96%99%E6%AC%84%E4%BD%8D%E7%9B%B8%E9%97%9C%E6%96%87%E4%BB%B6/analysis">GitHub analysis 資料夾</a>；本頁僅呈現當前採用規格及已完成的擴樣結果。</p>
+</section>
+
+</main>
+</div>
+<footer>統計實務 — 研究進度 / VD 資料預處理</footer>
+<script src="script.js"></script>
+</body></html>
