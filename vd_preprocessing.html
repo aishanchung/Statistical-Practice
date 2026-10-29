@@ -29,6 +29,7 @@
     .summary-row p { margin: 4px 0; }
     .preprocess-table th, .preprocess-table td { font-size: .92rem; }
     .preprocess-table th { white-space: nowrap; }
+    .preprocess-table .sample-note { display: block; color: #667788; font-size: .8rem; font-weight: 400; white-space: nowrap; margin-top: 2px; }
     .table-wrap { margin: 20px 0 22px; }
     .inline-math { font-family: Consolas, 'Courier New', monospace; background: #eef3f7; padding: 2px 5px; border-radius: 4px; }
     .status-list { padding-left: 24px; }
@@ -40,6 +41,10 @@
     .method-card p { margin: 5px 0; }
     .method-card .small-label { color: #667788; font-weight: 700; font-size: .8rem; }
     .table-note { color: #667788; font-size: .88rem; margin-top: -12px; }
+    .equation-card { background: #f5f9fd; border: 1px solid #d7e5f0; border-radius: 12px; padding: 16px 22px; margin: 14px 0; overflow-x: auto; }
+    .equation-card .equation-caption { color: #245c8a; font-weight: 700; font-size: .92rem; margin: 0 0 10px; }
+    .equation-card math { font-size: 1.32rem; min-width: max-content; margin: 8px auto; }
+    .equation-card .equation-explain { color: #526477; font-size: .91rem; margin: 12px 0 0; }
     @media(max-width:700px) { .page-toc ul { columns: 1; } .preprocess-table th, .preprocess-table td { font-size: .84rem; } }
   </style>
 </head>
@@ -82,7 +87,7 @@
           <li><a href="#strategy">不同情境的處理建議</a></li>
           <li><a href="#versions">M0／M1／M2</a></li>
           <li><a href="#corridor">整段壅塞 Y 與空間權重</a></li>
-          <li><a href="#next">後續實驗與分工</a></li>
+          <li><a href="#next">後續工作進度</a></li>
         </ul>
       </nav>
 
@@ -169,41 +174,42 @@
       <section id="results">
         <h2>四、不同缺漏長度的實測效果</h2>
         <p>同一情境中，<strong>最低 MAE</strong> 的方法和 <strong>最高壅塞 F1</strong> 的方法可能不同。兩者都必須看，因為研究最終關心 OD 和壅塞，而不只是速度曲線漂不漂亮。</p>
+        <div class="note"><strong>新增「筆數」的讀法：</strong>「測試 60 筆」表示人工遮罩後，原本有真實速度可供對照的 60 筆資料；「真塞 12 筆」表示其中有 12 筆真實速度低於 40 km/h；「找回 3／12」表示該列<strong>最高 F1 方法</strong>成功找回 3 筆真壅塞。這些是人工遮罩<strong>評估樣本</strong>，不是原始資料真正缺值的 29,592 筆；不同長度的評估樣本也不能簡單相加當作獨立資料。</div>
         <h3>只有 1 支 VD 缺值</h3>
         <div class="table-wrap"><table class="preprocess-table">
-          <thead><tr><th>缺漏長度</th><th>最低 MAE 方法</th><th>MAE</th><th>最高 F1 方法</th><th>F1</th><th>Recall</th></tr></thead>
+          <thead><tr><th>缺漏長度與測試筆數</th><th>最低 MAE 方法</th><th>MAE</th><th>最高 F1 方法</th><th>F1</th><th>Recall 與成功找回筆數</th></tr></thead>
           <tbody>
-            <tr><td>15 分鐘</td><td>線性插值</td><td>10.473</td><td>線性插值</td><td>0.353</td><td>0.250</td></tr>
-            <tr><td>1 小時</td><td>KNN</td><td>11.858</td><td>KNN</td><td>0.731</td><td>0.576</td></tr>
-            <tr><td>6 小時</td><td>KNN</td><td>7.214</td><td>ASM</td><td>0.587</td><td>0.485</td></tr>
-            <tr><td>24 小時</td><td>Random Forest</td><td>5.341</td><td>IDW</td><td>0.655</td><td>0.613</td></tr>
-            <tr><td>72 小時</td><td><strong>KNN</strong></td><td>5.389</td><td><strong>KNN</strong></td><td>0.558</td><td>0.480</td></tr>
-            <tr><td>151.5 小時</td><td>GP</td><td>5.126</td><td>IDW</td><td>0.457</td><td>0.423</td></tr>
+            <tr><td>15 分鐘<span class="sample-note">測試 60 筆；真塞 12 筆</span></td><td>線性插值</td><td>10.473</td><td>線性插值</td><td>0.353</td><td>0.250<span class="sample-note">找回 3／12 筆</span></td></tr>
+            <tr><td>1 小時<span class="sample-note">測試 240 筆；真塞 33 筆</span></td><td>KNN</td><td>11.858</td><td>KNN</td><td>0.731</td><td>0.576<span class="sample-note">找回 19／33 筆</span></td></tr>
+            <tr><td>6 小時<span class="sample-note">測試 1,440 筆；真塞 66 筆</span></td><td>KNN</td><td>7.214</td><td>ASM</td><td>0.587</td><td>0.485<span class="sample-note">找回 32／66 筆</span></td></tr>
+            <tr><td>24 小時<span class="sample-note">測試 5,749 筆；真塞 119 筆</span></td><td>Random Forest</td><td>5.341</td><td>IDW</td><td>0.655</td><td>0.613<span class="sample-note">找回 73／119 筆</span></td></tr>
+            <tr><td>72 小時<span class="sample-note">測試 17,212 筆；真塞 562 筆</span></td><td><strong>KNN</strong></td><td>5.389</td><td><strong>KNN</strong></td><td>0.558</td><td>0.480<span class="sample-note">找回 270／562 筆</span></td></tr>
+            <tr><td>151.5 小時<span class="sample-note">測試 36,324 筆；真塞 750 筆</span></td><td>GP</td><td>5.126</td><td>IDW</td><td>0.457</td><td>0.423<span class="sample-note">找回 317／750 筆</span></td></tr>
           </tbody>
         </table></div>
         <p class="table-note">MAE 單位 km/h；15 分鐘／1 小時／24 小時來自九方法測試，6／72／151.5 小時來自包含 GP、Kriging 的十一方法共同測試。</p>
         <h3>五支 VD 同時缺值</h3>
         <div class="table-wrap"><table class="preprocess-table">
-          <thead><tr><th>缺漏長度</th><th>最低 MAE 方法</th><th>MAE</th><th>最高 F1 方法</th><th>F1</th><th>Recall</th></tr></thead>
+          <thead><tr><th>缺漏長度與測試筆數</th><th>最低 MAE 方法</th><th>MAE</th><th>最高 F1 方法</th><th>F1</th><th>Recall 與成功找回筆數</th></tr></thead>
           <tbody>
-            <tr><td>15 分鐘</td><td>線性插值</td><td>10.473</td><td>線性插值</td><td>0.353</td><td>0.250</td></tr>
-            <tr><td>1 小時</td><td>線性插值</td><td>14.517</td><td>ASM（有實測參照）</td><td>0.286</td><td>0.182</td></tr>
-            <tr><td>6 小時</td><td>Kriging</td><td>8.339</td><td>線性插值</td><td>0.273</td><td>0.182</td></tr>
-            <tr><td>24 小時</td><td>歷史同期中位數</td><td>6.348</td><td>ASM＋歷史備援</td><td>0.407</td><td>0.277</td></tr>
-            <tr><td>72 小時</td><td>Kriging</td><td>7.067</td><td>Random Forest</td><td>0.358</td><td>0.242</td></tr>
-            <tr><td>151.5 小時</td><td>GP</td><td>5.632</td><td>GP</td><td>0.290</td><td>0.209</td></tr>
+            <tr><td>15 分鐘<span class="sample-note">測試 60 筆；真塞 12 筆</span></td><td>線性插值</td><td>10.473</td><td>線性插值</td><td>0.353</td><td>0.250<span class="sample-note">找回 3／12 筆</span></td></tr>
+            <tr><td>1 小時<span class="sample-note">測試 240 筆；真塞 33 筆</span></td><td>線性插值</td><td>14.517</td><td>ASM（有實測參照）</td><td>0.286</td><td>0.182<span class="sample-note">找回 6／33 筆</span></td></tr>
+            <tr><td>6 小時<span class="sample-note">測試 1,440 筆；真塞 66 筆</span></td><td>Kriging</td><td>8.339</td><td>線性插值</td><td>0.273</td><td>0.182<span class="sample-note">找回 12／66 筆</span></td></tr>
+            <tr><td>24 小時<span class="sample-note">測試 5,749 筆；真塞 119 筆</span></td><td>歷史同期中位數</td><td>6.348</td><td>ASM＋歷史備援</td><td>0.407</td><td>0.277<span class="sample-note">找回 33／119 筆</span></td></tr>
+            <tr><td>72 小時<span class="sample-note">測試 17,212 筆；真塞 562 筆</span></td><td>Kriging</td><td>7.067</td><td>Random Forest</td><td>0.358</td><td>0.242<span class="sample-note">找回 136／562 筆</span></td></tr>
+            <tr><td>151.5 小時<span class="sample-note">測試 36,324 筆；真塞 750 筆</span></td><td>GP</td><td>5.632</td><td>GP</td><td>0.290</td><td>0.209<span class="sample-note">找回 157／750 筆</span></td></tr>
           </tbody>
         </table></div>
         <div class="warning"><strong>核心警訊：</strong>五站缺 6 小時時，Kriging 的 MAE 最低，但真正壅塞的 Recall = 0。五站缺 72 小時的最高 F1 也只有 0.358。這類補值可能抓到「平常的車速」，卻補不出「當天臨時塞車」。</div>
         <h3>2–4 站缺值：72 小時範例</h3>
         <div class="table-wrap"><table class="preprocess-table">
-          <thead><tr><th>缺失站數</th><th>最低 MAE</th><th>MAE</th><th>最高 F1</th><th>F1</th><th>Recall</th></tr></thead>
+          <thead><tr><th>缺失站數與測試筆數</th><th>最低 MAE</th><th>MAE</th><th>最高 F1</th><th>F1</th><th>Recall 與成功找回筆數</th></tr></thead>
           <tbody>
-            <tr><td>1</td><td>KNN</td><td>5.389</td><td>KNN</td><td>0.558</td><td>0.480</td></tr>
-            <tr><td>2</td><td>KNN</td><td>5.883</td><td>KNN</td><td>0.474</td><td>0.362</td></tr>
-            <tr><td>3</td><td>GP</td><td>6.207</td><td>GP</td><td>0.429</td><td>0.308</td></tr>
-            <tr><td>4</td><td>GP</td><td>6.376</td><td>GP</td><td>0.394</td><td>0.282</td></tr>
-            <tr><td>5</td><td>Kriging</td><td>7.067</td><td>Random Forest</td><td>0.358</td><td>0.242</td></tr>
+            <tr><td>1 站<span class="sample-note">測試 17,212 筆；真塞 562 筆</span></td><td>KNN</td><td>5.389</td><td>KNN</td><td>0.558</td><td>0.480<span class="sample-note">找回 270／562 筆</span></td></tr>
+            <tr><td>2 站<span class="sample-note">測試 27,541 筆；真塞 968 筆</span></td><td>KNN</td><td>5.883</td><td>KNN</td><td>0.474</td><td>0.362<span class="sample-note">找回 350／968 筆</span></td></tr>
+            <tr><td>3 站<span class="sample-note">測試 30,982 筆；真塞 1,113 筆</span></td><td>GP</td><td>6.207</td><td>GP</td><td>0.429</td><td>0.308<span class="sample-note">找回 343／1,113 筆</span></td></tr>
+            <tr><td>4 站<span class="sample-note">測試 27,541 筆；真塞 968 筆</span></td><td>GP</td><td>6.376</td><td>GP</td><td>0.394</td><td>0.282<span class="sample-note">找回 273／968 筆</span></td></tr>
+            <tr><td>5 站<span class="sample-note">測試 17,212 筆；真塞 562 筆</span></td><td>Kriging</td><td>7.067</td><td>Random Forest</td><td>0.358</td><td>0.242<span class="sample-note">找回 136／562 筆</span></td></tr>
           </tbody>
         </table></div>
         <h3>72 小時：KNN、Kriging、GP 的直接比較</h3>
@@ -220,7 +226,7 @@
           </tbody>
         </table></div>
         <p><strong>覆蓋率提醒：</strong>ASM 在五站缺 72 小時曾得到很低的局部 MAE，但只可估約 2.8% 的遮罩時點，不能拿這個 MAE 和 100% 覆蓋的方法直接比。所有方法都應同時報 Coverage。</p>
-        <p><strong>短缺漏樣本提醒：</strong>15 分鐘、1 小時、6 小時、24 小時、72 小時、151.5 小時的單站／五站測試，真正壅塞格數分別為 12、33、66、119、562、750；短缺結果非常容易受少數樣本影響。</p>
+        <p><strong>短缺漏樣本提醒：</strong>15 分鐘的單站／五站實驗只有 60 筆評估資料，其中真正壅塞 12 筆；即使某方法只多找回 1–2 筆，Recall 與 F1 也可能明顯改變。因此仍需擴充獨立日期與壅塞事件測試。不同缺漏長度的遮罩樣本不同，也不應從 MAE 數值直接推論「缺得越久越容易補」。</p>
         <div class="note"><strong>GP 的不確定性也不能直接當作壅塞可信度：</strong>五站全缺 72 小時，GP 名義 90% 車速區間對整體速度的實際涵蓋率約 90.9%，但只看真正壅塞的時點，涵蓋率僅 34.0%。</div>
       </section>
 
@@ -244,20 +250,17 @@
       </section>
 
       <section id="strategy">
-        <h2>六、先依「缺幾站 × 缺多久」決定是否補</h2>
-        <p>原始 VD 速度的鄰站 Pearson 相關約 0.655–0.810，扣除日週時間規律後仍有正相關，顯示空間資訊可能有效；但仍需檢查壅塞傳播時差，不能只用零時差相關就假設同速。</p>
+        <h2>六、依缺站數與時間選擇補值</h2>
+        <p>關鍵是<strong>還有沒有其他 VD 的當下觀測</strong>，以及缺口是否短到能利用前後速度。以下是待驗證的保守策略，不是已定案規則。</p>
         <div class="table-wrap"><table class="preprocess-table">
-          <thead><tr><th>缺值情境</th><th>優先候選</th><th>主研究建議</th><th>理由</th></tr></thead>
+          <thead><tr><th>缺值情境</th><th>優先作法</th><th>原因</th></tr></thead>
           <tbody>
-            <tr><td>單站／部分站短缺</td><td>KNN、IDW、線性對照</td><td><span class="mini-label done">優先驗證</span></td><td>其他站同時刻仍可能有實測證據</td></tr>
-            <tr><td>單站／部分站中長缺</td><td>KNN、ASM、GP</td><td><span class="mini-label caution">依驗證結果選</span></td><td>要考慮剩幾站、相對位置及時間差</td></tr>
-            <tr><td>五站全缺 5–15 分鐘</td><td>線性插值</td><td><span class="mini-label caution">有條件試補</span></td><td>若缺漏前後有有效觀測，可用邊界作離線估計</td></tr>
-            <tr><td>五站全缺 20–60 分鐘</td><td>線性、歷史同期對照</td><td><span class="mini-label caution">需獨立驗證</span></td><td>試驗 Recall 與事件邊界是否可接受</td></tr>
-            <tr><td>五站全缺 1–24 小時</td><td>歷史同期、GP 比較</td><td><span class="mini-label pending">主分析傾向未知</span></td><td>缺少即時站點觀測，突發壅塞容易漏掉</td></tr>
-            <tr><td>五站全缺超過 24 小時</td><td>歷史／GP 僅供 M2</td><td><span class="mini-label pending">不強制補</span></td><td>目前欠缺可靠還原當天壅塞的證據</td></tr>
+            <tr><td><strong>單站／部分站缺失</strong></td><td>KNN 優先；極短缺口另比線性插值</td><td>仍可利用其他站的實測車速；方法由各時長驗證決定</td></tr>
+            <tr><td><strong>五站全缺 ≤ 15 分鐘</strong></td><td>有前後觀測才試離線線性插值</td><td>短缺可參考前後變化，但壅塞 Recall 仍要檢查</td></tr>
+            <tr><td><strong>五站全缺 &gt; 15 分鐘</strong></td><td>主分析保留未知；歷史同期／GP 僅做 M2 比較</td><td>缺乏即時空間資訊，長缺尤其難還原突發壅塞</td></tr>
           </tbody>
         </table></div>
-        <div class="warning"><strong>時間切點尚未定案：</strong>5–15、20–60 分鐘等分組用於整理實際缺漏；「短缺適合補」尚須獨立驗證。線性插值使用缺漏後的真實車速，若將來做即時預測，不能把未來資訊當成預測當下已知的解釋變數。</div>
+        <p class="fine-print">15 分鐘只是暫定分界，仍須按 MAE、壅塞 Recall、Coverage 與下游 M0–M2 表現調整；線性插值用到缺口<strong>之後</strong>的速度，只能做離線分析，不能混作即時預測的已知資訊。</p>
       </section>
 
       <section id="versions">
@@ -299,13 +302,34 @@
           </tbody>
         </table></div>
         <h3>主要 Y 候選：距離加權的壅塞比例</h3>
-        <div class="note"><strong>C(t) = Σ[測站代表長度 × 1(速度 &lt; 40)] ／ 研究路段總長度</strong><p>白話意思：「這段道路有多大比例被測站判定為壅塞？」另保留 <strong>Y(any)</strong>（任何代表路段壅塞）及 <strong>Y(broad)</strong>（例如 C(t) ≥ 0.5 的大範圍壅塞）。0.5 是待比較的研究門檻，不是官方認定。</p></div>
+        <p>先由每支 VD 代表的道路長度決定權重，再加總「速度低於 40 km/h」的路段占比：</p>
+        <div class="equation-card">
+          <p class="equation-caption">① 每支 VD 的道路長度權重</p>
+          <math display="block" aria-label="w 下標 j 等於 d 下標 j 除以所有五站 d 的總和">
+            <msub><mi>w</mi><mi>j</mi></msub><mo>=</mo><mfrac><msub><mi>d</mi><mi>j</mi></msub><mrow><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mn>5</mn></munderover><msub><mi>d</mi><mi>k</mi></msub></mrow></mfrac>
+          </math>
+          <p class="equation-explain"><strong>d</strong> 是該站代表的公里數；五個 <strong>w</strong> 加總等於 1。站點代表範圍越長，權重越高。</p>
+        </div>
+        <div class="equation-card">
+          <p class="equation-caption">② 整段道路的壅塞比例</p>
+          <math display="block" aria-label="C 下標 t 等於五支 VD 的權重乘以速度低於 40 的指示函數之加總">
+            <msub><mi>C</mi><mi>t</mi></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mn>5</mn></munderover><msub><mi>w</mi><mi>j</mi></msub><mo>⋅</mo><mn>𝟙</mn><mo>(</mo><msub><mi>v</mi><mrow><mi>j</mi><mo>,</mo><mi>t</mi></mrow></msub><mo>&lt;</mo><mn>40</mn><mo>)</mo>
+          </math>
+          <p class="equation-explain">車速低於 40 時括號那項算 1，否則算 0。<strong>C</strong> 越大，代表壅塞的道路占比越高。</p>
+        </div>
+        <div class="equation-card">
+          <p class="equation-caption">③ 是否達到「大範圍壅塞」的候選門檻</p>
+          <math display="block" aria-label="Y 大範圍壅塞下標 t 等於 C 下標 t 至少 0.5 時為 1，否則為 0">
+            <msubsup><mi>Y</mi><mi>t</mi><mtext>broad</mtext></msubsup><mo>=</mo><mn>𝟙</mn><mo>(</mo><msub><mi>C</mi><mi>t</mi></msub><mo>≥</mo><mn>0.5</mn><mo>)</mo>
+          </math>
+          <p class="equation-explain">若至少 50% 的代表道路長度壅塞，就先標為大範圍壅塞。<strong>0.5 是研究待測門檻，不是官方標準。</strong>另保留「任何局部路段壅塞」指標作對照。</p>
+        </div>
         <p><strong>M0 不一定要補值才能判定 Y：</strong>對有缺值的時刻，可以計算「已確定壅塞的最低比例」與「假設所有未知區段都壅塞的最高比例」。若最低比例已 ≥ 0.5，便能確定大範圍壅塞；若最高比例仍 &lt; 0.5，便能確定未達門檻；其餘標記未知。</p>
         <div class="warning"><strong>進度界線：</strong>距離權重的初步計算已完成；逐五分鐘整段 Y 尚未正式產生，也尚未納入交流道精確匝道邊界。後續要比較 62–68K、完整五站範圍、改動端點的敏感度，不能宣稱目前權重已精確還原真實塞車長度。</div>
       </section>
 
       <section id="next">
-        <h2>九、研究分工、下一步與完成狀態</h2>
+        <h2>九、後續工作與完成狀態</h2>
         <div class="table-wrap"><table class="preprocess-table">
           <thead><tr><th>工作</th><th>需交付內容</th><th>狀態</th></tr></thead>
           <tbody>
@@ -318,10 +342,6 @@
             <tr><td>OD 與天氣模型</td><td>三版下游效能、資料覆蓋率與 OD 關係穩定性</td><td><span class="mini-label pending">未執行</span></td></tr>
           </tbody>
         </table></div>
-        <div class="summary-row"><h3>分工 A｜資料稽核</h3><p>交付「單站／多站／全站 × 連續缺失長度」摘要與所有缺失事件的起迄清單。</p></div>
-        <div class="summary-row"><h3>分工 B｜補值方法驗證</h3><p>固定遮罩與真值；同時報 MAE、Coverage、Recall、Precision、F1，以及事件開始和結束誤差。</p></div>
-        <div class="summary-row"><h3>分工 C｜M0–M2 策略</h3><p>明確記錄哪些情境補值、採何種方法、原本是否缺值，以及為何長時間全站缺漏保留未知。</p></div>
-        <div class="summary-row"><h3>分工 D｜整段 Y 與 OD 建模</h3><p>先定義研究道路範圍與連續／二元壅塞 Y，再比較三個版本是否真正改善 OD–壅塞分析。</p></div>
         <p class="fine-print">實驗來源：2026/10/29 的 VD 缺值稽核及九／十一方法人工遮罩結果；本頁只呈現摘要，不包含所有遮罩區塊及逐筆候選補值。詳細 VD 原始缺漏事件另見 <a href="vd.html#vd-missing-audit">VD 稽核頁</a>。</p>
       </section>
       <div class="intro-box"><strong>一句話總結</strong><p>補值是否值得採用，不取決於能否把空白填滿，而在於能否可靠還原壅塞、保留不確定性，且不讓 OD 與壅塞的研究結論被補值假設主導。若 M1／M2 在獨立驗證沒有實質改善，主研究就保留 M0。</p></div>
