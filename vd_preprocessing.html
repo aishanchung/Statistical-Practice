@@ -173,11 +173,14 @@ w<sub>j</sub> I(V<sub>j,t</sub> &lt; 40)
 <dt>c</dt><dd>大範圍壅塞門檻，正式建模時需固定並比較敏感度。</dd>
 <dt>I(·)</dt><dd>條件成立為 1，否則為 0。</dd>
 </dl>
-<p><strong>空間邊界：</strong>龍潭與大溪交流道名義里程約為 68K 與 62K；但五支 VD 範圍為 69.510–61.000K，不能直接把 8.51 公里當成交流道間主線。現階段採用候選 62–68K 中點截取權重：</p>
+<p><strong>空間邊界：</strong>五支 VD 涵蓋 61.000–69.510K（8.51 公里）；目前另以龍潭至大溪間的名義邊界 62–68K（6 公里）建立候選 Y。兩套權重都保留，避免把測站涵蓋範圍與交流道間範圍混為一談。</p>
 <div class="table-wrap"><table class="compact">
-<thead><tr><th>VD 里程</th><th class="num">69.510K</th><th class="num">65.990K</th><th class="num">63.990K</th><th class="num">61.670K</th><th class="num">61.000K</th></tr></thead>
-<tbody><tr><td>權重</td><td class="num">4.17%</td><td class="num">46.00%</td><td class="num">36.00%</td><td class="num">13.83%</td><td class="num">0%</td></tr></tbody></table></div>
-<p class="section-note">權重是以名義 62–68K 邊界與相鄰 VD 中點推算的候選值，尚非精確匝道邊界。若 VD 有缺值，不能直接把未知站當成「不壅塞」；應保留未知或計算 Y 的可能上下界。</p>
+<thead><tr><th>範圍／VD 里程</th><th class="num">69.510K</th><th class="num">65.990K</th><th class="num">63.990K</th><th class="num">61.670K</th><th class="num">61.000K</th></tr></thead>
+<tbody>
+<tr><td><strong>五站全範圍</strong><br><small>61.000–69.510K；8.51 km</small></td><td class="num">20.68%</td><td class="num">32.43%</td><td class="num">25.38%</td><td class="num">17.57%</td><td class="num">3.94%</td></tr>
+<tr class="focusrow"><td><strong>交流道間候選</strong><br><small>62–68K；6 km</small></td><td class="num">4.17%</td><td class="num">46.00%</td><td class="num">36.00%</td><td class="num">13.83%</td><td class="num">0%</td></tr>
+</tbody></table></div>
+<p class="section-note">兩套比例均依相鄰 VD 的<strong>里程中點劃分代表區間</strong>，再以各自總長度正規化；前者表示完整五站觀測範圍，後者截取名義交流道間路段。62–68K 不是已核定的匝道精確邊界，正式研究需再確認；缺值站不得直接當成「未壅塞」。</p>
 </section>
 
 <section id="models">
