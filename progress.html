@@ -302,6 +302,7 @@
 <a href="machine_learning.html">機器學習模型</a>
 <div class="sidebar-section-title">進度與報告</div>
 <a href="progress.html"  class="active">研究進度</a>
+<a href="vd_preprocessing.html" style="padding-left:42px; font-size:.94rem;">↳ VD 資料預處理</a>
 <a href="reports.html">報告簡報</a>
 </aside>
 
@@ -344,6 +345,23 @@
     <div class="progress-status-card"><strong>OD 分群</strong><span class="progress-status-value">方法規劃</span>尚待特徵建構、實作及驗證</div>
     <div class="progress-status-card"><strong>壅塞預測</strong><span class="progress-status-value">方法規劃</span>尚未完成模型訓練與效能比較</div>
   </div>
+</section>
+
+<!-- =====================================================
+     2026-10-29 VD preprocessing update
+========================================================= -->
+<section class="weekly-update" id="vd-preprocessing-20261029">
+  <div class="weekly-date">2026 / 10 / 29｜資料預處理研究紀錄</div>
+  <h2>VD 缺值處理與壅塞指標：新增研究專頁</h2>
+  <p>已完成 2024–2025 年五支北向 VD 的缺值盤點，依<strong>單站、2–4 站、五站全缺</strong>及<strong>連續缺失長度</strong>分類，並以人工遮罩測試線性插值、KNN、IDW、ASM、Random Forest、Kriging、Gaussian Process 等候選方法。</p>
+  <div class="progress-status-grid">
+    <div class="progress-status-card"><strong>真正 VD 缺值</strong><span class="progress-status-value">29,592 筆</span>占全部測站時間格 2.811%</div>
+    <div class="progress-status-card"><strong>五站全缺比重</strong><span class="progress-status-value">77.22%</span>需特別關注長時間共同缺漏</div>
+    <div class="progress-status-card"><strong>補值與建模策略</strong><span class="progress-status-value">M0–M2</span>原始／保守補值／全補候選三版本待建模比較</div>
+  </div>
+  <p><strong>研究判斷：</strong>部分站缺漏優先驗證 KNN 等可利用鄰站真實速度的方法；五站長時間全缺的壅塞 Recall 仍偏低，不宜只看速度 MAE 就強制填滿。整段路的壅塞 Y 也須考慮龍潭、大溪交流道間的實際距離與測站代表範圍。</p>
+  <p><a href="vd_preprocessing.html"><strong>前往「VD 資料預處理」完整專頁，查看數據、方法優缺點與待辦事項</strong></a></p>
+  <div class="weekly-note">進度界線：缺漏稽核、候選補值方法的初版遮罩實驗、空間權重試算已完成；正式 M0–M2 資料、OD 下游模型及逐時點整段 Y 尚待建立。</div>
 </section>
 
 <!-- =====================================================
@@ -970,6 +988,11 @@ V2_LITE
 
 </tr>
 
+
+<tr>
+<td><a href="vd_preprocessing.html">VD 資料預處理</a></td>
+<td>缺值長短分類、補值實驗、M0–M2 策略與整段壅塞指標 Y</td>
+</tr>
 
 <tr>
 
