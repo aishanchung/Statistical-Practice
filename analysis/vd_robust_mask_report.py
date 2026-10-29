@@ -106,6 +106,8 @@ def main():
     os.chdir(Path(__file__).resolve().parent)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("details_csv", type=Path)
+    parser.add_argument("--extra-details", type=Path, action="append", default=[],
+                        help="Additional block-level method CSV, e.g. GP/Kriging on exactly the same masks")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--bootstrap", type=int, default=1000)
     parser.add_argument("--seed", type=int, default=20261030)
@@ -116,6 +118,16 @@ def main():
     required = {"block_id","stratum","duration_hours","n_stations_missing","method",*SUM_COLS}
     if not required.issubset(data.columns):
         parser.error(f"Missing columns: {sorted(required - set(data.columns))}")
+    if args.extra_details:
+        extra_frames = []
+        for path in args.extra_details:
+            extra = pd.read_csv(path)
+            if not required.issubset(extra.columns):
+                parser.error(f"{path}: missing columns {sorted(required - set(extra.columns))}")
+            if set(extra["method"]).intersection(data["method"]):
+                parser.error(f"{path}: methods overlap; would double-count predictions")
+            extra_frames.append(extra[data.columns.intersection(extra.columns)])
+        data = pd.concat([data, *extra_frames], ignore_index=True, sort=False)
     args.output.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(args.seed)
     records = []
@@ -150,6 +162,32 @@ def main():
                        "knn_minus_linear_mae_kmh":ma["mae_kmh"]-mb["mae_kmh"],
                        **paired_bootstrap(aa,bb,rng,args.bootstrap)})
     pd.DataFrame(paired).to_csv(args.output/"paired_knn_vs_linear_block_ci.csv",index=False,encoding="utf-8-sig")
+    # Additional GP/Kriging comparisons, if their block-level predictions were
+    # supplied through --extra-details. All contrasts reuse the same masks.
+    contrasts = []
+    for duration,stratum,missing in sorted({k[:3] for k in block_groups}):
+        linear = block_groups.get((duration,stratum,missing,"linear_offline"))
+        if linear is None: continue
+        for name in ("historical_knn","st_kriging_ou","gp_two_timescale"):
+            candidate = block_groups.get((duration,stratum,missing,name))
+            if candidate is None: continue
+            common = candidate.index.intersection(linear.index)
+            if len(common) < 2: continue
+            x = candidate.loc[common].to_numpy(dtype=float)
+            y = linear.loc[common].to_numpy(dtype=float)
+            xm,ym = metrics(x.sum(axis=0)),metrics(y.sum(axis=0))
+            contrasts.append({
+                "duration_hours":duration,"stratum":stratum,
+                "n_stations_missing":missing,"method":name,
+                "reference":"linear_offline","n_blocks":len(common),
+                "method_f1":xm["congestion_f1"],"linear_f1":ym["congestion_f1"],
+                "f1_difference":xm["congestion_f1"]-ym["congestion_f1"],
+                "method_mae_kmh":xm["mae_kmh"],"linear_mae_kmh":ym["mae_kmh"],
+                "mae_difference_kmh":xm["mae_kmh"]-ym["mae_kmh"],
+                **paired_bootstrap(x,y,rng,args.bootstrap),
+            })
+    pd.DataFrame(contrasts).to_csv(args.output/"paired_methods_vs_linear_block_ci.csv",
+                                   index=False,encoding="utf-8-sig")
     print("Saved metrics and block-bootstrap 95% confidence intervals to",args.output)
     sel=all_metrics.query('stratum=="congestion_enriched" and n_stations_missing in [1,5] and eligible_95pct_coverage')
     best=sel.loc[sel.groupby(["duration_hours","n_stations_missing"])["congestion_f1"].idxmax()]
