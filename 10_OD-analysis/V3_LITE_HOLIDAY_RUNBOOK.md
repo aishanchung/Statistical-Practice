@@ -4,8 +4,8 @@
 
 - 日期：2024–2025 年、`DayType ∈ {WEEKEND, LONGHOLIDAY}`；不納入 `WEEKDAY`、`STANDALONEHOLIDAY` 作為主要分析樣本。**正式 V3 全程使用假日完整 24 小時；沒有 14–20 點子時段與 `is_focus_window` 欄位。**
 - VD：只納入 `K69.510`（0.0417）、`K65.990`（0.4600）、`K63.990`（0.3600）、`K61.670`（0.1383）。`K61.000` 不進入 V3 或 Y。
-- VD 原始欄位：`TargetTime,VDID,Speed,Occupancy,VDType`；負速度、缺速度與缺測站列分開標註。四站缺一不可產生正式 `Y`；沒有資料不是 `Y=0`。
-- `C_weighted = Σ_j w_j 1(Speed_j < 40)`；四站有效時，`Y=0`（`C=0`）、`Y=1`（`0<C<c`）、`Y=2`（`C>=c`），預設 `c=0.50`。如需比較門檻，重新執行 `--c 0.25`、`--c 0.75`，輸出到不同資料夾。
+- VD 原始欄位：`TargetTime,VDID,Speed,Occupancy,VDType`；負速度、缺速度與缺測站列分開標註。**一至四站有效都計算 Y；四站全缺才 Y=NA。**
+- 令 `O_t` 為有效站集合：`C_weighted = [Σ_(j∈O_t) w_j 1(Speed_j < 40)] / [Σ_(j∈O_t) w_j]`；`Y=0`（`C=0`）、`Y=1`（`0<C<c`）、`Y=2`（`C>=c`），目前預設 `c=0.50`。**只要一站有效就計算，沒有三站、75% 的限制**；但輸出有效站數和有效權重供敏感度分析。
 
 ## A. Windows PowerShell：取得程式
 
@@ -36,10 +36,10 @@ Invoke-WebRequest `
 
 已檢查 `V3_LITE_holiday_audit.zip`（91 個 OD 分檔、1 個 VD 檔）；依 **24 小時全日**統計：
 
-| 年份 | 納入假日 | 預期 5 分鐘時段 | 四站全部有效時段 | 缺少至少一站而無法計算 Y | 嚴格 Y 缺失率 | 四站逐格缺失率 |
+| 年份 | 納入假日 | 預期 5 分鐘時段 | 四站全部有效時段 | **至少一站有效、可計算 Y** | **正式 Y 缺失率** | 舊版嚴格四站缺失率 |
 |---|---:|---:|---:|---:|---:|---:|
-| 2024 | 113 | 32,544 | 30,167 | 2,377 | 7.30% | 5.34% |
-| 2025 | 117 | 33,696 | 32,527 | 1,169 | 3.47% | 1.48% |
+| 2024 | 113 | 32,544 | 30,167 | 31,024 | **4.67%** | 7.30% |
+| 2025 | 117 | 33,696 | 32,527 | 33,423 | **0.81%** | 3.47% |
 
 特別注意：2024/11/30、12/01、12/07、12/08 四站整天速度無效；2024/11/24 四站有 21 小時 55 分鐘連續缺失；2025/03/16 四站有 16 小時 25 分鐘連續缺失；2025/05/10–11 主要為 K61.670 長時間無效。報表中 `row_absent_bins=0`，缺失都落在 `invalid_speed_bins`；有列不代表有可用速度。**保留這些日期的 OD 記錄，不對缺 VD 的時段製造 Y=0；模型訓練再按有效 Y 篩選。**
 
@@ -56,6 +56,27 @@ Invoke-WebRequest `
 
 時間視硬碟及 91 個 OD 分檔容量而定；掃描 4,500 萬多筆 OD 時不會一次載入 pandas。最費時／佔空間的是 `V3_LITE_OD_TRIPS.parquet`。只需要聚合 OD 與四站資料時加 `--skip-trip-level`。
 
+### C.1 已經建立完整 V3？**只重新產生 Y，不必再跑 91 個 OD 分檔（建議）**
+
+先下載輕量修正程式到本機，然後指定先前完整 V3 的輸出資料夾：
+
+```powershell
+Invoke-WebRequest `
+  -Uri "https://raw.githubusercontent.com/aishanchung/Statistical-Practice/main/10_OD-analysis/rebuild_v3_y_available.py" `
+  -OutFile ".\10_OD analysis\rebuild_v3_y_available.py"
+
+Invoke-WebRequest `
+  -Uri "https://raw.githubusercontent.com/aishanchung/Statistical-Practice/main/10_OD-analysis/build_v3_lite_holiday.py" `
+  -OutFile ".\10_OD analysis\build_v3_lite_holiday.py"
+
+& ".\.venv\Scripts\python.exe" ".\10_OD analysis\rebuild_v3_y_available.py" `
+  --existing-v3 "D:\統計實務\M06B_project\outputs\V3_LITE_holiday_full" `
+  --output "D:\統計實務\M06B_project\outputs\V3_LITE_holiday_Y_available" `
+  --c 0.50 --threads 4 --memory-limit 4GB
+```
+
+`V3_LITE_holiday_Y_available/V3_Y_5MIN.parquet` 是新的正式 Y，`V3_focus_date_coverage.csv` 和缺失摘要也會依新規則更新。原目錄中的 OD 旅次、OD-by-pair、舊 Y、四站 VD **全部保留不覆蓋**。後續模型請指定**新 Y 的路徑**，OD 仍用原本的 V3 OD 輸出。
+
 ## D. 缺值與原始日期稽核輸出
 
 | 輸出 | 重點 |
@@ -64,7 +85,7 @@ Invoke-WebRequest `
 | `V3_calendar_focus_dates.csv` | 真正納入分析的日期清單，含週末無 OD 旅次的日期 |
 | `OD_daytype_counts.csv`、`OD_daytype_conflicts.csv` | 同一日期各個 DayType 的筆數及衝突（不默默當成一致） |
 | `OD_dates_needing_calendar_review.csv` | OD 完全沒資料的平日、DayType 衝突日、週末標錯日；**優先人工檢查** |
-| `VD_missing_summary.csv` | 依年、WEEKEND / LONGHOLIDAY、**全天 24 小時**；四站有效率、單／雙／三／四站同時缺失率 |
+| `VD_missing_summary.csv` | 依年、WEEKEND / LONGHOLIDAY、全天 24 小時；四站有效率及單／雙／三／四站同時缺失率；另列 `Y_valid_bins`、`Y_unavailable_pct` |
 | `VD_missing_by_date.csv` | 精確到日期的缺值比例與缺一支至缺四支的五分鐘格數 |
 | `VD_missing_by_date_station.csv` | 每日**每支 VD 公里位置**的 288 預期格、有效／不存在／無效速度／缺值％ |
 | `VD_missing_by_station_summary.csv` | 依站、年、DayType 的全日缺值比例 |
@@ -74,14 +95,14 @@ Invoke-WebRequest `
 | `VD_duplicate_station_time.csv` | 重複測站時間檢核；若有重複，程式會停止以免模糊平均 |
 | `V3_focus_date_coverage.csv` | 逐日期：有效 Y 的 5 分鐘格比例、所有四站同缺、OD 零旅次格比例 |
 | `V3_LITE_VD_4SITES.parquet` | 四站 × 全部預期五分鐘格；缺值保留 `MissingStatus` |
-| `V3_Y_5MIN.parquet` | 四站嚴格的 Y、C、有效站數、同格 OD 旅次數（僅診斷）；不含時間窗標記 |
+| `V3_Y_5MIN.parquet` | 有效 VD 重正規化的 Y、C、`n_valid_vd`、`weight_coverage`、`used_partial_vd`、同格 OD 旅次數（僅診斷）；不含時間窗標記 |
 | `V3_LITE_OD_TRIPS.parquet` | 正式模式：篩選過的原 OD 旅次；移除 K61.000 相關速度／佔有率欄位 |
 | `V3_OD_5MIN_BY_PAIR.parquet` | 正式模式：依 BottleneckTime/起訖門架/車種每五分鐘旅次數 |
 | `V3_run_config.json` | 參數、空間權重、`time_scope=full_day_24h`、分析日期數 |
 
-注意：VD 預期資料分母為 **每個假日每站 288 個 5 分鐘格**；不使用「實際存在的資料列數」當分母。`VD_missing_summary.csv` 中 `missing_pct` 分母為四站所有格，`strict_Y_unavailable_pct` 分母為時間格，意義不同。正式 V3 僅有 `scope=full_day`；原 2026-11-04 稽核報表中的 `focus_window` 是舊輸出，**正式版不再產生**。
+注意：VD 預期資料分母為 **每個假日每站 288 個 5 分鐘格**；不使用「實際存在的資料列數」當分母。`VD_missing_summary.csv` 中 `missing_pct` 分母為四站所有格，`Y_unavailable_pct` 分母為時間格、且只計算四站全缺的時段；`four_vd_incomplete_pct` 是純資料品質診斷，不是正式 Y 缺值率。正式 V3 僅有 `scope=full_day`；原稽核報表中的 `focus_window` 是舊輸出，**正式版不再產生**。
 
-`ROW_ABSENT` = 應有測站／時間資料列不存在；`INVALID_SPEED` = 列存在但速度負值或空值。兩者目前都保留為無法計算 Y，不做速度補值。`VDType` 原值保留，可後續辨別官方缺值標記。**某個五分鐘格 OD=0 筆不能直接認定為 OD 缺檔**；OD 沒有預期的固定旅次數基準。
+`ROW_ABSENT` = 應有測站／時間資料列不存在；`INVALID_SPEED` = 列存在但速度負值或空值。兩者都不進入**當下有效站的分子與分母**，只有四站全缺才無法計算 Y；目前不做速度補值。`VDType` 原值保留，可後續辨別官方缺值標記。**某個五分鐘格 OD=0 筆不能直接認定為 OD 缺檔**；OD 沒有預期的固定旅次數基準。
 
 ## E. 重要缺檔限制及日曆修正
 
