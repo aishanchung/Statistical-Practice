@@ -33,13 +33,14 @@ class HolidayV3Tests(unittest.TestCase):
             od_dir.mkdir()
             od = pd.DataFrame({
                 "BottleneckTime": pd.to_datetime(["2024-01-05 14:01", "2024-01-07 14:03",
-                                                    "2024-01-07 14:07", "2024-01-08 12:01",
-                                                    "2024-01-09 18:01"]),
-                "DayType": ["LONGHOLIDAY", "WEEKEND", "WEEKDAY", "STANDALONEHOLIDAY", "WEEKDAY"],
-                "GantryO": ["a"] * 5, "GantryD": ["b"] * 5,
-                "VehicleType": ["31"] * 5,
-                "VD_61p000_Speed": [90.0] * 5,
-                "VD_61p670_Speed": [90.0] * 5,
+                                                    "2024-01-07 14:07", "2024-01-07 23:17",
+                                                    "2024-01-08 12:01", "2024-01-09 18:01"]),
+                "DayType": ["LONGHOLIDAY", "WEEKEND", "WEEKDAY", "WEEKEND",
+                            "STANDALONEHOLIDAY", "WEEKDAY"],
+                "GantryO": ["a"] * 6, "GantryD": ["b"] * 6,
+                "VehicleType": ["31"] * 6,
+                "VD_61p000_Speed": [90.0] * 6,
+                "VD_61p670_Speed": [90.0] * 6,
             })
             parquet(od_dir / "part_0000.parquet", od)
 
@@ -76,9 +77,12 @@ class HolidayV3Tests(unittest.TestCase):
             con.close()
             self.assertEqual(len(vd), 3 * 288 * 4)
             self.assertEqual(len(yy), 3 * 288)
-            self.assertEqual(len(od_v3), 3)  # One Friday + two Sunday; Sat has no OD
+            self.assertEqual(len(od_v3), 4)  # One Friday + three Sunday; Sat has no OD
             self.assertNotIn("VD_61p000_Speed", od_v3.columns)
             self.assertNotIn("VD_61p000_Occupancy", od_v3.columns if "VD_61p000_Occupancy" in od_v3 else [])
+            for table in (od_v3, vd, yy):
+                self.assertNotIn("is_focus_window", table.columns)
+            self.assertTrue(od_v3.BottleneckTime.eq(pd.Timestamp("2024-01-07 23:17")).any())
             self.assertFalse(vd.VDID.str.contains("61.000").any())
             self.assertEqual(vd.loc[(vd.Time5.eq(pd.Timestamp("2024-01-05 14:00"))) &
                                     vd.SiteKM.eq("61.670"), "MissingStatus"].item(), "INVALID_SPEED")
@@ -88,9 +92,15 @@ class HolidayV3Tests(unittest.TestCase):
             self.assertEqual(yy.loc[yy.Time5.eq(pd.Timestamp("2024-01-06 14:00")), "Y"].item(), 2)
             day = pd.read_csv(out / "VD_missing_by_date_station.csv")
             jan7 = day[(day.Date.eq("2024-01-07")) & day.SiteKM.eq(63.990) &
-                       day.scope.eq("focus_window")]
-            self.assertEqual(int(jan7.expected_bins.item()), 72)
-            self.assertEqual(int(jan7.row_absent_bins.item()), 72)
+                       day.scope.eq("full_day")]
+            self.assertEqual(int(jan7.expected_bins.item()), 288)
+            self.assertEqual(int(jan7.row_absent_bins.item()), 288)
+            self.assertEqual(set(day.scope), {"full_day"})
+            summary = pd.read_csv(out / "VD_missing_summary.csv")
+            self.assertEqual(set(summary.scope), {"full_day"})
+            daily = pd.read_csv(out / "V3_focus_date_coverage.csv")
+            self.assertEqual(len(daily), 3)
+            self.assertEqual(set(daily.scope), {"full_day"})
             self.assertTrue((out / "VD_missing_runs_joint.csv").exists())
 
     def test_calendar_override_discovers_unseen_weekday_holiday(self) -> None:
