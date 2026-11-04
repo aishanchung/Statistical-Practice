@@ -55,6 +55,13 @@ class HolidayV3Tests(unittest.TestCase):
                 data.append({"TargetTime": pd.Timestamp(date + " 14:00"),
                              "VDID": "VD-N3-N-61.000-M-LOOP", "Speed": 90.0,
                              "Occupancy": 0.5, "VDType": "OBSERVED"})
+            # Exactly one usable VD: classification must still be defined.
+            data.extend([
+                {"TargetTime": pd.Timestamp("2024-01-06 14:05"),
+                 "VDID": list(mod.SITES)[0], "Speed": 80.0, "Occupancy": 0.5, "VDType": "OBSERVED"},
+                {"TargetTime": pd.Timestamp("2024-01-06 14:10"),
+                 "VDID": list(mod.SITES)[0], "Speed": 30.0, "Occupancy": 0.5, "VDType": "OBSERVED"},
+            ])
             vd_path = root / "vd.parquet"
             parquet(vd_path, pd.DataFrame(data))
             out = root / "results"
@@ -88,8 +95,17 @@ class HolidayV3Tests(unittest.TestCase):
                                     vd.SiteKM.eq("61.670"), "MissingStatus"].item(), "INVALID_SPEED")
             self.assertEqual(vd.loc[(vd.Time5.eq(pd.Timestamp("2024-01-07 14:00"))) &
                                     vd.SiteKM.eq("63.990"), "MissingStatus"].item(), "ROW_ABSENT")
-            self.assertTrue(pd.isna(yy.loc[yy.Time5.eq(pd.Timestamp("2024-01-05 14:00")), "Y"].item()))
+            self.assertEqual(yy.loc[yy.Time5.eq(pd.Timestamp("2024-01-05 14:00")), "Y"].item(), 2)
+            self.assertAlmostEqual(float(yy.loc[yy.Time5.eq(pd.Timestamp("2024-01-05 14:00")),
+                                               "weight_coverage"].item()), 0.8617)
+            self.assertAlmostEqual(float(yy.loc[yy.Time5.eq(pd.Timestamp("2024-01-05 14:00")),
+                                               "C_weighted"].item()), 1.0)
             self.assertEqual(yy.loc[yy.Time5.eq(pd.Timestamp("2024-01-06 14:00")), "Y"].item(), 2)
+            self.assertEqual(yy.loc[yy.Time5.eq(pd.Timestamp("2024-01-06 14:05")), "Y"].item(), 0)
+            self.assertEqual(yy.loc[yy.Time5.eq(pd.Timestamp("2024-01-06 14:10")), "Y"].item(), 2)
+            self.assertEqual(yy.loc[yy.Time5.eq(pd.Timestamp("2024-01-06 14:05")), "n_valid_vd"].item(), 1)
+            self.assertTrue(pd.isna(yy.loc[yy.Time5.eq(pd.Timestamp("2024-01-06 00:00")), "Y"].item()))
+            self.assertTrue(pd.isna(yy.loc[yy.Time5.eq(pd.Timestamp("2024-01-06 00:00")), "C_weighted"].item()))
             day = pd.read_csv(out / "VD_missing_by_date_station.csv")
             jan7 = day[(day.Date.eq("2024-01-07")) & day.SiteKM.eq(63.990) &
                        day.scope.eq("full_day")]
@@ -101,6 +117,12 @@ class HolidayV3Tests(unittest.TestCase):
             daily = pd.read_csv(out / "V3_focus_date_coverage.csv")
             self.assertEqual(len(daily), 3)
             self.assertEqual(set(daily.scope), {"full_day"})
+            jan6 = daily.loc[daily.Date.eq("2024-01-06")].iloc[0]
+            self.assertEqual(int(jan6.Y_valid_bins), 3)
+            self.assertEqual(int(jan6.partial_vd_bins), 2)
+            summary = pd.read_csv(out / "VD_missing_summary.csv")
+            self.assertTrue((summary.Y_valid_bins >= summary.complete_4vd_bins).all())
+            self.assertNotIn("strict_Y_unavailable_pct", summary.columns)
             self.assertTrue((out / "VD_missing_runs_joint.csv").exists())
 
     def test_calendar_override_discovers_unseen_weekday_holiday(self) -> None:
