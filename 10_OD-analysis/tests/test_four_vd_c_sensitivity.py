@@ -51,12 +51,12 @@ class FourVdCTest(unittest.TestCase):
                 self.assertEqual(wide.loc[pd.Timestamp("2024-07-01 08:00"), "69.510"], 30)
 
     def test_weights_and_labels_missing_not_free_flow(self):
-        times = pd.date_range("2024-07-01 00:00:00", periods=4, freq="5min")
+        times = pd.date_range("2024-07-01 00:00:00", periods=5, freq="5min")
         speeds = pd.DataFrame({
-            "69.510": [30.0, 80.0, 80.0, 80.0],
-            "65.990": [80.0, 30.0, 30.0, 80.0],
-            "63.990": [80.0, 80.0, 30.0, 80.0],
-            "61.670": [80.0, 80.0, 80.0, np.nan],
+            "69.510": [30.0, 80.0, 80.0, 80.0, np.nan],
+            "65.990": [80.0, 30.0, 30.0, 80.0, np.nan],
+            "63.990": [80.0, 80.0, 30.0, 80.0, np.nan],
+            "61.670": [80.0, 80.0, 80.0, np.nan, np.nan],
         }, index=times)
         with tempfile.TemporaryDirectory() as temporary:
             out = Path(temporary)
@@ -66,12 +66,17 @@ class FourVdCTest(unittest.TestCase):
             self.assertAlmostEqual(table.C_weighted.iloc[0], 0.0417)
             self.assertAlmostEqual(table.C_weighted.iloc[1], 0.4600)
             self.assertAlmostEqual(table.C_weighted.iloc[2], 0.8200)
-            self.assertTrue(np.isnan(table.C_weighted.iloc[3]))
+            self.assertAlmostEqual(table.C_weighted.iloc[3], 0.0)
+            self.assertAlmostEqual(table.weight_coverage.iloc[3], 0.8617)
+            self.assertTrue(np.isnan(table.C_weighted.iloc[4]))
             self.assertEqual(table.Y_c025.tolist()[:3], [1.0, 2.0, 2.0])
             self.assertEqual(table.Y_c050.tolist()[:3], [1.0, 1.0, 2.0])
             self.assertEqual(table.Y_c075.tolist()[:3], [1.0, 1.0, 2.0])
-            self.assertTrue(np.isnan(table.Y_c050.iloc[3]))
+            self.assertEqual(table.Y_c050.iloc[3], 0.0)
+            self.assertTrue(np.isnan(table.Y_c050.iloc[4]))
             self.assertEqual(int(yearly.missing_bins.iloc[0]), 1)
+            self.assertEqual(int(yearly.Y_valid_bins.iloc[0]), 4)
+            self.assertEqual(int(yearly.complete_four_vd_bins.iloc[0]), 3)
 
     def test_long_and_missing_time_slot(self):
         source = pd.DataFrame({
