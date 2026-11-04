@@ -55,6 +55,8 @@ def arguments() -> argparse.Namespace:
     p.add_argument("--wide-speeds", nargs=4, metavar=("K69", "K65", "K63", "K61"),
                    help="Four speed columns for 69.510,65.990,63.990,61.670 respectively")
     p.add_argument("--c-values", nargs="+", type=float, default=[0.25, 0.50, 0.75])
+    p.add_argument("--missing-speed-values", nargs="+", type=float, default=[],
+                   help="Additional known missing-value codes; do NOT mark zero missing unless source documentation confirms")
     p.add_argument("--train-year", type=int, default=2024, help="Year for main c selection report")
     p.add_argument("--min-valid", type=int, default=4, choices=[4],
                    help="Strict primary Y requires all four station speeds")
@@ -197,7 +199,10 @@ def prepare_wide(raw: pd.DataFrame, args: argparse.Namespace) -> pd.DataFrame:
     data = data.reindex(expected)
     data.index.name = "Time5"
     data = data.apply(pd.to_numeric, errors="coerce")
-    return data.mask(~np.isfinite(data) | (data < 0))
+    data = data.mask(~np.isfinite(data) | (data < 0))
+    if args.missing_speed_values:
+        data = data.mask(data.isin(args.missing_speed_values))
+    return data
 
 
 def y_col(c: float) -> str:
@@ -331,6 +336,7 @@ def main() -> None:
         json.dump({"input": args.input, "n_files": len(paths), "sites": list(SITES),
                    "weights": WEIGHTS, "c_values": thresholds, "train_year": args.train_year,
                    "missing_policy": "strict: all four must be present", "timestamp_alignment": "floor 5min",
+                   "missing_speed_values": args.missing_speed_values,
                    "time_col": args.time_col, "site_col": args.site_col,
                    "speed_col": args.speed_col, "wide_speeds": args.wide_speeds,
                    "station_map": args.station_map}, f, ensure_ascii=False, indent=2)
