@@ -9,7 +9,8 @@ Core definitions:
     There is no separate afternoon window or peak-hour flag.
   - VD: K69.510, K65.990, K63.990, K61.670 (K61.000 excluded).
   - Missing: expected 5-minute grid, including missing rows and invalid speeds.
-  - Y: strict 4/4 observed, speed < 40, weighted C, 3 classes with c=0.5.
+  - Y: use ANY valid VD (1 to 4 stations); renormalize the weights of the
+    observed stations only. All four missing -> NA. Speed < 40, c=0.5 default.
 
 OD records and their day labels need not be observed for every expected date;
 zero OD records are explicitly a *coverage flag*, NOT proof of a missing file.
@@ -314,12 +315,14 @@ def audit_vd(grid: pd.DataFrame, out: Path, args: argparse.Namespace) -> pd.Data
             n_t = len(part)
             rec = {"Year": int(year), "DayType": daytype, "scope": scope,
                    "expected_time_bins": n_t, "expected_site_bins": n_t * 4,
-                   "complete_4vd_bins": int(part.n_missing.eq(0).sum())}
+                   "complete_4vd_bins": int(part.n_missing.eq(0).sum()),
+                   "Y_valid_bins": int(part.n_missing.lt(4).sum())}
             for n in range(1, 5):
                 rec[f"bins_missing_{n}_sites"] = int(part.n_missing.eq(n).sum())
             rec["missing_site_bins"] = int(part.n_missing.sum())
             rec["missing_pct"] = 100 * rec["missing_site_bins"] / rec["expected_site_bins"] if n_t else np.nan
-            rec["strict_Y_unavailable_pct"] = 100 * (1 - rec["complete_4vd_bins"] / n_t) if n_t else np.nan
+            rec["Y_unavailable_pct"] = 100 * rec["bins_missing_4_sites"] / n_t if n_t else np.nan
+            rec["four_vd_incomplete_pct"] = 100 * (1 - rec["complete_4vd_bins"] / n_t) if n_t else np.nan
             summary_records.append(rec)
 
         station_rows = subset.loc[subset.is_missing, ["SiteKM", "Time5", "MissingStatus"]]
@@ -360,18 +363,23 @@ def audit_vd(grid: pd.DataFrame, out: Path, args: argparse.Namespace) -> pd.Data
 def y_and_daily_coverage(con: duckdb.DuckDBPyConnection, grid: pd.DataFrame,
                          od_bins: pd.DataFrame, cal: pd.DataFrame,
                          args: argparse.Namespace, out: Path) -> None:
-    print("[5/5] Writing strict four-VD Y and date-level availability...", flush=True)
+    print("[5/5] Writing available-station renormalized Y and date-level availability...", flush=True)
     frame = grid.copy()
-    frame["weighted_congested"] = np.where(frame.MissingStatus.eq("VALID"),
-                                            np.where(frame.Speed < 40, frame.weight, 0.0), 0.0)
+    valid = frame.MissingStatus.eq("VALID")
+    frame["valid_weight"] = np.where(valid, frame.weight, 0.0)
+    frame["weighted_congested"] = np.where(valid & frame.Speed.lt(40), frame.weight, 0.0)
     y = frame.groupby(["Time5", "Date", "DayType", "Year"], as_index=False).agg(
         n_valid_vd=("MissingStatus", lambda x: int(x.eq("VALID").sum())),
+        weight_coverage=("valid_weight", "sum"),
         C_weighted_sum=("weighted_congested", "sum"))
-    y["C_weighted"] = y.C_weighted_sum.where(y.n_valid_vd.eq(4))
+    # A missing VD is excluded from both numerator and denominator. In particular,
+    # do not mistake a missing station for an observed uncongested station.
+    y["C_weighted"] = y.C_weighted_sum / y.weight_coverage.where(y.weight_coverage.gt(0))
     y = y.drop(columns="C_weighted_sum")
     labels = np.select([y.C_weighted.eq(0), y.C_weighted.ge(args.c)], [0, 2], default=1)
-    y["Y"] = pd.Series(labels, dtype="Int8").where(y.n_valid_vd.eq(4))
+    y["Y"] = pd.Series(labels, dtype="Int8").where(y.n_valid_vd.gt(0))
     y["n_missing_vd"] = 4 - y.n_valid_vd
+    y["used_partial_vd"] = y.n_valid_vd.between(1, 3)
     od_bins["Time5"] = pd.to_datetime(od_bins.Time5)
     y = y.merge(od_bins, on="Time5", how="left", validate="one_to_one")
     y["od_trips_5min"] = y.od_trips_5min.fillna(0).astype("int64")
@@ -379,11 +387,15 @@ def y_and_daily_coverage(con: duckdb.DuckDBPyConnection, grid: pd.DataFrame,
     save_parquet(con, y, out / "V3_Y_5MIN.parquet")
 
     daily = y.groupby(["Date", "DayType", "Year"], as_index=False).agg(
-        expected_5min_bins=("Time5", "size"), strict_Y_valid_bins=("n_valid_vd", lambda x: int(x.eq(4).sum())),
+        expected_5min_bins=("Time5", "size"), Y_valid_bins=("n_valid_vd", lambda x: int(x.gt(0).sum())),
+        complete_4vd_bins=("n_valid_vd", lambda x: int(x.eq(4).sum())),
+        partial_vd_bins=("used_partial_vd", "sum"),
         all_4vd_missing_bins=("n_valid_vd", lambda x: int(x.eq(0).sum())),
         od_5min_zero_bins=("od_zero_records_bin", "sum"), od_records=("od_trips_5min", "sum"))
     daily["scope"] = "full_day"
-    daily["strict_Y_missing_pct"] = 100 * (1 - daily.strict_Y_valid_bins / daily.expected_5min_bins)
+    daily["Y_missing_bins"] = daily.expected_5min_bins - daily.Y_valid_bins
+    daily["Y_missing_pct"] = 100 * daily.Y_missing_bins / daily.expected_5min_bins
+    daily["four_vd_incomplete_pct"] = 100 * (1 - daily.complete_4vd_bins / daily.expected_5min_bins)
     daily["od_zero_bin_pct_NOT_missing_proof"] = 100 * daily.od_5min_zero_bins / daily.expected_5min_bins
     daily = daily.merge(cal[["Date", "calendar_source", "daytype_conflict", "od_zero_records"]],
                         on="Date", how="left", validate="many_to_one")
@@ -430,7 +442,8 @@ def main(argv: list[str] | None = None) -> None:
                 "daytype_conflicts": int(cal.daytype_conflict.sum()),
                 "VD_sites": list(SITES.keys()), "VD_weights": {v[0]: v[1] for v in SITES.values()},
                 "speed_threshold_kmh": 40, "c": args.c,
-                "strict_missing_rule": "All 4 stations must have Speed >= 0 (not null)",
+                "missing_rule": "Any 1-4 valid VDs: weighted congestion / sum of observed weights; all 4 missing: Y=NA",
+                "minimum_valid_vd": 1,
                 "trip_level_saved": not (args.audit_only or args.skip_trip_level),
                 "model_leakage_warning": "BottleneckTime retrospective OD demand is NOT real-time prediction input"}
         (out / "V3_run_config.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
