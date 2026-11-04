@@ -6,3 +6,5 @@
 - **OD 分群：** 2024 年建立分群、2025 年外部測試。比較 K-means／K-medoids／GMM／Sparse K-means，`K=2,3,4,5`，**預測最佳 K 以保留時序的壅塞預測表現判定，不以 Silhouette 直接定案。**
 - [四站 VD 壅塞 Y 與最佳預測 K：完整研究規範](10_OD-analysis/FOUR_VD_Y_AND_PREDICTIVE_K_PROTOCOL.md)
 - [OD 分群 Python 程式與使用說明](10_OD-analysis/README.md)
+
+- [四站 VD 的 c=0.25／0.50／0.75 本機比較程式與指令](10_OD-analysis/FOUR_VD_C_RUNBOOK.md)（2026-11-04：程式與合成資料測試完成，真實 VD 結果待本機執行）
