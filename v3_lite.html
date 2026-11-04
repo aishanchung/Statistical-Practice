@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="V3_LITE：國道三號龍潭至大溪北向，週末與連續假期全天 OD 旅次、四支 VD 與三類壅塞 Y。">
+  <title>V3_LITE｜國道瓶頸資料專案</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .v3-lead{max-width:950px;line-height:1.9}
+    .v3-tag{display:inline-block;background:#eaf3fb;color:#245c8a;padding:3px 11px;border-radius:18px;font-size:.84rem;font-weight:650;margin:3px 5px 3px 0}
+    .v3-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:13px;margin:18px 0 28px}
+    .v3-stat{background:#fff;border:1px solid #dce3e9;border-radius:10px;padding:17px}
+    .v3-stat .v3-value{display:block;color:#245c8a;font-size:1.8rem;font-weight:750;line-height:1.4}
+    .v3-stat .v3-label{display:block;color:#667788;font-size:.88rem}
+    .v3-note{background:#eef5fb;border-left:4px solid #245c8a;border-radius:6px;padding:15px 20px;margin:17px 0;line-height:1.8}
+    .v3-note.warn{background:#fff8e8;border-left-color:#b68124}
+    .v3-note.good{background:#edf8f1;border-left-color:#27825b}
+    .v3-table{width:100%;border-collapse:collapse;min-width:610px}
+    .v3-table th,.v3-table td{padding:11px 12px;border:1px solid #dce3e9;text-align:left;vertical-align:top}
+    .v3-table th{background:#eaf3fb;color:#245c8a}
+    .v3-table tbody tr:nth-child(even){background:#f8fafc}
+    .v3-num{text-align:right!important;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .v3-equation{border:1px solid #dce3e9;background:#fff;border-radius:10px;padding:18px 20px;margin:14px 0;text-align:center;overflow-x:auto;font-family:Georgia,"Times New Roman",serif;font-size:1.08rem}
+    .v3-equation .v3-frac{display:inline-flex;vertical-align:middle;flex-direction:column;text-align:center;line-height:1.3}
+    .v3-equation .v3-frac>span:first-child{border-bottom:1px solid #24313d;padding:0 8px 4px}
+    .v3-equation .v3-frac>span:last-child{padding:4px 8px 0}
+    .v3-list li{margin-bottom:8px;line-height:1.8}
+    .v3-toc{display:flex;flex-wrap:wrap;gap:8px 20px;margin:15px 0 25px}
+    .v3-toc a{color:#245c8a;text-decoration:none;font-weight:650}
+    .v3-foot{font-size:.9rem;color:#667788}
+    @media(max-width:650px){.v3-equation{font-size:.96rem;padding:12px}.v3-stat .v3-value{font-size:1.5rem}}
+  </style>
+</head>
+<body>
+  <button class="mobile-menu-button" onclick="toggleSidebar()" aria-label="開啟選單">☰</button>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><h1>國道瓶頸資料專案</h1><p>統計實務</p></div>
+    <div class="sidebar-section-title">首頁</div>
+    <a href="index.html">專案概述</a>
+    <div class="sidebar-section-title">資料</div>
+    <a href="v1_full.html">V1_FULL</a>
+    <a href="v1_lite.html">V1_LITE</a>
+    <a href="vd.html">VD</a>
+    <a href="v2_lite.html">V2_LITE</a>
+    <a href="v3_lite.html" class="active" aria-current="page">V3_LITE</a>
+    <div class="sidebar-section-title">研究方法與分析</div>
+    <a href="eda.html">EDA 探索分析</a>
+    <a href="od_clustering.html">OD 分群</a>
+    <a href="statistical_models.html">傳統統計模型</a>
+    <a href="machine_learning.html">機器學習模型</a>
+    <div class="sidebar-section-title">進度與報告</div>
+    <a href="progress.html">研究進度</a>
+    <a href="reports.html">報告簡報</a>
+  </aside>
+
+  <div class="main">
+    <header class="page-header">
+      <h1>V3_LITE｜節假日研究資料</h1>
+      <p>國道 3 號龍潭 → 大溪北向：以週末／連續假期的完整 24 小時資料，整合 OD 旅次、四支 VD 與三類壅塞指標 Y。</p>
+      <div><span class="v3-tag">2024–2025</span><span class="v3-tag">WEEKEND / LONGHOLIDAY</span><span class="v3-tag">4 VD</span><span class="v3-tag">5 分鐘</span><span class="v3-tag">24 小時</span></div>
+    </header>
+    <main class="content">
+      <nav class="v3-toc" aria-label="本頁章節">
+        <a href="#scope">範圍</a><a href="#calendar">日期分類</a><a href="#sites">四支 VD</a><a href="#target">壅塞 Y</a><a href="#quality">缺值</a><a href="#files">輸出與後續</a>
+      </nav>
+
+      <section id="scope">
+        <h2>一、V3_LITE 與 V2_LITE 的差異</h2>
+        <p class="v3-lead">V2_LITE 保留 2024–2025 年研究路段的旅次資料；V3_LITE 則聚焦於「週末及連續假期」的交通需求，並將壅塞標籤改以四支 VD 的加權壅塞比例建立。原始 V2 資料保留，不因 V3 篩選而被覆寫。</p>
+        <div class="v3-grid">
+          <div class="v3-stat"><span class="v3-value">230 天</span><span class="v3-label">納入的假日（2024–2025）</span></div>
+          <div class="v3-stat"><span class="v3-value">24 小時</span><span class="v3-label">每天 00:00–23:55，全部時段</span></div>
+          <div class="v3-stat"><span class="v3-value">4 站</span><span class="v3-label">正式計算 Y 的 VD 數量</span></div>
+          <div class="v3-stat"><span class="v3-value">3 類</span><span class="v3-label">未壅塞／局部／大範圍</span></div>
+        </div>
+        <div class="v3-note good"><strong>研究範圍已確認：</strong>OD 原始資料已篩選為會完整行經龍潭—大溪北向路段的旅次；兩交流道之間無中途出口，因此本版本不再區分「僅通過部分路段」。</div>
+      </section>
+
+      <section id="calendar">
+        <h2>二、假日選取與 DayType</h2>
+        <div class="table-wrap"><table class="v3-table">
+          <thead><tr><th>DayType</th><th>研究處理</th><th>2024–2025 日期數</th></tr></thead>
+          <tbody>
+            <tr><td><code>WEEKEND</code></td><td>納入：一般週六、週日</td><td class="v3-num">184 天</td></tr>
+            <tr><td><code>LONGHOLIDAY</code></td><td>納入：連續假期</td><td class="v3-num">46 天</td></tr>
+            <tr><td><code>STANDALONEHOLIDAY</code></td><td>不納入主要研究樣本：單日假期</td><td class="v3-num">5 天</td></tr>
+            <tr><td><code>WEEKDAY</code></td><td>不納入主要研究樣本：一般平日</td><td class="v3-num">496 天</td></tr>
+          </tbody></table></div>
+        <p>納入日期分布：<strong>2024 年 113 天</strong>、<strong>2025 年 117 天</strong>，合計 230 天；每一日保留 288 個五分鐘時段。所有日期以 <code>BottleneckTime</code> 所屬日判定，沒有額外的 14:00–20:00 旗標。</p>
+        <div class="v3-note"><strong>欄位精簡決策：</strong>正式分析保留原始欄位 <code>DayType</code>；<code>V3_DayType</code> 是處理程式曾額外建立的日期級標籤，目前已決定從最終使用資料中移除，避免重複。現有建置程式仍可能輸出此欄位，實際產檔時應同步刪除或改名，不宜只靠網頁說明視為已完成。</div>
+        <p class="v3-foot">日期稽核顯示 731 天中未發現同一日期的 DayType 衝突，且本次 V3 日曆分類與原始 OD 分類相同；但 46 天 LONGHOLIDAY 的官方日期對照仍可作獨立複核。</p>
+      </section>
+
+      <section id="sites">
+        <h2>三、四支 VD 與空間權重</h2>
+        <p>正式 V3 的 Y 使用交流道間候選區段之代表長度權重（四站權重總和為 1）。K61.000 屬研究範圍外延測站，不納入本版四站 Y。</p>
+        <div class="table-wrap"><table class="v3-table">
+          <thead><tr><th>VD 里程</th><th>測站類型</th><th>空間權重 w<sub>j</sub></th><th>用途</th></tr></thead>
+          <tbody>
+            <tr><td>K69.510</td><td>LOOP</td><td class="v3-num">0.0417</td><td rowspan="4">四站共同描述龍潭 → 大溪北向的壅塞空間範圍</td></tr>
+            <tr><td>K65.990</td><td>RS</td><td class="v3-num">0.4600</td></tr>
+            <tr><td>K63.990</td><td>LOOP</td><td class="v3-num">0.3600</td></tr>
+            <tr><td>K61.670</td><td>RS</td><td class="v3-num">0.1383</td></tr>
+          </tbody></table></div>
+        <p class="v3-foot">權重是依候選區間分配的代表長度，並非已經官方核定的交流道精確起訖里程；正式報告應保留此空間界線假設。</p>
+      </section>
+
+      <section id="target">
+        <h2>四、三類壅塞指標 Y</h2>
+        <p>每五分鐘先標記有效測站是否低速：<code>L(j,t) = 1[Speed(j,t) &lt; 40 km/h]</code>。若有測站缺失，僅對當下仍有效的測站重新正規化權重。</p>
+        <div class="v3-equation" aria-label="有效測站加權壅塞比例">
+          <i>C</i><sub>t</sub><sup>(w)</sup> =
+          <span class="v3-frac"><span>Σ<sub>j ∈ O(t)</sub> w<sub>j</sub> · 1[Speed<sub>j,t</sub> &lt; 40]</span><span>Σ<sub>j ∈ O(t)</sub> w<sub>j</sub></span></span>
+        </div>
+        <p><code>O(t)</code> 表示時間 t 有有效速度觀測的 VD 集合。</p>
+        <div class="table-wrap"><table class="v3-table">
+          <thead><tr><th>Y</th><th>條件</th><th>解讀</th></tr></thead>
+          <tbody>
+            <tr><td><strong>0</strong></td><td>C<sub>t</sub><sup>(w)</sup> = 0</td><td>未偵測到壅塞</td></tr>
+            <tr><td><strong>1</strong></td><td>0 &lt; C<sub>t</sub><sup>(w)</sup> &lt; c</td><td>局部壅塞</td></tr>
+            <tr><td><strong>2</strong></td><td>C<sub>t</sub><sup>(w)</sup> ≥ c</td><td>大範圍壅塞</td></tr>
+          </tbody></table></div>
+        <div class="v3-note"><strong>目前工作門檻：</strong><code>c = 0.50</code>，另保留 <code>0.25</code> 與 <code>0.75</code> 做敏感度分析。<strong>只要四支 VD 中至少一站有有效速度就計算 Y；只有四站同時無效，Y 才記為缺失（NA），絕不視為 Y=0。</strong></div>
+        <p>建議同時保留 <code>n_valid_vd</code> 與可用權重總和，方便未來比較「只有一站有效」與「四站皆有效」的結果穩健性。</p>
+      </section>
+
+      <section id="quality">
+        <h2>五、正式研究日的缺值概況</h2>
+        <p>缺值分母為所選假日全天「每五分鐘預期 1 格」；不是只統計已出現在檔案中的列，也不是每站速度的平均缺值率。</p>
+        <div class="table-wrap"><table class="v3-table">
+          <thead><tr><th>年度</th><th>假日</th><th>預期 5 分鐘格</th><th>四站皆有效</th><th>至少一站有效（Y 可計算）</th><th>Y 缺失率</th></tr></thead>
+          <tbody>
+            <tr><td>2024</td><td class="v3-num">113</td><td class="v3-num">32,544</td><td class="v3-num">30,167</td><td class="v3-num">31,024</td><td class="v3-num"><strong>4.67%</strong></td></tr>
+            <tr><td>2025</td><td class="v3-num">117</td><td class="v3-num">33,696</td><td class="v3-num">32,527</td><td class="v3-num">33,423</td><td class="v3-num"><strong>0.81%</strong></td></tr>
+          </tbody></table></div>
+        <div class="v3-note warn"><strong>資料品質提醒：</strong>2024/11/30、12/01、12/07、12/08 四站整日速度皆不可用；另有跨數小時的聯合缺失。這些日期的 OD 不因此刪除，但 Y 缺失時不應用假造的「未壅塞」取代。單／多／全站缺失的詳細起訖時間另有稽核表。</div>
+        <p>正式建模可比較「原始不補」、「只補短缺」及「完整補值」三種資料層級；是否補值應由後續預測表現和敏感度分析決定。</p>
+      </section>
+
+      <section id="files">
+        <h2>六、V3 主要輸出與後續研究</h2>
+        <div class="table-wrap"><table class="v3-table">
+          <thead><tr><th>輸出資料</th><th>觀測單位／用途</th></tr></thead>
+          <tbody>
+            <tr><td><code>V3_LITE_OD_TRIPS.parquet</code></td><td>一列一筆節假日 OD 旅次；保留旅次、日期與氣象等欄位。最終版只保留一套 DayType。</td></tr>
+            <tr><td><code>V3_OD_5MIN_BY_PAIR.parquet</code></td><td>每五分鐘 × OD 起訖組合 × 車種的旅次數；作為分群後車流量的建模輸入。</td></tr>
+            <tr><td><code>V3_LITE_VD_4SITES.parquet</code></td><td>每五分鐘 × 四支 VD 的速度、佔有率與觀測有效性。</td></tr>
+            <tr><td><code>V3_Y_5MIN.parquet</code></td><td>五分鐘三類壅塞標籤；正式使用「至少一站有效就可計算 Y」的重建版本。</td></tr>
+            <tr><td><code>V3_calendar_focus_dates.csv</code></td><td>納入研究的 230 個日期、DayType 與稽核來源。</td></tr>
+            <tr><td><code>VD_missing_*.csv</code></td><td>依日期、測站、月份及缺失連續區間的品質報表。</td></tr>
+          </tbody></table></div>
+        <ol class="v3-list">
+          <li>以 2024 年假日 OD 進行分群特徵建構；比較 K-means、K-medoids、GMM、Sparse K-means 與 K=2–5。</li>
+          <li>以五分鐘 OD 群組車流量／占比作為預測特徵，與四站 VD 的 Y 對齊。</li>
+          <li>使用 2025 年作時間上的外部驗證；最佳 K 以預測績效判定，而不是只依 Silhouette。</li>
+          <li>比較有無補值、不同 c 及有效 VD 站數的敏感度，並避免把事後才知道的交通資訊當作即時預測輸入。</li>
+        </ol>
+        <div class="v3-note"><strong>程式與可重現性：</strong><a href="https://github.com/aishanchung/Statistical-Practice/blob/main/10_OD-analysis/V3_LITE_HOLIDAY_RUNBOOK.md">V3 建置說明</a>、<a href="https://github.com/aishanchung/Statistical-Practice/blob/main/10_OD-analysis/build_v3_lite_holiday.py">正式產生程式</a>、<a href="https://github.com/aishanchung/Statistical-Practice/blob/main/10_OD-analysis/rebuild_v3_y_available.py">部分站缺失下的 Y 重建程式</a>。本頁呈現已完成稽核的研究設定；預測模型比較仍屬下一階段。</div>
+      </section>
+    </main>
+  </div>
+  <footer>統計實務 — 國道瓶頸資料專案</footer>
+  <script src="script.js"></script>
+</body>
+</html>
