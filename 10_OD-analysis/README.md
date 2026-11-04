@@ -1,5 +1,7 @@
 # N3 北向 OD 需求分群（Python）
 
+> **V3 假日子集（2026-11-04）：** 新增 [`build_v3_lite_holiday.py`](build_v3_lite_holiday.py) 與 [`V3_LITE_HOLIDAY_RUNBOOK.md`](V3_LITE_HOLIDAY_RUNBOOK.md)。保留 `WEEKEND`、`LONGHOLIDAY` 完整 24 小時，14:00–20:00 為模型重點時間窗；`STANDALONEHOLIDAY` 不進主要樣本。重新以完整日曆、四支 VD（不含 K61.000）統整逐日／逐站、單站／多站／全站缺測比例與連續缺失位置。**請先使用 `--audit-only` 核對假日日期與缺檔報表**；原 V2 不變。
+
 這套程式會讀取 `V2_LITE` 拆分後的 `part_*.parquet`，以**一組 `(GantryO, GantryD)` 為一個分群個體**，不會把 4,500 萬筆旅次直接送進分群演算法。DuckDB 只掃描所需欄位，pandas 只接收 OD 彙總資料，因此不必一次把所有原始旅次載入記憶體。
 
 已用 Google Drive 目錄中兩個真實檔案測試：`part_0000.parquet`（2024，500,000 筆）與 `part_0090.parquet`（2025，150,592 筆）。**這只是功能測試，並不是完整 2024–2025 年的分群結果。** 正式執行要在本機準備全部 91 個 `part_0000.parquet`～`part_0090.parquet`。
