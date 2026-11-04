@@ -32,6 +32,7 @@ class FourVdCTest(unittest.TestCase):
             wide_speeds = None
             flow_col = None
             station_map = None
+            missing_speed_values = []
 
         with tempfile.TemporaryDirectory() as temporary:
             folder = Path(temporary)
@@ -85,6 +86,7 @@ class FourVdCTest(unittest.TestCase):
             wide_speeds = None
             flow_col = None
             station_map = None
+            missing_speed_values = []
         wide = vd.prepare_wide(source, Args())
         self.assertEqual(len(wide), 3)
         self.assertTrue(wide.iloc[1].isna().all())
