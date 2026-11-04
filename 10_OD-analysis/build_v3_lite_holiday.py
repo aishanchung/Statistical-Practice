@@ -5,8 +5,8 @@ Core definitions:
   - Date/DayType: OD's BottleneckTime date and modal DayType per calendar date.
     Saturday/Sunday with no OD records are inferred WEEKEND. Missing weekday
     LONGHOLIDAY dates require an optional authoritative --calendar-csv.
-  - Included: WEEKEND or LONGHOLIDAY dates, full 00:00-24:00 days.
-  - Main modelling window: [14:00, 20:00); full days are retained for lags.
+  - Included: WEEKEND or LONGHOLIDAY dates, full 00:00-24:00 days ONLY.
+    There is no separate afternoon window or peak-hour flag.
   - VD: K69.510, K65.990, K63.990, K61.670 (K61.000 excluded).
   - Missing: expected 5-minute grid, including missing rows and invalid speeds.
   - Y: strict 4/4 observed, speed < 40, weighted C, 3 classes with c=0.5.
@@ -46,8 +46,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--start-date", default="2024-01-01")
     p.add_argument("--end-date", default="2025-12-31")
     p.add_argument("--calendar-csv", help="Optional authoritative overrides: Date,DayType (YYYY-MM-DD)")
-    p.add_argument("--focus-start-hour", type=int, default=14)
-    p.add_argument("--focus-end-hour", type=int, default=20)
     p.add_argument("--c", type=float, default=0.50, help="Threshold for Y=2 (weighted C >= c)")
     p.add_argument("--threads", type=int, default=4)
     p.add_argument("--memory-limit", default="4GB")
@@ -212,10 +210,7 @@ def od_exports(con: duckdb.DuckDBPyConnection, cal: pd.DataFrame,
             raw_cols = [r[0] for r in con.execute("DESCRIBE SELECT * FROM od_src").fetchall()]
             keep = [x for x in raw_cols if x not in {"VD_61p000_Speed", "VD_61p000_Occupancy"}]
             select_cols = ", ".join("o.\"" + c.replace('"', '""') + "\"" for c in keep)
-            focus_flag = (f"EXTRACT(HOUR FROM o.BottleneckTime) >= {args.focus_start_hour} "
-                          f"AND EXTRACT(HOUR FROM o.BottleneckTime) < {args.focus_end_hour}")
-            q = (f"SELECT {select_cols}, c.DayType AS V3_DayType, "
-                 f"({focus_flag}) AS is_focus_window FROM od_src o {join}")
+            q = f"SELECT {select_cols}, c.DayType AS V3_DayType FROM od_src o {join}"
             print("  Writing filtered trip-level V3_LITE (may take several minutes)...", flush=True)
             save_query_parquet(con, q, out / "V3_LITE_OD_TRIPS.parquet")
     return bins
@@ -253,7 +248,6 @@ def vd_expected(con: duckdb.DuckDBPyConnection, cal: pd.DataFrame,
         grid._merge.eq("left_only"), grid.Speed.isna() | grid.Speed.lt(0),
     ], ["ROW_ABSENT", "INVALID_SPEED"], default="VALID")
     grid = grid.drop(columns="_merge")
-    grid["is_focus_window"] = (grid.Time5.dt.hour >= args.focus_start_hour) & (grid.Time5.dt.hour < args.focus_end_hour)
     grid["Year"] = grid.Time5.dt.year
     save_parquet(con, grid, out / "V3_LITE_VD_4SITES.parquet")
     return grid
@@ -291,7 +285,8 @@ def audit_vd(grid: pd.DataFrame, out: Path, args: argparse.Namespace) -> pd.Data
     daily_overview = []
     station_runs = []
     joint_runs = []
-    for scope, subset in [("full_day", grid), ("focus_window", grid.loc[grid.is_focus_window])]:
+    # Single scope only: every included holiday's entire 24 hours.
+    for scope, subset in [("full_day", grid)]:
         # Actual denominator: expected time bins x 4 sites, never just observed rows.
         day = subset.groupby(["Year", "Date", "DayType", "SiteKM"], as_index=False).agg(
             expected_bins=("Time5", "size"), valid_bins=("MissingStatus", lambda x: int(x.eq("VALID").sum())),
@@ -369,7 +364,7 @@ def y_and_daily_coverage(con: duckdb.DuckDBPyConnection, grid: pd.DataFrame,
     frame = grid.copy()
     frame["weighted_congested"] = np.where(frame.MissingStatus.eq("VALID"),
                                             np.where(frame.Speed < 40, frame.weight, 0.0), 0.0)
-    y = frame.groupby(["Time5", "Date", "DayType", "Year", "is_focus_window"], as_index=False).agg(
+    y = frame.groupby(["Time5", "Date", "DayType", "Year"], as_index=False).agg(
         n_valid_vd=("MissingStatus", lambda x: int(x.eq("VALID").sum())),
         C_weighted_sum=("weighted_congested", "sum"))
     y["C_weighted"] = y.C_weighted_sum.where(y.n_valid_vd.eq(4))
@@ -383,21 +378,13 @@ def y_and_daily_coverage(con: duckdb.DuckDBPyConnection, grid: pd.DataFrame,
     y["od_zero_records_bin"] = y.od_trips_5min.eq(0)
     save_parquet(con, y, out / "V3_Y_5MIN.parquet")
 
-    daily = y.groupby(["Date", "DayType", "Year", "is_focus_window"], as_index=False).agg(
+    daily = y.groupby(["Date", "DayType", "Year"], as_index=False).agg(
         expected_5min_bins=("Time5", "size"), strict_Y_valid_bins=("n_valid_vd", lambda x: int(x.eq(4).sum())),
         all_4vd_missing_bins=("n_valid_vd", lambda x: int(x.eq(0).sum())),
         od_5min_zero_bins=("od_zero_records_bin", "sum"), od_records=("od_trips_5min", "sum"))
-    daily["scope"] = np.where(daily.is_focus_window, "focus_window", "outside_focus_window")
+    daily["scope"] = "full_day"
     daily["strict_Y_missing_pct"] = 100 * (1 - daily.strict_Y_valid_bins / daily.expected_5min_bins)
     daily["od_zero_bin_pct_NOT_missing_proof"] = 100 * daily.od_5min_zero_bins / daily.expected_5min_bins
-    # Also report all-day denominators (288 bins) as well as focus-window (72 bins).
-    full = daily.groupby(["Date", "DayType", "Year"], as_index=False)[
-        ["expected_5min_bins", "strict_Y_valid_bins", "all_4vd_missing_bins",
-         "od_5min_zero_bins", "od_records"]].sum()
-    full["scope"] = "full_day"
-    full["strict_Y_missing_pct"] = 100 * (1 - full.strict_Y_valid_bins / full.expected_5min_bins)
-    full["od_zero_bin_pct_NOT_missing_proof"] = 100 * full.od_5min_zero_bins / full.expected_5min_bins
-    daily = pd.concat([daily.drop(columns="is_focus_window"), full], ignore_index=True)
     daily = daily.merge(cal[["Date", "calendar_source", "daytype_conflict", "od_zero_records"]],
                         on="Date", how="left", validate="many_to_one")
     save_csv(daily, out / "V3_focus_date_coverage.csv")
@@ -407,8 +394,8 @@ def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
     start = pd.Timestamp(args.start_date)
     end = pd.Timestamp(args.end_date)
-    if start > end or not (0 <= args.focus_start_hour < args.focus_end_hour <= 24):
-        raise ValueError("Check --start-date/--end-date and focus hours")
+    if start > end:
+        raise ValueError("Check --start-date/--end-date")
     if not 0 < args.c <= 1:
         raise ValueError("--c must be in (0, 1]")
     if not np.isclose(sum(w for _, w in SITES.values()), 1.0):
@@ -437,7 +424,7 @@ def main(argv: list[str] | None = None) -> None:
         meta = {"od_input_files": len(odfiles), "vd_input_files": len(vdfiles),
                 "start_date": args.start_date, "end_date": args.end_date,
                 "focus_daytypes": sorted(FOCUS), "excluded_daytype": "STANDALONEHOLIDAY",
-                "focus_hours": f"[{args.focus_start_hour:02}:00,{args.focus_end_hour:02}:00)",
+                "time_scope": "full_day_24h",
                 "focus_dates": int(cal.is_focus_date.sum()),
                 "focus_weekday_dates_with_zero_od": int((cal.od_zero_records & cal.Date.dt.dayofweek.lt(5)).sum()),
                 "daytype_conflicts": int(cal.daytype_conflict.sum()),
