@@ -2,8 +2,8 @@
 """Four-VD congestion labels and candidate-c sensitivity (no future information).
 
 Input can be a long-format five-minute VD CSV/Parquet (one row per detector/time)
-or a wide-format table (one speed column per detector).  No missing speed is
-silently treated as free-flow traffic.
+or a wide-format table (one speed column per detector). If at least one VD is
+valid, renormalize the available station weights; if all are missing, Y=NA.
 
 Example (wide):
   python four_vd_c_sensitivity.py --input vd.csv --time-col Time5 \
@@ -221,11 +221,16 @@ def event_stats(labels: pd.Series) -> tuple[int, float, float]:
 def analyze(data: pd.DataFrame, thresholds: list[float], train_year: int, out: Path) -> None:
     if not np.isclose(sum(WEIGHTS.values()), 1.0, atol=1e-9):
         raise AssertionError("The four VD weights must sum to one")
-    valid = data[list(SITES)].notna().all(axis=1)
+    complete = data[list(SITES)].notna().all(axis=1)
+    valid = data[list(SITES)].notna().any(axis=1)
     binary = data[list(SITES)].lt(40).where(data[list(SITES)].notna(), np.nan)
-    weighted = binary.mul(pd.Series(WEIGHTS), axis="columns").sum(axis=1).where(valid)
+    available_weight = data[list(SITES)].notna().mul(pd.Series(WEIGHTS), axis="columns").sum(axis=1)
+    weighted = (binary.mul(pd.Series(WEIGHTS), axis="columns").sum(axis=1) /
+                available_weight.where(available_weight.gt(0)))
     observed = data.rename_axis("Time5").reset_index()
     observed["n_valid_vd"] = data.notna().sum(axis=1).to_numpy()
+    observed["weight_coverage"] = available_weight.to_numpy()
+    observed["used_partial_vd"] = (valid & ~complete).to_numpy()
     observed["C_weighted"] = weighted.to_numpy()
     observed["year"] = observed.Time5.dt.year
     observed["month"] = observed.Time5.dt.to_period("M").astype(str)
@@ -247,7 +252,8 @@ def analyze(data: pd.DataFrame, thresholds: list[float], train_year: int, out: P
             groups = label.value_counts()
             events, median_minutes, max_minutes = event_stats(label)
             yearly.append({"year": int(year), "c": c, "expected_bins": n_all,
-                           "complete_four_vd_bins": n_valid, "missing_bins": n_all - n_valid,
+                           "complete_four_vd_bins": int(complete.loc[block.Time5].sum()),
+                           "Y_valid_bins": n_valid, "missing_bins": n_all - n_valid,
                            "valid_fraction": n_valid / n_all if n_all else np.nan,
                            "n_Y0": int(groups.get(0.0, 0)), "n_Y1": int(groups.get(1.0, 0)),
                            "n_Y2": int(groups.get(2.0, 0)),
@@ -270,12 +276,13 @@ def analyze(data: pd.DataFrame, thresholds: list[float], train_year: int, out: P
     pd.DataFrame(monthly).to_csv(out / "c_monthly_comparison.csv", index=False, encoding="utf-8-sig")
 
     # Four on/off stations -> at most 16 spatial-coverage states.
-    # Missing timestamps are excluded below, so their temporary indicator is irrelevant.
+    # These exact four-station patterns describe only fully observed bins;
+    # Y itself can use partially observed bins.
     patterns = data[list(SITES)].lt(40).astype(int)
-    complete = patterns.loc[valid].copy()
-    complete["year"] = complete.index.year
-    complete["pattern"] = complete[list(SITES)].astype(str).agg("".join, axis=1)
-    pattern_counts = complete.groupby(["year", "pattern"]).size().reset_index(name="n_bins")
+    pattern_data = patterns.loc[complete].copy()
+    pattern_data["year"] = pattern_data.index.year
+    pattern_data["pattern"] = pattern_data[list(SITES)].astype(str).agg("".join, axis=1)
+    pattern_counts = pattern_data.groupby(["year", "pattern"]).size().reset_index(name="n_bins")
     combo_map = {"".join(map(str, bits)): sum(v * WEIGHTS[site] for v, site in zip(bits, SITES))
                  for bits in itertools.product([0, 1], repeat=4)}
     pattern_counts["C_weighted"] = pattern_counts.pattern.map(combo_map)
@@ -284,11 +291,11 @@ def analyze(data: pd.DataFrame, thresholds: list[float], train_year: int, out: P
     main = annual_df.loc[annual_df.year.eq(train_year)].sort_values("c")
     if main.empty:
         raise ValueError(f"Training year {train_year} has no timestamp observations")
-    if main.complete_four_vd_bins.max() == 0:
-        raise ValueError(f"No complete four-VD five-minute bins in training year {train_year}; "
+    if main.Y_valid_bins.max() == 0:
+        raise ValueError(f"No five-minute bins with any valid VD in training year {train_year}; "
                          "check station IDs and missing data before comparing c")
     print("\nFour-VD primary c sensitivity (training year only):")
-    print(main[["year", "c", "complete_four_vd_bins", "missing_bins", "n_Y0", "n_Y1", "n_Y2",
+    print(main[["year", "c", "Y_valid_bins", "complete_four_vd_bins", "missing_bins", "n_Y0", "n_Y1", "n_Y2",
                 "pct_Y0", "pct_Y1", "pct_Y2", "Y2_event_count", "Y2_event_median_min"]]
           .to_string(index=False, float_format=lambda v: f"{v:.4f}"))
     print("Note: 2025 output is DESCRIPTIVE ONLY; do not select c from the future test year.")
@@ -335,7 +342,8 @@ def main() -> None:
     with (out / "run_config.json").open("w", encoding="utf-8") as f:
         json.dump({"input": args.input, "n_files": len(paths), "sites": list(SITES),
                    "weights": WEIGHTS, "c_values": thresholds, "train_year": args.train_year,
-                   "missing_policy": "strict: all four must be present", "timestamp_alignment": "floor 5min",
+                   "missing_policy": "any available VD, renormalize observed weights; all four absent => Y=NA",
+                   "minimum_valid_vd": 1, "timestamp_alignment": "floor 5min",
                    "missing_speed_values": args.missing_speed_values,
                    "time_col": args.time_col, "site_col": args.site_col,
                    "speed_col": args.speed_col, "wide_speeds": args.wide_speeds,
