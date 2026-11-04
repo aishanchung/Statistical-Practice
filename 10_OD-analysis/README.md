@@ -1,6 +1,6 @@
 # N3 北向 OD 需求分群（Python）
 
-> **V3 假日分析正式版（2026-11-04 修訂）：** 使用 [`build_v3_lite_holiday.py`](build_v3_lite_holiday.py) 篩選 `WEEKEND`、`LONGHOLIDAY`（排除單日假日）；**所有分析皆為全天 24 小時，已移除 14:00–20:00 標記**。VD/Y 僅使用 K69.510、K65.990、K63.990、K61.670 四支。假日稽核顯示 2024 年完整四站 Y 缺失 7.30%、2025 年 3.47%；缺值時段保留 OD，Y 設為缺失。正式指令及詳細缺值位置見 [`V3_LITE_HOLIDAY_RUNBOOK.md`](V3_LITE_HOLIDAY_RUNBOOK.md)。原 V2 不更動。
+> **V3 假日分析正式版（2026-11-04 修訂）：** 使用 [`build_v3_lite_holiday.py`](build_v3_lite_holiday.py)，只保留 `WEEKEND`、`LONGHOLIDAY`（排除單日假日）、**研究完整 24 小時，沒有 14:00–20:00 額外時間標記**。VD/Y 只使用 K69.510、K65.990、K63.990、K61.670 四支。**任何一支有效 VD 都能計算 Y，當下可用權重重新正規化；四站全缺才 Y=NA。** 新 Y 缺失率：2024 年 4.67%、2025 年 0.81%（舊版四站嚴格版為 7.30%、3.47%）。已產生 V3 時，可使用 [`rebuild_v3_y_available.py`](rebuild_v3_y_available.py) 僅更新 Y 而不重跑 91 個 OD 分檔。Windows 指令詳見 [`V3_LITE_HOLIDAY_RUNBOOK.md`](V3_LITE_HOLIDAY_RUNBOOK.md)，原始 V2 不更動。
 
 這套程式會讀取 `V2_LITE` 拆分後的 `part_*.parquet`，以**一組 `(GantryO, GantryD)` 為一個分群個體**，不會把 4,500 萬筆旅次直接送進分群演算法。DuckDB 只掃描所需欄位，pandas 只接收 OD 彙總資料，因此不必一次把所有原始旅次載入記憶體。
 
