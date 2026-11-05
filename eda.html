@@ -21,7 +21,41 @@
 <a href="progress.html">研究進度</a>
 <a href="reports.html">報告簡報</a>
 </aside>
-<div class="main"><header class="page-header"><h1>EDA 探索性資料分析</h1><p>國道三號大溪－龍潭北向｜時間、車種、旅次距離與 OD 需求</p></header><main class="content"><section class="research-section"><h2>研究範圍與資料摘要</h2><p class="page-intro">以國道三號大溪－龍潭北向瓶頸路段為主，利用旅次紀錄、五分鐘 VD 速度與佔有率、氣象及日曆資訊，探索需求在時間、車種、距離及 OD 結構上的差異。</p><div class="research-grid"><div class="research-card"><div class="research-metric">45,150,592</div><div class="research-muted">旅次紀錄筆數</div></div><div class="research-card"><div class="research-metric">16,350</div><div class="research-muted">門架 OD 組合</div></div><div class="research-card"><div class="research-metric">731 天</div><div class="research-muted">2024–2025 年觀測期間</div></div></div></section>
+<div class="main"><header class="page-header"><h1>EDA 探索性資料分析</h1><p>國道三號大溪－龍潭北向｜時間、車種、旅次距離與 OD 需求</p></header><main class="content"><section class="research-section" id="v3-eda">
+<h2>V3_LITE｜週末與連假 OD EDA（2024–2025，已完成）</h2>
+<p class="page-intro">正式 V3 範圍為國道 3 號龍潭 → 大溪北向、共 230 個研究日，保留 16,068,709 筆旅次、11,740 組 OD。此處分析假日交通量、OD 時間輪廓與跨年相似程度；下方舊版全期間 EDA 仍保留作歷史比較，<strong>不能混用 V2 與 V3 的分母</strong>。</p>
+<div class="research-grid">
+<div class="research-card"><div class="research-metric">16,068,709</div><div class="research-muted">V3 旅次（2024＋2025）</div></div>
+<div class="research-card"><div class="research-metric">230 天</div><div class="research-muted">週末 184 天／連假 46 天</div></div>
+<div class="research-card"><div class="research-metric">11,740</div><div class="research-muted">V3 全部 OD 組合</div></div>
+<div class="research-card"><div class="research-metric">1,493</div><div class="research-muted">2024 年 ≥300 筆 OD；2025 涵蓋率 95.07%</div></div>
+</div>
+<h3>跨年／日期類別的交通量</h3>
+<div class="research-scroll"><table class="research-table"><thead><tr><th>年度</th><th>日期類別</th><th>天數</th><th>總旅次</th><th>平均旅次／天</th></tr></thead><tbody>
+<tr><td>2024</td><td>一般週末</td><td>98</td><td>6,787,300</td><td>69,258</td></tr>
+<tr><td>2024</td><td>連續假期</td><td>15</td><td>1,171,680</td><td>78,112</td></tr>
+<tr><td>2025</td><td>一般週末</td><td>86</td><td>5,876,665</td><td>68,333</td></tr>
+<tr><td>2025</td><td>連續假期</td><td>31</td><td>2,233,064</td><td>72,034</td></tr>
+</tbody></table></div>
+<div class="research-note research-warning"><strong>解讀限制：</strong>2024 連假單日平均需求確實較高，但日期數與連假季節組成不同。天氣可能影響需求，但不能僅憑年度比較就推論是下雨造成。需控制月份、連假階段、日序、降雨與其他混雜因素。</div>
+<div class="research-grid">
+<figure class="research-card" style="margin:0"><img loading="lazy" style="width:100%;height:auto" src="assets/v3/mean_daily_demand.png" alt="2024 和 2025 年週末及連假每日平均 OD 需求"><figcaption class="research-muted">每日平均旅次量，先控制不同年度的天數差異。</figcaption></figure>
+<figure class="research-card" style="margin:0"><img loading="lazy" style="width:100%;height:auto" src="assets/v3/holiday_phase_hourly.png" alt="連續假期各階段逐小時 OD 車流曲線"><figcaption class="research-muted">連假第一天、中間日、最後一天的時段型態。</figcaption></figure>
+<figure class="research-card" style="margin:0"><img loading="lazy" style="width:100%;height:auto" src="assets/v3/A_od_hourly_heatmap_2024_weekend.png" alt="2024 年週末前四十高流量 OD 各小時旅次占比的熱圖"><figcaption class="research-muted">2024 週末前 40 高流量 OD：各 OD 內部 24 小時占比。</figcaption></figure>
+<figure class="research-card" style="margin:0"><img loading="lazy" style="width:100%;height:auto" src="assets/v3/B_top5_weekend_vs_holiday_2024.png" alt="2024 年五個高流量 OD 的週末和連假小時旅次占比"><figcaption class="research-muted">高流量五組 OD 的週末／連假日內輪廓。</figcaption></figure>
+<figure class="research-card" style="margin:0"><img loading="lazy" style="width:100%;height:auto" src="assets/v3/C_2024_holiday_minus_weekend.png" alt="2024 年六個時段連假與週末 OD 占比中位數差"><figcaption class="research-muted">連假減一般週末的時段占比中位數與四分位距。</figcaption></figure>
+<figure class="research-card" style="margin:0"><img loading="lazy" style="width:100%;height:auto" src="assets/v3/D_year_to_year_profile_stability.png" alt="2024 至 2025 年 OD 分布跨年 Jensen Shannon 散度"><figcaption class="research-muted">跨年穩定性：週末 JS 中位數 0.0027、連假 0.0083。</figcaption></figure>
+</div>
+<h3>可用於分群的線索</h3>
+<ul>
+<li>2024 年 1,485 組可靠 OD 的連假－週末時段占比中位數：00–03 +4.72 pp、04–07 +1.74 pp、08–11 −0.01 pp、12–15 −1.69 pp、16–19 −4.91 pp、20–23 +0.10 pp。</li>
+<li>距離與連假／週末每日旅次比值之對數相關（Spearman）：2024 年 0.666、2025 年 0.621；僅解讀為關聯，距離原始單位仍待確認。</li>
+<li>2024 年最少 300 筆之 1,493 組 OD，涵蓋 2024 旅次 97.08% 及 2025 旅次 95.07%；其餘 OD 於預測中彙整為 OTHER。</li>
+</ul>
+<p><a class="research-link" href="v3_lite.html#v3-eda">查看 V3 EDA 統計與方法註解</a>　｜　<a class="research-link" href="od_clustering.html">查看已完成的 OD 分群 Pilot</a></p>
+</section>
+<section class="research-section"><h2>V2 全期間 EDA（歷史基準）</h2><p class="research-muted">以下原有數字是 V2 全期間樣本，不是前述 V3 週末／連假篩選後資料。</p></section>
+<section class="research-section"><h2>研究範圍與資料摘要</h2><p class="page-intro">以國道三號大溪－龍潭北向瓶頸路段為主，利用旅次紀錄、五分鐘 VD 速度與佔有率、氣象及日曆資訊，探索需求在時間、車種、距離及 OD 結構上的差異。</p><div class="research-grid"><div class="research-card"><div class="research-metric">45,150,592</div><div class="research-muted">旅次紀錄筆數</div></div><div class="research-card"><div class="research-metric">16,350</div><div class="research-muted">門架 OD 組合</div></div><div class="research-card"><div class="research-metric">731 天</div><div class="research-muted">2024–2025 年觀測期間</div></div></div></section>
 <section class="research-section"><h2>主要探索結果</h2><div class="research-grid"><div class="research-card"><h3>時間型態</h3><p>星期日需求較高，尖峰約 14:00；一般平日尖峰約 17:00，週末與平日的日內型態不同。</p></div><div class="research-card"><h3>連假階段</h3><p>連假需求維持高檔的時間較長；在暫定連假分組中，最後一天的北向尖峰約 13:00。</p></div><div class="research-card"><h3>氣象條件</h3><p>比較氣溫、露點、降雨及風速與需求的關聯；控制時間條件後，部分關聯方向改變。</p></div><div class="research-card"><h3>車種結構</h3><p>一般週末小客車需求上升較多；大型貨車、聯結車平均需求相對下降。</p></div><div class="research-card"><h3>旅次距離</h3><p>探索性分組下，100–500 公里旅次是週末需求增加的重要來源，主要由小客車貢獻。</p></div><div class="research-card"><h3>OD 長尾分布</h3><p>16,350 組 OD 中，9,266 組累積紀錄不超過 10 筆，約占 56.7%。</p></div></div></section>
 <section class="research-section"><h2>OD 篩選門檻的探索性比較</h2><div class="research-scroll"><table class="research-table"><thead><tr><th>2024 年最低筆數</th><th>符合 OD 組數</th><th>涵蓋 2025 年需求</th></tr></thead><tbody><tr><td>30</td><td>4,256</td><td>97.80%</td></tr><tr><td>100</td><td>3,103</td><td>97.51%</td></tr><tr><td>300</td><td>2,182</td><td>96.76%</td></tr><tr><td>500</td><td>1,813</td><td>96.14%</td></tr><tr><td>1,000</td><td>1,314</td><td>94.55%</td></tr></tbody></table></div><div class="research-note research-warning">這些門檻屬於敏感度比較，尚未決定最終分群門檻。旅次距離分類及部分異常 QC 日期也仍需要進一步檢查。</div></section>
 <section class="research-section"><h2>研究問題與後續工作</h2><p>在控制時間、天氣、歷史 VD 及總需求後，<strong>OD 組成能否提供額外的未來低速風險資訊？</strong></p><ul><li>持續處理缺漏時段、異常日期與特殊狀態。</li><li>建構 OD 分群所需的穩定特徵。</li><li>把旅次需求與 VD 交通狀態彙整並對齊至五分鐘尺度。</li></ul></section>

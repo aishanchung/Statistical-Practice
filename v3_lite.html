@@ -29,6 +29,10 @@
     .v3-toc{display:flex;flex-wrap:wrap;gap:8px 20px;margin:15px 0 25px}
     .v3-toc a{color:#245c8a;text-decoration:none;font-weight:650}
     .v3-foot{font-size:.9rem;color:#667788}
+    .v3-figures{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px;margin:18px 0}
+    .v3-figure{margin:0;border:1px solid #dce3e9;border-radius:10px;background:#fff;padding:10px}
+    .v3-figure img{display:block;width:100%;height:auto;border-radius:5px}
+    .v3-figure figcaption{padding:10px 5px 4px;color:#506477;font-size:.88rem;line-height:1.7}
     @media(max-width:650px){.v3-equation{font-size:.96rem;padding:12px}.v3-stat .v3-value{font-size:1.5rem}}
   </style>
 </head>
@@ -62,7 +66,7 @@
     </header>
     <main class="content">
       <nav class="v3-toc" aria-label="本頁章節">
-        <a href="#scope">範圍</a><a href="#calendar">日期分類</a><a href="#sites">四支 VD</a><a href="#target">壅塞 Y</a><a href="#quality">缺值</a><a href="#files">輸出與後續</a>
+        <a href="#scope">範圍</a><a href="#calendar">日期分類</a><a href="#sites">四支 VD</a><a href="#target">壅塞 Y</a><a href="#quality">缺值</a><a href="#v3-eda">V3 EDA</a><a href="#v3-clustering">OD 分群 Pilot</a><a href="#files">輸出與後續</a>
       </nav>
 
       <section id="scope">
@@ -138,8 +142,84 @@
         <p>正式建模可比較「原始不補」、「只補短缺」及「完整補值」三種資料層級；是否補值應由後續預測表現和敏感度分析決定。</p>
       </section>
 
+
+      <section id="v3-eda">
+        <h2>六、EDA｜V3 節假日 OD 交通需求（已完成）</h2>
+        <p class="v3-lead">分析基於 2024–2025 年的 <strong>230 個研究日、16,068,709 筆旅次及 11,740 組 OD</strong>。同時檢查日期數、總量、單日平均、日內分布及跨年穩定性，以避免把「樣本天數較多」誤解成「車流較高」。</p>
+        <div class="table-wrap"><table class="v3-table">
+          <thead><tr><th>年度</th><th>DayType</th><th>天數</th><th>總旅次</th><th>平均旅次／日</th></tr></thead>
+          <tbody>
+            <tr><td>2024</td><td>WEEKEND</td><td class="v3-num">98</td><td class="v3-num">6,787,300</td><td class="v3-num">69,258</td></tr>
+            <tr><td>2024</td><td>LONGHOLIDAY</td><td class="v3-num">15</td><td class="v3-num">1,171,680</td><td class="v3-num">78,112</td></tr>
+            <tr><td>2025</td><td>WEEKEND</td><td class="v3-num">86</td><td class="v3-num">5,876,665</td><td class="v3-num">68,333</td></tr>
+            <tr><td>2025</td><td>LONGHOLIDAY</td><td class="v3-num">31</td><td class="v3-num">2,233,064</td><td class="v3-num">72,034</td></tr>
+          </tbody>
+        </table></div>
+        <div class="v3-note warn"><strong>如何解讀跨年差異：</strong>2024 連假單日平均旅次在這份樣本中高於 2025，確實值得研究；但兩年連假日期組成、季節、天氣與假期長度不同，<strong>目前無法把差異歸因於降雨或天氣</strong>。需在相近月份及連假階段下控制天氣、日期與 OD 結構後再檢驗。</div>
+
+        <h3>主要圖表</h3>
+        <div class="v3-figures">
+          <figure class="v3-figure"><img src="assets/v3/mean_daily_demand.png" loading="lazy" alt="2024、2025 一般週末與連假每日平均 OD 旅次比較"><figcaption>每日平均需求：使用相同分母才可比較兩年假日交通量。</figcaption></figure>
+          <figure class="v3-figure"><img src="assets/v3/holiday_phase_hourly.png" loading="lazy" alt="連假不同階段逐小時車流分布"><figcaption>連假階段 × 小時：檢視 first、middle、last 是否有不同出發模式。</figcaption></figure>
+          <figure class="v3-figure"><img src="assets/v3/C_2024_holiday_minus_weekend.png" loading="lazy" alt="2024 年連假減一般週末六個四小時區間之 OD 中位數與四分位範圍"><figcaption>2024 連假相對一般週末的時段占比差，含 OD 間四分位範圍。</figcaption></figure>
+          <figure class="v3-figure"><img src="assets/v3/D_year_to_year_profile_stability.png" loading="lazy" alt="2024 和 2025 年 OD 小時分布 JS divergence 比較"><figcaption>跨年日內分布穩定性：Jensen–Shannon divergence 越接近零越相似。</figcaption></figure>
+        </div>
+        <h3>2024 連假與一般週末：時段比例的位移</h3>
+        <p>以下是 1,485 組觀測量足夠的 OD，各自計算「連假時段旅次占比 − 一般週末占比」後的<strong>跨 OD 中位數</strong>，單位為百分點（pp），不是整體交通量增減。</p>
+        <div class="table-wrap"><table class="v3-table">
+          <thead><tr><th>時段</th><th>連假－週末中位數（pp）</th><th>初步解讀</th></tr></thead>
+          <tbody>
+            <tr><td>00–03</td><td class="v3-num">+4.72</td><td>深夜占比增加</td></tr>
+            <tr><td>04–07</td><td class="v3-num">+1.74</td><td>清晨占比增加</td></tr>
+            <tr><td>08–11</td><td class="v3-num">−0.01</td><td>中位數接近不變</td></tr>
+            <tr><td>12–15</td><td class="v3-num">−1.69</td><td>中午至下午占比減少</td></tr>
+            <tr><td>16–19</td><td class="v3-num">−4.91</td><td>傍晚占比明顯下降</td></tr>
+            <tr><td>20–23</td><td class="v3-num">+0.10</td><td>晚間差異不明顯</td></tr>
+          </tbody>
+        </table></div>
+        <p>OD 日內分布跨年比較（六個四小時區間的 Jensen–Shannon divergence，0 代表相同）：一般週末中位數約 <strong>0.0027</strong>（1,491 組），連假約 <strong>0.0083</strong>（1,486 組）。表示在此尺度下週末分布跨年較相似；不代表每個 OD 都相同。</p>
+        <p>另外，OD 距離中位數與連假／週末<strong>每日平均旅次比值的對數</strong>之 Spearman 相關，2024 年約 <strong>0.666</strong>、2025 年約 <strong>0.621</strong>。這是關聯性，距離欄位單位與交通目的仍需複核。</p>
+
+        <h3>分群前的 OD 篩選</h3>
+        <div class="table-wrap"><table class="v3-table">
+          <thead><tr><th>2024 年最低旅次門檻</th><th>保留 OD 數</th><th>涵蓋 2025 旅次</th></tr></thead>
+          <tbody>
+            <tr><td>≥ 100</td><td class="v3-num">2,285</td><td class="v3-num">96.86%</td></tr>
+            <tr><td><strong>≥ 300（Pilot）</strong></td><td class="v3-num"><strong>1,493</strong></td><td class="v3-num"><strong>95.07%</strong></td></tr>
+            <tr><td>≥ 500</td><td class="v3-num">1,180</td><td class="v3-num">93.55%</td></tr>
+          </tbody></table></div>
+        <div class="v3-note"><strong>門檻 300 的意義：</strong>1,493 組 OD 涵蓋 2024 年 97.08% 及 2025 年 95.07% 旅次。尚未入群的低頻 OD 於預測階段歸入 <code>OTHER</code>，不把它們直接刪除。<a href="eda.html">其他 EDA 說明</a>。</div>
+      </section>
+
+      <section id="v3-clustering">
+        <h2>七、OD 分群｜2024 Pilot（已完成）</h2>
+        <p>對 2024 年 1,493 組高頻 OD，測試 <strong>4 組特徵（F1–F4）× 4 種方法 × K=2–5</strong>，共 <strong>64 組候選設定</strong>，並檢查三次重啟的群組穩定性。此階段是非監督式分群品質檢查，<strong>還不能宣稱哪一組最會預測壅塞</strong>。</p>
+        <div class="table-wrap"><table class="v3-table">
+          <thead><tr><th>代表設定</th><th>Silhouette</th><th>重啟穩定 ARI</th><th>用途</th></tr></thead>
+          <tbody>
+            <tr><td>F1／Sparse K-means／K=2</td><td class="v3-num">0.349</td><td class="v3-num">1.000</td><td>純時間型態基準</td></tr>
+            <tr><td>F1／K-means／K=2</td><td class="v3-num">0.345</td><td class="v3-num">0.915</td><td>一般 K-means 基準</td></tr>
+            <tr><td>F2／K-means／K=3</td><td class="v3-num">0.198</td><td class="v3-num">1.000</td><td>加上連假反應</td></tr>
+            <tr><td>F3／K-means／K=3</td><td class="v3-num">0.255</td><td class="v3-num">0.983</td><td>再加旅次距離</td></tr>
+            <tr><td>F4／K-means／K=3</td><td class="v3-num">0.218</td><td class="v3-num">0.996</td><td>再加車種結構</td></tr>
+          </tbody></table></div>
+        <figure class="v3-figure" style="max-width:800px"><img src="assets/v3/v3_pilot_silhouette.png" loading="lazy" alt="V3 OD 分群 Pilot 候選設定的 Silhouette 比較"><figcaption>64 組非監督式分群的 Pilot 比較圖；只用於初步篩選，不能取代下游 Y=2 預測驗證。</figcaption></figure>
+        <div class="v3-note"><strong>比較原則：</strong>不同 F 的特徵空間不同，Silhouette 無法當成跨特徵組的最終排名。最佳方法與 K 將以 <strong>2024 年時間順序驗證中的 Y=2 PR-AUC</strong>，加上穩定性、群組大小與可解釋性綜合選擇。<a href="od_clustering.html">完整分群設計及結果</a>。</div>
+        <h3>下一階段：提前 15 分鐘預測大範圍壅塞</h3>
+        <p>每 5 分鐘產出一筆預測，以時間 <code>t</code> 已知資訊預測 <code>Y(t+15min)</code>，即往後第 3 個五分鐘格；比較 Logistic Regression、XGBoost、LightGBM：</p>
+        <div class="table-wrap"><table class="v3-table">
+          <thead><tr><th>特徵組</th><th>內容</th><th>比較目的</th></tr></thead>
+          <tbody>
+            <tr><td><strong>B0</strong></td><td>時間、日曆、當下／歷史 VD、當下可得氣象</td><td>不使用 OD 的基準模型</td></tr>
+            <tr><td><strong>B1</strong></td><td>B0 ＋ 整體 OD 車流量</td><td>測試總需求是否有效</td></tr>
+            <tr><td><strong>B2</strong></td><td>B0 ＋ 各分群 OD 車流量 ＋ OTHER</td><td>測試分群是否增加預測資訊</td></tr>
+          </tbody></table></div>
+        <p><strong>時間切分：</strong>2024 年依時間向前驗證、決定 F／方法／K 與參數；2025 年保留做最終測試。主指標為 <strong>Y=2 的 PR-AUC（Average Precision）</strong>，並報告 Recall、F1、macro-F1、誤報率；所有特徵都必須能在 t 時點取得，不得使用事後才確認的旅次資訊。</p>
+        <div class="v3-note warn"><strong>狀態：</strong>OD 分群 Pilot 已執行；B0、B1、B2 的三種分類器尚未完成比較，因此目前沒有可公布的預測績效或最佳 K。壅塞門檻暫採 <code>c=0.50</code>，待敏感度分析複核。<a href="machine_learning.html">預測實驗架構</a>。</div>
+      </section>
+
       <section id="files">
-        <h2>六、V3 主要輸出與後續研究</h2>
+        <h2>八、V3 主要輸出與後續研究</h2>
         <div class="table-wrap"><table class="v3-table">
           <thead><tr><th>輸出資料</th><th>觀測單位／用途</th></tr></thead>
           <tbody>
@@ -151,9 +231,9 @@
             <tr><td><code>VD_missing_*.csv</code></td><td>依日期、測站、月份及缺失連續區間的品質報表。</td></tr>
           </tbody></table></div>
         <ol class="v3-list">
-          <li>以 2024 年假日 OD 進行分群特徵建構；比較 K-means、K-medoids、GMM、Sparse K-means 與 K=2–5。</li>
+          <li>已完成 2024 年 OD 分群 Pilot：K-means、K-medoids、GMM、Sparse K-means 與 K=2–5 的共 64 組候選比較。</li>
           <li>以五分鐘 OD 群組車流量／占比作為預測特徵，與四站 VD 的 Y 對齊。</li>
-          <li>使用 2025 年作時間上的外部驗證；最佳 K 以預測績效判定，而不是只依 Silhouette。</li>
+          <li>待執行 2024 時序驗證與 2025 最終測試；最佳 K 以 Y=2 的 PR-AUC 等預測績效判定，而不是只依 Silhouette。</li>
           <li>比較有無補值、不同 c 及有效 VD 站數的敏感度，並避免把事後才知道的交通資訊當作即時預測輸入。</li>
         </ol>
         <div class="v3-note"><strong>程式與可重現性：</strong><a href="https://github.com/aishanchung/Statistical-Practice/blob/main/10_OD-analysis/V3_LITE_HOLIDAY_RUNBOOK.md">V3 建置說明</a>、<a href="https://github.com/aishanchung/Statistical-Practice/blob/main/10_OD-analysis/build_v3_lite_holiday.py">正式產生程式</a>、<a href="https://github.com/aishanchung/Statistical-Practice/blob/main/10_OD-analysis/rebuild_v3_y_available.py">部分站缺失下的 Y 重建程式</a>。本頁呈現已完成稽核的研究設定；預測模型比較仍屬下一階段。</div>

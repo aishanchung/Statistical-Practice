@@ -83,7 +83,7 @@
 
 
 <main class="content">
-<section aria-labelledby="v3-news"><h2 id="v3-news">最新資料版本：V3_LITE</h2><div class="note"><strong>週末與連續假期（2024–2025）</strong>的完整 24 小時 OD 旅次，整合四支 VD 與三類壅塞 Y。共納入 230 天；四站全部缺失時 Y 才記為 NA。<a href="v3_lite.html"><strong>查看 V3_LITE 詳細說明</strong></a>。</div></section>
+<section aria-labelledby="v3-news"><h2 id="v3-news">最新資料版本：V3_LITE</h2><div class="note"><strong>週末與連續假期（2024–2025）</strong>的完整 24 小時 OD 旅次，整合四支 VD 與三類壅塞 Y。共納入 230 天；四站全部缺失時 Y 才記為 NA。<strong>V3 OD EDA 與 64 組 OD 分群 Pilot 已完成</strong>，正在規劃 Y(t+15min) 的 2024 時序驗證及 2025 最終測試。<a href="v3_lite.html"><strong>查看 V3_LITE 詳細說明</strong></a>。</div></section>
 
 
 
@@ -320,7 +320,31 @@ V2_LITE
 <br><br>
 
 <strong>
-重新進行正式 EDA
+V3_LITE
+</strong>
+
+<br>
+
+節假日 OD、四支 VD、三類 Y
+
+<br><br>
+
+↓
+
+<br><br>
+
+<strong>
+V3 EDA／OD 分群 Pilot（完成）
+</strong>
+
+<br><br>
+
+↓
+
+<br><br>
+
+<strong>
+15 分鐘壅塞預測（待實證）
 </strong>
 
 </div>
@@ -471,7 +495,7 @@ V1_LITE +
 </td>
 
 </tr>
-
+<tr><td><a href="v3_lite.html">V3_LITE</a></td><td>N3 北向週末／連假</td><td>2024–2025，OD、4 VD、三類壅塞 Y</td><td>V3 EDA 與 OD 分群 Pilot</td><td><strong>EDA／分群 Pilot 已完成</strong></td></tr>
 </table>
 
 </div>
@@ -565,15 +589,15 @@ V2_LITE
 <div class="card">
 
 <strong>
-正式 EDA
+V3 EDA／OD 分群 Pilot
 </strong>
 
 <div class="big-number">
-下一步
+完成
 </div>
 
 <p>
-重新建立正式分析
+64 組候選已完成；15 分鐘預測待驗證
 </p>
 
 </div>
@@ -598,19 +622,13 @@ V2_LITE
 
 <div class="note">
 
-目前資料整理階段已完成。
-
-後續將不直接沿用前期探索性分析結果，
-而是以新的 V2_LITE 為基礎，
-重新進行正式 EDA。
+V3 節假日 OD EDA 已完成，並以 2024 年 1,493 組高頻 OD 執行 64 組分群 Pilot；尚未決定最終最佳 K。
 
 </div>
 
 
 <p>
-後續分析將重新從交通量時間分布、
-VD 壅塞狀態、旅次特性、OD 結構、
-日期型態、氣象因素及其與壅塞的關係開始整理。
+下一階段：以 Logistic Regression、XGBoost、LightGBM 比較 B0（不含 OD）、B1（加入 OD 總量）、B2（加入 OD 群組需求），以 2024 時序驗證選模、2025 作最終測試，預測 <strong>15 分鐘後 Y=2 大範圍壅塞</strong>。<a href="od_clustering.html">查看分群 Pilot</a>、<a href="machine_learning.html">查看模型設計</a>。
 </p>
 
 </section>
