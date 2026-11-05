@@ -225,3 +225,11 @@ V3 OD-pair 特徵 EDA 與第一輪 64 組無監督分群已執行；壅塞預測
 - 本次只跑無監督分群，**尚未測試 Logistic Regression／XGBoost／LightGBM 的 B0／B1／B2 2024 時序驗證與 2025 外部測試**。
 
 結果檔：[`v3_method_scores.csv`](results/v3_od_cluster_pilot/v3_method_scores.csv)、[`v3_cluster_profiles_all.csv`](results/v3_od_cluster_pilot/v3_cluster_profiles_all.csv)、[`v3_od_labels_wide.csv`](results/v3_od_cluster_pilot/v3_od_labels_wide.csv)。程式：[`v3_od_cluster_pilot.py`](v3_od_cluster_pilot.py)。原始旅次級 V3 Parquet 不放 GitHub。
+
+
+## I. 15 分鐘後壅塞預測（2026-11-05 確認）
+
+- 已決定以 `t` 時間格可取得的資料預測 `Y(t+15 分鐘)`（即往後三個五分鐘格），重點為 `Y=2` 的大範圍壅塞。
+- 模型比較：**Logistic Regression、XGBoost、LightGBM**；依序 B0（無 OD）、B1（總 OD 車流）、B2（分群 + OTHER 車流）。用相同 2024 時序交叉驗證，比較 B2−B1 的 PR-AUC / Y=2 Recall、F1、macro-F1、誤報率。
+- 2024 內各折需只依訓練期資料建立 OD 特徵與群組；2025 保留最終外部測試。現有已完成 64 組分群屬完整 2024 的**描述性 pilot**，還不能直接當作 2024 滾動驗證之無洩漏分群。
+- `BottleneckTime` 的完整 OD 在即時情境可能尚未可知。提前預測請先使用資訊發布時間已確認的已完成旅次（候選 `DetectionTimeD`），而非直接套用事後完整 OD 配對數量。正式 Y 門檻 c 尚待定案。
