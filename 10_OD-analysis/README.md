@@ -19,6 +19,12 @@
 - 主分析只使用 **四站** K69.510、K65.990、K63.990、K61.670 的既定權重；2024 年用來選擇 c，2025 年留作外部評估。不以未經驗證的 c 直接選出預測最佳 K。
 - 目前 Git 僅包含**程式與合成資料測試**，尚未取得使用者本機 VD 原檔，因此沒有真實 c 比例結果，也尚未執行 16 組分群下游壅塞預測。
 
+## V3 快速進度入口（2026-11-05）
+
+- **已完成**：[V3 OD-pair EDA 與 64 組分群實驗](V3_OD_CLUSTER_PILOT_20261105.md)，資料為 2024 WEEKEND／LONGHOLIDAY，門檻 300 筆，共 1,493 OD。
+- **V3 專用程式**：[`v3_od_cluster_pilot.py`](v3_od_cluster_pilot.py)；與下方原 V2_LITE 全年分群程式分開，請勿直接套用舊版 WEEKDAY 特徵。
+- **下一步**：把全 64 組 OD 標籤轉成五分鐘群組量，2024 時序 CV 對照 B0 無 OD／B1 總量／B2 分群量；Logistic Regression、XGBoost、LightGBM 三模型同切分，2025 留作最終測試。預測 Y 的主要 c 與 horizon 仍待固定。
+
 ## 1. 安裝
 
 建議 Python 3.10 或更新版本。Windows PowerShell：
