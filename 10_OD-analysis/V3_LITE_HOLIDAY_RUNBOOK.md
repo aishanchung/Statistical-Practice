@@ -166,19 +166,19 @@ Date,DayType
 
 - **12:00–19:59** 旅次占各 OD 全天比例約 **42.5%–66.9%**，中位數 **53.5%**。
 - **18/20** 組 OD 的單小時尖峰落在 13:00–17:00，另 **2/20** 組尖峰為 22:00。
-- 例：\`01F1699N → 03F0394N\` 的下午占比約 **42.5%**、尖峰 22:00；\`03F0698N → 03F0394N\` 約 **66.9%**、尖峰 17:00。
+- 例：`01F1699N → 03F0394N` 的下午占比約 **42.5%**、尖峰 22:00；`03F0698N → 03F0394N` 約 **66.9%**、尖峰 17:00。
 - 這些觀察初步支持**OD 之間的時間分布存在異質性**，但前 20 大且合併年度／日型的結果不能直接代表全部 OD，也不能證明連假效果。
 
 ### G.4 車種、距離、天氣與 Y 資料品質
 
-- \`VehicleType\` 31、32 為主要代碼；沒有經官方代碼表驗證之前，不應自行替代碼指定車種語意。
-- \`TripLength\` 全期中位數約 **72.78**、第 95 百分位約 **268.88**（原程式自動推斷 km；正式解讀須再核對原始單位）。距離可能與 OD 的起終門架高度相關，因此與門架空間特徵有重複風險。
-- 既有天氣 EDA 顯示不同年份、日型的降雨分布可能不同；\`precipitation > 0\` 很敏感，不能單憑圖推論「2025 旅次較少是因為下雨」。天氣留作後續時變預測共變數，不直接當成固定 OD 群組特徵。
+- `VehicleType` 31、32 為主要代碼；沒有經官方代碼表驗證之前，不應自行替代碼指定車種語意。
+- `TripLength` 全期中位數約 **72.78**、第 95 百分位約 **268.88**（原程式自動推斷 km；正式解讀須再核對原始單位）。距離可能與 OD 的起終門架高度相關，因此與門架空間特徵有重複風險。
+- 既有天氣 EDA 顯示不同年份、日型的降雨分布可能不同；`precipitation > 0` 很敏感，不能單憑圖推論「2025 旅次較少是因為下雨」。天氣留作後續時變預測共變數，不直接當成固定 OD 群組特徵。
 - 四支 VD 任一站有效即計算 Y；全站缺時 Y=NA。2024 假日 Y 不可用比例約 **4.67%**，2025 約 **0.81%**。本階段純 OD 分群 EDA **不使用 Y 作為特徵**。
 
 ### G.5 下一輪 OD-pair 小型 EDA（程式已上傳、尚待全量執行）
 
-程式：[**v3_od_quick_eda.py**](v3_od_quick_eda.py)。沿用 V3 日曆的 \`DayType\`，**忽略冗餘的 \`V3_DayType\` 欄**；以 \`BottleneckTime\` 描述 OD 旅次，完整 24 小時：
+程式：[**v3_od_quick_eda.py**](v3_od_quick_eda.py)。沿用 V3 日曆的 `DayType`，**忽略冗餘的 `V3_DayType` 欄**；以 `BottleneckTime` 描述 OD 旅次，完整 24 小時：
 
 1. **OD 24 小時型態**：每組 OD 在 WEEKEND／LONGHOLIDAY 各小時的比例熱圖與前五大 OD 對照。
 2. **連假效應**：六個 4 小時區塊的連假減週末占比（百分點）；同 OD 日型分布的 JS divergence。
@@ -186,24 +186,24 @@ Date,DayType
 4. **跨年穩定**：各 OD 的 2024 vs 2025 六區塊分布 JS divergence。兩邊各至少 30 筆才計算，以免小樣本誤判。
 5. **涵蓋率**：2024 年每 OD ≥100／300／500 筆，列出 2024、2025 的旅次涵蓋比例。
 
-輸出 \`README_results.md\`、CSV 及 A–D 四張 PNG 圖；**截至本次更新，這些逐 OD × 年 × 日型的結果尚未取得，不能填入虛構數值**。
+輸出 `README_results.md`、CSV 及 A–D 四張 PNG 圖；**截至本次更新，這些逐 OD × 年 × 日型的結果尚未取得，不能填入虛構數值**。
 
-本機 PowerShell（假設檔案保存在 \`10_OD analysis\`，不是 Git 的連字號目錄）：
+本機 PowerShell（假設檔案保存在 `10_OD analysis`，不是 Git 的連字號目錄）：
 
-\`\`\`powershell
-Invoke-WebRequest \`
-  -Uri "https://raw.githubusercontent.com/aishanchung/Statistical-Practice/main/10_OD-analysis/v3_od_quick_eda.py" \`
-  -OutFile "D:\\統計實務\\M06B_project\\10_OD analysis\\v3_od_quick_eda.py"
+```powershell
+Invoke-WebRequest `
+  -Uri "https://raw.githubusercontent.com/aishanchung/Statistical-Practice/main/10_OD-analysis/v3_od_quick_eda.py" `
+  -OutFile "D:\統計實務\M06B_project\10_OD analysis\v3_od_quick_eda.py"
 
-& "D:\\統計實務\\M06B_project\\.venv\\Scripts\\python.exe" \`
-  "D:\\統計實務\\M06B_project\\10_OD analysis\\v3_od_quick_eda.py" \`
-  --input "D:\\統計實務\\Data\\V3_LITE\\V3_LITE.parquet" \`
-  --calendar "D:\\統計實務\\Data\\V3_LITE\\V3_Y_5MIN.parquet" \`
-  --output "D:\\統計實務\\Data\\V3_LITE\\od_quick_eda" \`
+& "D:\統計實務\M06B_project\.venv\Scripts\python.exe" `
+  "D:\統計實務\M06B_project\10_OD analysis\v3_od_quick_eda.py" `
+  --input "D:\統計實務\Data\V3_LITE\V3_LITE.parquet" `
+  --calendar "D:\統計實務\Data\V3_LITE\V3_Y_5MIN.parquet" `
+  --output "D:\統計實務\Data\V3_LITE\od_quick_eda" `
   --min-trips 300 --threads 4
-\`\`\`
+```
 
-若尚未安裝依賴，先執行 \`python -m pip install duckdb pandas numpy matplotlib\`。**連假 first／middle／last 此次不拆成大量 OD 特徵**，先確認樣本數與 2024／2025 型態穩定，再決定是否納入。
+若尚未安裝依賴，先執行 `python -m pip install duckdb pandas numpy matplotlib`。**連假 first／middle／last 此次不拆成大量 OD 特徵**，先確認樣本數與 2024／2025 型態穩定，再決定是否納入。
 
 後續候選特徵：FS1＝時間分布，FS2＝時間＋週末／連假差異，FS3＝再加入車種／距離。這些只是待比較的候選，尚未執行 V3 分群或壅塞預測。
 
