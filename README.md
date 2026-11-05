@@ -16,5 +16,8 @@
 ### EDA（V3_LITE）
 
 - [已完成的 V3 EDA 統整：OD 長尾、車流時間分布、週末 vs 連假、車種／距離、天氣與資料限制](10_OD-analysis/V3_LITE_HOLIDAY_RUNBOOK.md#g-eda-v3_lite2026-11-05)
-- [OD-pair 進階 EDA 程式](10_OD-analysis/v3_od_quick_eda.py)：逐 OD × 2024/2025 × WEEKEND/LONGHOLIDAY 的 24 小時比例、假日差異、車種、距離及跨年穩定性（待全量執行）。
+- [OD-pair 進階 EDA 程式](10_OD-analysis/v3_od_quick_eda.py)：逐 OD × 2024/2025 × WEEKEND/LONGHOLIDAY 的 24 小時比例、假日差異、車種、距離及跨年穩定性（已完成 2024／2025 全量 EDA）。
 - 已確認 V3 共 **16,068,709** 筆、**230** 個研究假日；2024 OD 每組 ≥300 筆時選入 **1,493** 組，涵蓋 2025 年約 **95.07%** 旅次。其他明細與未完成項目見上方 EDA。
+
+- [**V3 OD-pair EDA 實際發現與 64 組分群 pilot**](10_OD-analysis/V3_OD_CLUSTER_PILOT_20261105.md)：比較四個特徵組、K-means／K-medoids／GMM／Sparse K-means、K=2–5；含每群特徵解讀、分群分數與下游 LR／XGBoost／LightGBM 評估設計。**尚未完成壅塞預測**。
+- [OD 分群結果：全部候選的分數、群組特性與 OD 標籤](10_OD-analysis/results/v3_od_cluster_pilot/v3_method_scores.csv)（其餘 CSV 連結位於上述研究紀錄）。
