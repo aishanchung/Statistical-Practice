@@ -91,3 +91,8 @@ C2 長距離、連假需求反應較高；C3 較短距離且包含大量旅次�
 重要輸出：[`results/v3_od_cluster_pilot/v3_method_scores.csv`](results/v3_od_cluster_pilot/v3_method_scores.csv)、[`results/v3_od_cluster_pilot/v3_cluster_profiles_all.csv`](results/v3_od_cluster_pilot/v3_cluster_profiles_all.csv)、[`results/v3_od_cluster_pilot/v3_od_labels_wide.csv`](results/v3_od_cluster_pilot/v3_od_labels_wide.csv)。Wide labels 以每 OD 一列、各方法/特徵/K 一欄保存，方便日後與五分鐘 OD 車流做 join；**所有 64 組皆有標籤，不只存最好的那組**。
 
 分析程式與結果可由同一筆資料重跑；方法和亂數種子均固定。完整原始 V3 Parquet 不放 GitHub。
+
+
+## 6. 已固定的下游預測時間點（2026-11-05 使用者確認）
+
+主要研究先採 **15 分鐘提前預測**：`t` 的特徵 → `Y_(t+3)`（5 分鐘格）；以 `Y=2` PR-AUC 為主要指標，三分類 macro-F1 與 Recall/F1 同時報告。Logistic Regression、XGBoost、LightGBM 使用共同 2024 時序交叉驗證，2025 僅外部測試。OD 完整起訖資訊不能用事後 `BottleneckTime` 直接冒充 `t` 時已知的即時特徵；必要時需以已完成旅次及資料延遲重新彙整。Y 門檻 `c` 仍未最終固定，尚未產生模型預測分數。
