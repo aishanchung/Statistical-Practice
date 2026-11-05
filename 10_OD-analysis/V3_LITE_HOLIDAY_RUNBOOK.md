@@ -131,7 +131,7 @@ Date,DayType
 
 ## G. EDA（V3_LITE，2026-11-05）
 
-> **狀態：先前 V3 完整 EDA 已完成；OD 配對層級的週末／連假特徵細查，程式已完成、待全量執行。** 本節只呈現實際已算過的資料，不把觀察寫成預測績效或氣象因果結論。
+> **狀態：先前 V3 完整 EDA、OD 配對層級的 2024／2025 週末／連假特徵細查均已完成；2024 OD 分群 pilot 已執行 64 個候選。** 本節只呈現實際已算過的資料，不把觀察寫成預測績效或氣象因果結論。
 
 ### G.1 範圍、總量與日期
 
@@ -180,7 +180,7 @@ Date,DayType
 - 既有天氣 EDA 顯示不同年份、日型的降雨分布可能不同；`precipitation > 0` 很敏感，不能單憑圖推論「2025 旅次較少是因為下雨」。天氣留作後續時變預測共變數，不直接當成固定 OD 群組特徵。
 - 四支 VD 任一站有效即計算 Y；全站缺時 Y=NA。2024 假日 Y 不可用比例約 **4.67%**，2025 約 **0.81%**。本階段純 OD 分群 EDA **不使用 Y 作為特徵**。
 
-### G.5 下一輪 OD-pair 小型 EDA（程式已上傳、尚待全量執行）
+### G.5 已完成的 OD-pair 小型 EDA（2024／2025）
 
 程式：[**v3_od_quick_eda.py**](v3_od_quick_eda.py)。沿用 V3 日曆的 `DayType`，**忽略冗餘的 `V3_DayType` 欄**；以 `BottleneckTime` 描述 OD 旅次，完整 24 小時：
 
@@ -190,7 +190,7 @@ Date,DayType
 4. **跨年穩定**：各 OD 的 2024 vs 2025 六區塊分布 JS divergence。兩邊各至少 30 筆才計算，以免小樣本誤判。
 5. **涵蓋率**：2024 年每 OD ≥100／300／500 筆，列出 2024、2025 的旅次涵蓋比例。
 
-輸出 `README_results.md`、CSV 及 A–D 四張 PNG 圖；**截至本次更新，這些逐 OD × 年 × 日型的結果尚未取得，不能填入虛構數值**。
+已取得 `README_results.md`、8 份 EDA CSV 及 A–D 四張 PNG 圖；本節結果摘要與完整分群進度見下方 H 節。
 
 本機 PowerShell（假設檔案保存在 `10_OD analysis`，不是 Git 的連字號目錄）：
 
@@ -209,6 +209,19 @@ Invoke-WebRequest `
 
 若尚未安裝依賴，先執行 `python -m pip install duckdb pandas numpy matplotlib`。**連假 first／middle／last 此次不拆成大量 OD 特徵**，先確認樣本數與 2024／2025 型態穩定，再決定是否納入。
 
-後續候選特徵：FS1＝時間分布，FS2＝時間＋週末／連假差異，FS3＝再加入車種／距離。這些只是待比較的候選，尚未執行 V3 分群或壅塞預測。
+V3 OD-pair 特徵 EDA 與第一輪 64 組無監督分群已執行；壅塞預測與預測最佳 K 尚未完成。
 
 資料更新位置：[V3 Google Drive](https://drive.google.com/drive/folders/1lwLzrDoav_PEFxuQTkq0bdHHh_OBjybR?usp=drive_link)。
+
+
+## H. OD-pair EDA 數值結果與分群 pilot（2026-11-05 更新）
+
+- [完整 EDA 解讀、候選特徵、64 組 V3 分群結果與未完成的預測驗證](V3_OD_CLUSTER_PILOT_20261105.md)。
+- 2024 OD ≥300 筆，共 **1,493 OD**；2024 全量資料建立固定 OD 群組。輸出全部 **4 特徵組 × 4 方法 × K=2–5 = 64 組**，皆有 OD 標籤與群組特性表。
+- 假日對比：2024 每組 OD 的「連假−週末」比例差，中位數 00–03 時 **+4.72 pp**、16–19 時 **−4.91 pp**。這些是相對占比，不可解讀為絕對車流下降。
+- 2024 OD 距離 vs 連假/週末每日需求比的 Spearman 相關約 **0.666**；2025 對應約 **0.621**，支持把距離當作待比較特徵，不能直接認定因果。
+- 2024 vs 2025 週末日內分布的 JS divergence 中位數 **0.0027**；連假 **0.0083**；2024 週末 vs 連假 **0.0232**。兩年連假天數與組成不同，解釋須謹慎。
+- 探索性分群 F1/Sparse/K=2 Silhouette **0.349**；但**不表示對壅塞預測最好**。示例 F3/K-means/K=3 的三群 OD 數為 340／729／424，各群可依距離、時段及連假需求增幅解釋。
+- 本次只跑無監督分群，**尚未測試 Logistic Regression／XGBoost／LightGBM 的 B0／B1／B2 2024 時序驗證與 2025 外部測試**。
+
+結果檔：[`v3_method_scores.csv`](results/v3_od_cluster_pilot/v3_method_scores.csv)、[`v3_cluster_profiles_all.csv`](results/v3_od_cluster_pilot/v3_cluster_profiles_all.csv)、[`v3_od_labels_wide.csv`](results/v3_od_cluster_pilot/v3_od_labels_wide.csv)。程式：[`v3_od_cluster_pilot.py`](v3_od_cluster_pilot.py)。原始旅次級 V3 Parquet 不放 GitHub。
