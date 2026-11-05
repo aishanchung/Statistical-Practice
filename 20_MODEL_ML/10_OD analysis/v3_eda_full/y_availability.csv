@@ -1,0 +1,5 @@
+﻿Year,DayType,expected_bins,y_valid_bins,all_missing_bins,partial_vd_bins,y_rule_violations
+2024,LONGHOLIDAY,4320,4304,16.0,34.0,0.0
+2024,WEEKEND,28224,26720,1504.0,823.0,0.0
+2025,LONGHOLIDAY,8928,8857,71.0,61.0,0.0
+2025,WEEKEND,24768,24566,202.0,835.0,0.0

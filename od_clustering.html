@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OD 分群｜國道瓶頸資料專案</title><link rel="stylesheet" href="style.css"><style>
+.page-intro{max-width:920px;line-height:1.85}.research-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:16px;margin:20px 0}.research-card{padding:20px;background:#fff;border:1px solid #dce3e9;border-radius:10px}.research-card h3{margin:0 0 10px;color:#245c8a}.research-card p{margin:0;line-height:1.8}.research-metric{font-weight:750;font-size:27px;color:#245c8a}.research-muted{color:#627282;font-size:14px}.research-table{width:100%;border-collapse:collapse;min-width:560px}.research-table th,.research-table td{border:1px solid #dce3e9;padding:12px;text-align:left;vertical-align:top}.research-table th{background:#eef5fb;color:#245c8a}.research-scroll{overflow-x:auto}.research-note{background:#eef5fb;border-left:4px solid #245c8a;padding:16px 20px;margin:16px 0;border-radius:6px;line-height:1.8}.research-warning{background:#fff8e8;border-left-color:#c18a1c}.research-section{margin:30px 0}.research-section p,.research-section li{line-height:1.85}.research-section li{margin-bottom:7px}.research-pills{display:flex;flex-wrap:wrap;gap:9px;margin:15px 0}.research-pill{background:#eaf3fb;border-radius:30px;padding:5px 13px;font-size:13px;color:#245c8a}.research-link{color:#245c8a;font-weight:600}
+</style></head>
+<body><button class="mobile-menu-button" onclick="toggleSidebar()">☰</button>
+<aside class="sidebar" id="sidebar"><div class="sidebar-brand"><h1>國道瓶頸資料專案</h1><p>統計實務</p></div>
+<div class="sidebar-section-title">首頁</div>
+<a href="index.html">專案概述</a>
+<div class="sidebar-section-title">資料</div>
+<a href="v1_full.html">V1_FULL</a>
+<a href="v1_lite.html">V1_LITE</a>
+<a href="vd.html">VD</a>
+<a href="v2_lite.html">V2_LITE</a>
+<a href="v3_lite.html">V3_LITE</a>
+<div class="sidebar-section-title">研究方法與分析</div>
+<a href="eda.html">EDA 探索分析</a>
+<a href="od_clustering.html"  class="active">OD 分群</a>
+<a href="statistical_models.html">傳統統計模型</a>
+<a href="machine_learning.html">機器學習模型</a>
+<div class="sidebar-section-title">進度與報告</div>
+<a href="progress.html">研究進度</a>
+<a href="reports.html">報告簡報</a>
+</aside>
+<div class="main"><header class="page-header"><h1>OD 分群</h1><p>V3 節假日 OD：2024 非監督式分群 Pilot 與下游 15 分鐘預測規劃</p></header><main class="content">
+<section class="research-section">
+<h2>V3 OD 分群｜2024 年 Pilot（已完成）</h2>
+<p class="page-intro">正式研究範圍為 2024–2025 年國道 3 號龍潭 → 大溪北向週末／連假。以 2024 年 <strong>至少 300 筆旅次</strong>的 <strong>1,493 組 OD</strong>建立非監督式分群，這些 OD 涵蓋 2024 年旅次的 <strong>97.08%</strong>、2025 年旅次的 <strong>95.07%</strong>。</p>
+<div class="research-grid">
+<div class="research-card"><div class="research-metric">1,493</div><div class="research-muted">入群 OD 組數</div></div>
+<div class="research-card"><div class="research-metric">64</div><div class="research-muted">候選：4 特徵組 × 4 方法 × 4 K</div></div>
+<div class="research-card"><div class="research-metric">3</div><div class="research-muted">每設定重啟次數，檢查穩定性</div></div>
+</div>
+<div class="research-note research-warning"><strong>重要：</strong>已完成的是分群 Pilot，<strong>不是壅塞預測模型的績效</strong>。Silhouette 高不代表 Y=2 PR-AUC 一定高；最佳分群方法、K 與實際預測增益仍待 2024 時序驗證。</div>
+</section>
+<section class="research-section"><h2>四組分群特徵（F1–F4）</h2>
+<div class="research-scroll"><table class="research-table"><thead><tr><th>特徵組</th><th>主要內容</th><th>希望辨識的需求差異</th></tr></thead><tbody>
+<tr><td>F1</td><td>一般週末每 OD 的六個四小時旅次占比</td><td>早、中、晚及深夜的時間模式</td></tr>
+<tr><td>F2</td><td>F1 + 連假／週末需求反應及時段占比變化</td><td>對連續假期是否特別敏感</td></tr>
+<tr><td>F3</td><td>F2 + OD 旅次距離摘要</td><td>短途與長途需求型態</td></tr>
+<tr><td>F4</td><td>F3 + 車種組成</td><td>不同車種需求結構</td></tr>
+</tbody></table></div>
+<p class="research-muted">每組特徵應在訓練資料上標準化；時間占比的加總限制及不同尺度需注意。距離的原始單位與車種代碼名稱仍待碼表核實。</p>
+</section>
+<section class="research-section"><h2>四種實際比較方法</h2>
+<div class="research-grid">
+<div class="research-card"><h3>K-means</h3><p>固定 K，依群內平方距離分群，做為清楚、可重現的中心式基準。</p></div>
+<div class="research-card"><h3>K-medoids</h3><p>用實際 OD 做群中心，檢查異常點是否影響群組。</p></div>
+<div class="research-card"><h3>GMM</h3><p>用高斯混合模型估計 OD 的機率式群組歸屬。</p></div>
+<div class="research-card"><h3>Sparse K-means</h3><p>讓部分特徵取得較高權重，評估哪些特徵對群集分離較重要。</p></div>
+</div>
+<p>K=2、3、4、5 均測試，搭配 Silhouette、跨重啟 ARI、群組規模與特性做初步檢視。</p>
+</section>
+<section class="research-section"><h2>Pilot 代表設定的結果</h2>
+<div class="research-scroll"><table class="research-table"><thead><tr><th>設定</th><th>Silhouette</th><th>重啟 ARI</th><th>備註</th></tr></thead><tbody>
+<tr><td>F1／Sparse K-means／K=2</td><td>0.349</td><td>1.000</td><td>純日內型態基準</td></tr>
+<tr><td>F1／K-means／K=2</td><td>0.345</td><td>0.915</td><td>一般時間型態 K-means</td></tr>
+<tr><td>F2／K-means／K=3</td><td>0.198</td><td>1.000</td><td>引入連假反應</td></tr>
+<tr><td>F3／K-means／K=3</td><td>0.255</td><td>0.983</td><td>引入旅次距離</td></tr>
+<tr><td>F4／K-means／K=3</td><td>0.218</td><td>0.996</td><td>引入車種結構</td></tr>
+</tbody></table></div>
+<figure style="max-width:860px;margin:22px 0"><img src="assets/v3/v3_pilot_silhouette.png" loading="lazy" alt="V3 OD Pilot 不同特徵組、方法、K 的 Silhouette 分數" style="display:block;width:100%;height:auto;border:1px solid #dce3e9;border-radius:9px"><figcaption class="research-muted">Pilot Silhouette 分數：特徵組不同時，距離空間也不同，不能僅依跨組分數高低決定。</figcaption></figure>
+<h3>F3／K-means／K=3 的群組輪廓範例</h3>
+<div class="research-scroll"><table class="research-table"><thead><tr><th>群組</th><th>OD 數</th><th>占 2024 入群旅次</th><th>距離中位數（原始單位）</th><th>連假／週末平均每日旅次比（中位數）</th></tr></thead><tbody>
+<tr><td>C1</td><td>340</td><td>6.0%</td><td>180.65</td><td>1.396</td></tr>
+<tr><td>C2</td><td>729</td><td>28.3%</td><td>222.50</td><td>1.642</td></tr>
+<tr><td>C3</td><td>424</td><td>65.7%</td><td>78.79</td><td>1.016</td></tr>
+</tbody></table></div>
+<p>此表只示範群組可解釋性，<strong>尚未選定 F3／K=3</strong>；不直接把距離大小推論為旅遊目的。</p>
+<p><a class="research-link" href="https://github.com/aishanchung/Statistical-Practice/blob/main/10_OD-analysis/V3_OD_CLUSTER_PILOT_20261105.md">Pilot 研究紀錄</a>　｜　<a class="research-link" href="https://github.com/aishanchung/Statistical-Practice/tree/main/10_OD-analysis/results/v3_od_cluster_pilot">64 組指標及所有 OD 群組標籤</a></p>
+</section>
+<section class="research-section"><h2>下一階段：以預測結果選 K</h2>
+<ol>
+<li>每個 2024 時序驗證 fold 僅使用當時訓練期間資料估計分群，避免偷看未來 OD 型態。</li>
+<li>將已知的 OD 需求按群彙整至五分鐘，未入群 OD 放入 <code>OTHER</code>；檢查旅次時間戳在預測時是否已可取得。</li>
+<li>同一分類器比較 B0（時間＋VD＋氣象）、B1（B0＋總 OD 量）、B2（B0＋分群 OD 量）。</li>
+<li>用 Logistic Regression、XGBoost、LightGBM 預測 <code>Y(t+15min)</code>；主指標為 Y=2 的 PR-AUC，其餘看 Recall、F1、macro-F1 與誤報率。</li>
+<li>由 2024 驗證結果選 F／方法／K，再一次性在 2025 年做最終測試。</li>
+</ol>
+<div class="research-note"><strong>進度界線：</strong>尚未執行 B0／B1／B2 預測比較，沒有最佳 K 或最終模型優劣結論。<a class="research-link" href="machine_learning.html">查看預測評估方案</a>；<a class="research-link" href="v3_lite.html#v3-eda">返回 V3 EDA</a>。</div>
+</section>
+</main></div><footer>統計實務 — OD 分群</footer><script src="script.js"></script></body></html>

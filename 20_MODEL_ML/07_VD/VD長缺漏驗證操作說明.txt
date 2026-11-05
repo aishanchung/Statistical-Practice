@@ -1,0 +1,58 @@
+VD 長缺漏 11 種方法驗證 — 重跑說明（2026-10-29）
+
+狀態：已完成重跑程式與指令測試；尚未取得新的實際評估分數。
+原因：目前執行環境缺少可用的 Parquet 讀取套件，無法直接將已取得的 VD Parquet 解碼。請勿把既有舊版的小樣本結果稱為新版擴樣驗證。
+
+一、測試設定
+  6 小時：一般時段 12 段 + 壅塞加強時段 12 段
+  24 小時：8 + 8 段
+  72 小時：6 + 6 段
+  151.5 小時：4 + 4 段
+每段輪流測試 1–5 支相鄰 VD 同時缺漏。模型使用 2024 年資料，2025 年有真值的資料做人工遮罩。
+如果實際可用而且互相錯開的區塊不足，程式會自動少選，不硬湊樣本。
+
+二、Windows 檔案配置（同一資料夾）
+  VD_N3_N_2024_2025_LITE.parquet
+  run_vd_long_gap_validation.py
+  vd_imputation_experiment.py
+  vd_spatial_methods_benchmark.py
+  vd_gp_kriging_experiment.py
+  vd_robust_mask_report.py
+
+原有四支研究程式可在 GitHub Statistical-Practice 的「資料欄位相關文件」分支、analysis 資料夾找到：
+https://github.com/aishanchung/Statistical-Practice/tree/%E8%B3%87%E6%96%99%E6%AC%84%E4%BD%8D%E7%9B%B8%E9%97%9C%E6%96%87%E4%BB%B6/analysis
+
+三、PowerShell 執行
+  py -m pip install duckdb numpy pandas scipy scikit-learn matplotlib
+
+  # 可先只跑 6、24 小時，確認程式正常：
+  py .\run_vd_long_gap_validation.py .\VD_N3_N_2024_2025_LITE.parquet --only-hours 6 24
+
+  # 再跑 72、151.5 小時：
+  py .\run_vd_long_gap_validation.py .\VD_N3_N_2024_2025_LITE.parquet --only-hours 72 151.5
+
+注意：上述第二次執行會覆寫同一根輸出資料夾下的「整合」CSV。若希望四種時長全部整合成同一份表，直接一次執行：
+  py .\run_vd_long_gap_validation.py .\VD_N3_N_2024_2025_LITE.parquet
+
+可先只檢查指令：
+  py .\run_vd_long_gap_validation.py .\VD_N3_N_2024_2025_LITE.parquet --dry-run
+
+四、輸出
+  outputs\vd_long_gap_validation\gap_6p0h\eleven\robust_metrics_with_ci.csv
+  outputs\vd_long_gap_validation\gap_24p0h\eleven\robust_metrics_with_ci.csv
+  outputs\vd_long_gap_validation\gap_72p0h\eleven\robust_metrics_with_ci.csv
+  outputs\vd_long_gap_validation\gap_151p5h\eleven\robust_metrics_with_ci.csv
+  outputs\vd_long_gap_validation\long_gap_all_methods.csv
+  outputs\vd_long_gap_validation\long_gap_top3_per_scenario.csv
+
+五、判讀
+  請優先檢查 n_blocks、n_test_truth、n_true_congestion_scored、coverage。
+  再比較 MAE、壅塞 Recall、壅塞 F1，並同時看信賴區間。
+  4–6 段遮罩的區間可能極不穩定，結論只作探索。
+  不同缺口長度遮罩日期可能相互重疊，不可把它們當作獨立事件加總。
+  線性插值是用缺漏後第一筆實測速度，因此是歷史補值，不是即時預測。
+  GP/Kriging 的計算可能較慢；可在首次試跑時加上 --skip-gp，先完成九方法。再跑全部時需移除該參數。
+
+六、網站更新
+  只有當以上輸出成功、且核對新樣本數與同一遮罩下的方法比較後，才應更新網站的長缺漏部分。
+  在此之前，網站保留目前已驗證的 15 分鐘及 1 小時擴樣結果。

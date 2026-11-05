@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>機器學習模型｜國道瓶頸資料專案</title><link rel="stylesheet" href="style.css"><style>
+.page-intro{max-width:920px;line-height:1.85}.research-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:16px;margin:20px 0}.research-card{padding:20px;background:#fff;border:1px solid #dce3e9;border-radius:10px}.research-card h3{margin:0 0 10px;color:#245c8a}.research-card p{margin:0;line-height:1.8}.research-metric{font-weight:750;font-size:27px;color:#245c8a}.research-muted{color:#627282;font-size:14px}.research-table{width:100%;border-collapse:collapse;min-width:560px}.research-table th,.research-table td{border:1px solid #dce3e9;padding:12px;text-align:left;vertical-align:top}.research-table th{background:#eef5fb;color:#245c8a}.research-scroll{overflow-x:auto}.research-note{background:#eef5fb;border-left:4px solid #245c8a;padding:16px 20px;margin:16px 0;border-radius:6px;line-height:1.8}.research-warning{background:#fff8e8;border-left-color:#c18a1c}.research-section{margin:30px 0}.research-section p,.research-section li{line-height:1.85}.research-section li{margin-bottom:7px}.research-pills{display:flex;flex-wrap:wrap;gap:9px;margin:15px 0}.research-pill{background:#eaf3fb;border-radius:30px;padding:5px 13px;font-size:13px;color:#245c8a}.research-link{color:#245c8a;font-weight:600}
+</style></head>
+<body><button class="mobile-menu-button" onclick="toggleSidebar()">☰</button>
+<aside class="sidebar" id="sidebar"><div class="sidebar-brand"><h1>國道瓶頸資料專案</h1><p>統計實務</p></div>
+<div class="sidebar-section-title">首頁</div>
+<a href="index.html">專案概述</a>
+<div class="sidebar-section-title">資料</div>
+<a href="v1_full.html">V1_FULL</a>
+<a href="v1_lite.html">V1_LITE</a>
+<a href="vd.html">VD</a>
+<a href="v2_lite.html">V2_LITE</a>
+<a href="v3_lite.html">V3_LITE</a>
+<div class="sidebar-section-title">研究方法與分析</div>
+<a href="eda.html">EDA 探索分析</a>
+<a href="od_clustering.html">OD 分群</a>
+<a href="statistical_models.html">傳統統計模型</a>
+<a href="machine_learning.html"  class="active">機器學習模型</a>
+<div class="sidebar-section-title">進度與報告</div>
+<a href="progress.html">研究進度</a>
+<a href="reports.html">報告簡報</a>
+</aside>
+<div class="main"><header class="page-header"><h1>機器學習模型</h1><p>Logistic Regression、XGBoost、LightGBM｜Y(t+15min) 的 B0／B1／B2 比較</p></header><main class="content">
+<section class="research-section"><h2>研究目標｜提前 15 分鐘的大範圍壅塞預測</h2>
+<p class="page-intro">以時間 <code>t</code> 已可取得的 OD、VD、日曆及氣象特徵，預測 <strong><code>Y(t+15min)</code></strong>，即五分鐘資料向前 3 格。V3 的 Y=0 為無壅塞、Y=1 為局部壅塞、Y=2 為大範圍壅塞。加權壅塞比例 <code>C(t)</code> 的門檻 <code>c=0.50</code> 暫定，後續進行敏感度分析。</p>
+<div class="research-note research-warning"><strong>目前尚無正式預測成績：</strong>OD 分群 64 組 Pilot 已執行，但 Logistic Regression、XGBoost、LightGBM 與 B0/B1/B2 的時序驗證尚未完成。此頁是<strong>已確認的實驗設計</strong>，不是結果排行榜。</div>
+</section>
+<section class="research-section"><h2>三種模型</h2>
+<div class="research-grid">
+<div class="research-card"><h3>Logistic Regression</h3><p>作為可解釋的線性分類基準；多分類 Y 可用 multinomial logistic regression，並取得 Y=2 的預測機率。</p></div>
+<div class="research-card"><h3>XGBoost</h3><p>梯度提升決策樹，捕捉 VD、OD、時間及氣象的非線性和交互作用；搭配正則化及早停控制複雜度。</p></div>
+<div class="research-card"><h3>LightGBM</h3><p>以 histogram 和 leaf-wise 策略訓練提升樹；效率與準確率在一致的驗證條件下實測。</p></div>
+</div>
+<p>三者均採一致的標籤、樣本範圍及時間切分，必要時對類別不平衡設計權重與閾值選擇。</p></section>
+<section class="research-section"><h2>B0、B1、B2 特徵比較</h2>
+<div class="research-scroll"><table class="research-table"><thead><tr><th>組別</th><th>預測時可使用的特徵</th><th>檢驗問題</th></tr></thead><tbody>
+<tr><td><strong>B0</strong></td><td>日曆、時刻、當下／過去 VD 速度與占有率、預測時已觀測到的氣象</td><td>不看 OD 的基準表現</td></tr>
+<tr><td><strong>B1</strong></td><td>B0 + 最近五分鐘及歷史 OD 總需求</td><td>OD 總量是否有額外訊息</td></tr>
+<tr><td><strong>B2</strong></td><td>B0 + 各分群 OD 需求與 OTHER（不應因篩選 OD 而丟掉其餘流量）</td><td>需求組成是否優於總量</td></tr>
+</tbody></table></div>
+<div class="research-note"><strong>公平比較：</strong>同一套資料分割、相同的缺失處理原則、相同指標。<strong>B2 優於 B1</strong> 才有證據顯示 OD 分群增加了比「總車流量」更多的預測資訊；若差異不穩健，應優先採較簡單的模型。</div>
+</section>
+<section class="research-section"><h2>驗證與選擇規則</h2>
+<ol>
+<li><strong>2024：</strong>依日期先後做多個 expanding/forward-chaining folds；群組、標準化器、特徵選擇與模型參數均只由訓練段估計。</li>
+<li><strong>嚴格防洩漏：</strong>保留訓練與驗證間至少可涵蓋 15 分鐘目標重疊的 gap，確認 OD 旅次在時間 t 已完成且資料可即時提供；不得用 t+15 的 VD 或天氣、事後確認的 <code>BottleneckTime</code>、未完成旅次的終點門架資訊當特徵。</li>
+<li><strong>選模：</strong>2024 的各 fold 共同評估 F1–F4、分群演算法、K=2–5，並比較 B0/B1/B2 與三個分類器。</li>
+<li><strong>主指標：</strong>Y=2 一對其他類的 PR-AUC（Average Precision），同時報告 Y=2 Recall、F1、macro-F1、誤報率與混淆矩陣；依驗證集選預測閾值。</li>
+<li><strong>2025：</strong>鎖定分群設計、模型與閾值後，只做一次最終外部測試；按月份、連假階段、降雨與 Y 有效站數呈現分層表現。</li>
+</ol>
+<div class="research-note research-warning"><strong>需注意：</strong>若不同日期 Y=2 的比例差很多，PR-AUC 的基準水準也會變動；報告需同時顯示 Y=2 盛行率。<code>Y=NA</code> 不得當作 0。V3 完整 Y 定義見 <a class="research-link" href="v3_lite.html#target">V3_LITE</a>。</div>
+</section>
+<section class="research-section"><h2>程式與目前進度</h2>
+<p>已完成 V3 OD EDA 與分群 Pilot 的程式、指標及每組 OD 標籤；<strong>三分類器評估程式和實證結果尚待完成</strong>。</p>
+<p><a class="research-link" href="od_clustering.html">OD 分群 Pilot</a>　｜　<a class="research-link" href="https://github.com/aishanchung/Statistical-Practice/blob/main/10_OD-analysis/FOUR_VD_Y_AND_PREDICTIVE_K_PROTOCOL.md">15 分鐘預測方案與防洩漏說明</a></p>
+</section>
+</main></div><footer>統計實務 — 機器學習模型</footer><script src="script.js"></script></body></html>

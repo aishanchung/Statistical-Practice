@@ -21,3 +21,9 @@
 
 - [**V3 OD-pair EDA 實際發現與 64 組分群 pilot**](10_OD-analysis/V3_OD_CLUSTER_PILOT_20261105.md)：比較四個特徵組、K-means／K-medoids／GMM／Sparse K-means、K=2–5；含每群特徵解讀、分群分數與下游 LR／XGBoost／LightGBM 評估設計。**尚未完成壅塞預測**。
 - [OD 分群結果：全部候選的分數、群組特性與 OD 標籤](10_OD-analysis/results/v3_od_cluster_pilot/v3_method_scores.csv)（其餘 CSV 連結位於上述研究紀錄）。
+
+## 網站與完整程式封存
+
+- [網站首頁](index.html)／[V3 EDA 與 OD 分群 Pilot](v3_lite.html#v3-eda)／[OD 分群比較](od_clustering.html)／[15 分鐘壅塞預測實驗設計](machine_learning.html)
+- [2026-11-05 本機 `20_MODEL_ML.zip` 整理後的程式與小型 EDA 結果](20_MODEL_ML/README.md)：原程式保留於獨立目錄，不覆蓋 `10_OD-analysis/` 的主要研究版本。
+- GitHub Pages 的來源需設為 `main` 分支 `/(root)`，才能由同一分支同步網站與程式。預測模型的數值績效仍待實際驗證。
