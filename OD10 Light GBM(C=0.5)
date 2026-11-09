@@ -1,0 +1,1548 @@
+# | 設定 | 值 |
+# |---|---|
+# | 特徵 | OD10＋總量及各組歷史流量 |
+#  | 類別權重 | 平方根平衡 |
+#  | 學習率 | 0.08 |
+#  | 最大葉數 | 7 |
+#  | 每葉最低樣本數 | 150 |
+#  | 訓練輪數 | 245，採三輪最佳輪數中位數 |
+#  | Y 門檻 | c＝0.50 |
+
+# ============================================================
+# 直接銜接「VD 補值程式」的模型流程
+#
+# 不必選檔、不必先有含 Y 的完整旅次檔
+# 必要物件：output_path、output_dir、lookup
+#
+# 2024 選特徵與參數；2025 暫不使用
+# ============================================================
+
+packages <- c("DBI", "duckdb", "data.table", "lightgbm")
+
+need_install <- packages[
+  !vapply(packages, requireNamespace, logical(1), quietly = TRUE)
+]
+
+if (length(need_install)) install.packages(need_install)
+
+library(data.table)
+
+required_objects <- c("output_path", "output_dir", "lookup")
+
+if (!all(vapply(required_objects, exists, logical(1)))) {
+  stop("請在剛才完成補值的 R 工作階段執行，缺少補值物件。")
+}
+
+stopifnot(file.exists(output_path))
+
+# 留存來源，避免後面其他程式變數影響
+model_input_path <- output_path
+
+model_dir <- file.path(
+  output_dir,
+  paste0("ML_c050_", format(Sys.time(), "%Y%m%d_%H%M%S"))
+)
+
+if (dir.exists(model_dir)) {
+  stop("結果資料夾已存在，請稍後再執行。")
+}
+
+dir.create(model_dir, recursive = TRUE)
+
+set.seed(20261104)
+
+# ------------------------------------------------------------
+# 1. 直接由補值查找表建立 Y，不輸出大型旅次檔
+# ------------------------------------------------------------
+
+sites_model <- c(
+  "VD_69p510_Speed",
+  "VD_65p990_Speed",
+  "VD_63p990_Speed",
+  "VD_61p670_Speed"
+)
+
+w_model <- c(0.0417, 0.4600, 0.3600, 0.1383)
+
+filled_cols <- paste0(sites_model, "_Filled")
+method_cols <- paste0(sites_model, "_ImputationMethod")
+
+stopifnot(all(
+  c("__vd_key", filled_cols, method_cols) %in% names(lookup)
+))
+
+v <- as.matrix(lookup[, ..filled_cols])
+m <- as.matrix(lookup[, ..method_cols])
+
+valid_vd <- is.finite(v) & v >= 0
+
+station_congested <- matrix(
+  FALSE, nrow(v), ncol(v)
+)
+station_congested[valid_vd] <- v[valid_vd] < 40
+
+coverage <- as.numeric(valid_vd %*% w_model)
+
+C_model <- rep(NA_real_, nrow(v))
+ok <- coverage > 0
+
+C_model[ok] <- as.numeric(
+  station_congested %*% w_model
+)[ok] / coverage[ok]
+
+C_model[ok] <- pmin(1, pmax(0, C_model[ok]))
+
+imputed_flag <- matrix(
+  m %in% c("LINEAR_SHORT", "KNN_2024"),
+  nrow = nrow(m),
+  ncol = ncol(m)
+) & valid_vd
+
+y_value <- rep(NA_integer_, length(C_model))
+y_value[ok & C_model == 0] <- 0L
+y_value[ok & C_model > 0 & C_model < 0.50] <- 1L
+y_value[ok & C_model >= 0.50] <- 2L
+
+y_model <- data.table(
+  TimeKey = lookup[["__vd_key"]],
+  Y = y_value,
+  C_weighted = C_model,
+  n_valid_vd = rowSums(valid_vd),
+  Y_used_imputation = rowSums(imputed_flag) > 0
+)
+
+stopifnot(!anyDuplicated(y_model$TimeKey))
+
+# ------------------------------------------------------------
+# 2. 從補值後旅次檔彙總 OD／天氣
+# 只載入彙總結果，不把四千多萬筆旅次全部載入 R
+# ------------------------------------------------------------
+
+prepared <- local({
+  
+  con_model <- DBI::dbConnect(duckdb::duckdb())
+  
+  on.exit(
+    DBI::dbDisconnect(con_model, shutdown = TRUE)
+  )
+  
+  qs_model <- function(x) {
+    as.character(DBI::dbQuoteString(con_model, x))
+  }
+  
+  DBI::dbExecute(con_model, "SET threads = 4")
+  DBI::dbExecute(con_model, "SET memory_limit = '4GB'")
+  
+  DBI::dbExecute(
+    con_model,
+    paste0(
+      "SET temp_directory = ",
+      qs_model(file.path(model_dir, "duckdb_temp"))
+    )
+  )
+  
+  DBI::dbExecute(
+    con_model,
+    paste0(
+      "CREATE VIEW src AS SELECT * FROM read_parquet(",
+      qs_model(model_input_path), ")"
+    )
+  )
+  
+  sc <- DBI::dbGetQuery(con_model, "DESCRIBE src")
+  
+  time_type <- sc$column_type[
+    sc$column_name == "BottleneckTime"
+  ]
+  
+  stopifnot(length(time_type) == 1L)
+  
+  clock_source <- if (
+    grepl("WITH TIME ZONE|TIMESTAMPTZ", time_type)
+  ) {
+    "timezone('UTC', BottleneckTime)"
+  } else {
+    "BottleneckTime"
+  }
+  
+  # OD 的鐘面值按先前確認，不額外加 8 小時。
+  # 這裡為旅次流量時間格，直接向下取整。
+  clock_expr <- paste0(
+    "TRY_CAST(REPLACE(SUBSTR(CAST(",
+    clock_source,
+    " AS VARCHAR),1,19),'T',' ') AS TIMESTAMP)"
+  )
+  
+  DBI::dbExecute(
+    con_model,
+    paste0(
+      "CREATE VIEW trips AS SELECT *, ",
+      clock_expr, " AS ClockTime, ",
+      "time_bucket(INTERVAL '5 minutes', ",
+      clock_expr, ") AS TimeBin FROM src"
+    )
+  )
+  
+  where_2024 <- paste0(
+    " WHERE ClockTime >= TIMESTAMP '2024-01-01'",
+    " AND ClockTime < TIMESTAMP '2025-01-01' "
+  )
+  
+  pairs <- as.data.table(DBI::dbGetQuery(
+    con_model,
+    paste0(
+      "SELECT TimeBin, ",
+      "CAST(GantryO AS VARCHAR) AS GantryO, ",
+      "CAST(GantryD AS VARCHAR) AS GantryD, ",
+      "COUNT(*) AS Trips FROM trips ",
+      where_2024,
+      " GROUP BY 1,2,3"
+    )
+  ))
+  
+  bins <- as.data.table(DBI::dbGetQuery(
+    con_model,
+    paste0(
+      "SELECT TimeBin, COUNT(*) AS TotalTrips, ",
+      "AVG(CASE WHEN isfinite(Weather_Temperature_C)",
+      " THEN Weather_Temperature_C END) AS Temperature, ",
+      "AVG(CASE WHEN isfinite(Weather_Dewpoint_C)",
+      " THEN Weather_Dewpoint_C END) AS Dewpoint, ",
+      "AVG(CASE WHEN isfinite(Weather_Precipitation_mm)",
+      " THEN Weather_Precipitation_mm END) AS Precipitation, ",
+      "AVG(CASE WHEN isfinite(Weather_WindSpeed_mps)",
+      " THEN Weather_WindSpeed_mps END) AS WindSpeed ",
+      "FROM trips ", where_2024,
+      " GROUP BY 1"
+    )
+  ))
+  
+  calendar <- as.data.table(DBI::dbGetQuery(
+    con_model,
+    paste0(
+      "SELECT CAST(ClockTime AS DATE) AS Date, ",
+      "DayType, COUNT(*) AS Trips FROM trips ",
+      where_2024,
+      " GROUP BY 1,2"
+    )
+  ))
+  
+  calendar[, Date := as.Date(Date)]
+  
+  if (calendar[, .N, by = Date][N > 1L, .N] > 0L) {
+    stop("同一天有不同 DayType，請先檢查日期分類。")
+  }
+  
+  calendar <- calendar[, .(Date, DayType)]
+  
+  bins[, TimeKey := format(
+    TimeBin, "%Y-%m-%d %H:%M:%S", tz = "UTC"
+  )]
+  
+  bins[, Date := as.Date(substr(TimeKey, 1, 10))]
+  
+  pairs[, TimeKey := format(
+    TimeBin, "%Y-%m-%d %H:%M:%S", tz = "UTC"
+  )]
+  
+  pairs[, Date := as.Date(substr(TimeKey, 1, 10))]
+  
+  d <- merge(bins, y_model, by = "TimeKey", all.x = TRUE)
+  d <- merge(d, calendar, by = "Date", all.x = TRUE)
+  
+  # 與剛才模型相同：只用四站完整原始實測 Y
+  d <- d[
+    DayType %in% c("WEEKEND", "LONGHOLIDAY") &
+      !is.na(Y) &
+      n_valid_vd == 4L &
+      Y_used_imputation == FALSE
+  ]
+  
+  setorder(d, TimeKey)
+  
+  if (!nrow(d)) stop("沒有符合條件的模型資料。")
+  
+  lt <- as.POSIXlt(
+    d$TimeKey,
+    format = "%Y-%m-%d %H:%M:%S",
+    tz = "UTC"
+  )
+  
+  hour_decimal <- lt$hour + lt$min / 60
+  
+  d[, `:=`(
+    HourSin = sin(2 * pi * hour_decimal / 24),
+    HourCos = cos(2 * pi * hour_decimal / 24),
+    WeekSin = sin(2 * pi * lt$wday / 7),
+    WeekCos = cos(2 * pi * lt$wday / 7),
+    YearSin = sin(2 * pi * (lt$yday + 1) / 365.25),
+    YearCos = cos(2 * pi * (lt$yday + 1) / 365.25),
+    IsLongHoliday = as.integer(DayType == "LONGHOLIDAY")
+  )]
+  
+  pairs <- merge(
+    pairs, calendar, by = "Date", all.x = TRUE
+  )
+  
+  pairs[, PairID := paste(
+    GantryO, GantryD, sep = "__"
+  )]
+  
+  list(data = d, pairs = pairs)
+})
+
+saveRDS(
+  prepared,
+  file.path(model_dir, "Prepared_2024.rds")
+)
+
+base_data <- prepared$data
+pair_counts <- prepared$pairs
+
+base_features <- c(
+  "HourSin", "HourCos",
+  "WeekSin", "WeekCos",
+  "YearSin", "YearCos",
+  "IsLongHoliday",
+  "Temperature", "Dewpoint",
+  "Precipitation", "WindSpeed"
+)
+
+parameter_grid <- CJ(
+  LearningRate = c(0.03, 0.08),
+  NumLeaves = c(7L, 15L),
+  MinDataInLeaf = c(50L, 150L)
+)
+
+# ------------------------------------------------------------
+# 3. 各訓練期間重新選 OD
+# ------------------------------------------------------------
+
+make_features <- function(train_end, valid_end, run_name) {
+  
+  train_end <- as.Date(train_end)
+  valid_end <- as.Date(valid_end)
+  
+  columns <- unique(c(
+    "TimeKey", "Date", "Y", "TotalTrips",
+    base_features
+  ))
+  
+  d <- copy(base_data[Date <= valid_end, ..columns])
+  
+  ranking <- pair_counts[
+    Date <= train_end &
+      DayType %in% c("WEEKEND", "LONGHOLIDAY") &
+      !is.na(GantryO) &
+      !is.na(GantryD),
+    .(TrainTrips = sum(Trips)),
+    by = .(PairID, GantryO, GantryD)
+  ][TrainTrips >= 100][order(-TrainTrips, PairID)]
+  
+  if (nrow(ranking) < 50L) {
+    stop(run_name, "：符合門檻的 OD 不足 50 組。")
+  }
+  
+  od_map <- copy(ranking[1:50])
+  od_map[, Feature := sprintf("OD_%03d", seq_len(.N))]
+  
+  fwrite(
+    od_map,
+    file.path(model_dir, paste0(run_name, "_OD_mapping.csv"))
+  )
+  
+  counts <- merge(
+    pair_counts[
+      Date <= valid_end,
+      .(TimeKey, PairID, Trips)
+    ],
+    od_map[, .(PairID, Feature)],
+    by = "PairID"
+  )
+  
+  counts <- counts[TimeKey %in% d$TimeKey]
+  
+  wide <- dcast(
+    counts,
+    TimeKey ~ Feature,
+    value.var = "Trips",
+    fun.aggregate = sum,
+    fill = 0
+  )
+  
+  d <- merge(
+    d, wide, by = "TimeKey",
+    all.x = TRUE, sort = FALSE
+  )
+  
+  for (f in od_map$Feature) {
+    if (!f %in% names(d)) d[, (f) := 0]
+    set(d, which(is.na(d[[f]])), f, 0)
+  }
+  
+  sets <- list(
+    B0 = base_features,
+    B1 = c(base_features, "TotalTrips")
+  )
+  
+  for (k in c(10L, 30L, 50L)) {
+    
+    fs <- od_map$Feature[seq_len(k)]
+    other <- paste0("OTHER_", k)
+    
+    d[
+      ,
+      (other) := TotalTrips - rowSums(as.matrix(.SD)),
+      .SDcols = fs
+    ]
+    
+    stopifnot(all(d[[other]] >= 0))
+    
+    sets[[paste0("OD", k)]] <- c(
+      base_features, fs, other
+    )
+  }
+  
+  setorder(d, TimeKey)
+  
+  list(data = d, sets = sets)
+}
+
+# ------------------------------------------------------------
+# 4. 評估函數
+# ------------------------------------------------------------
+
+evaluate_model <- function(y, probability) {
+  
+  prediction <- max.col(
+    probability, ties.method = "first"
+  ) - 1L
+  
+  cm <- table(
+    Actual = factor(y, levels = 0:2),
+    Predicted = factor(prediction, levels = 0:2)
+  )
+  
+  tp <- as.numeric(diag(cm))
+  actual <- as.numeric(rowSums(cm))
+  predicted <- as.numeric(colSums(cm))
+  
+  precision <- ifelse(predicted > 0, tp / predicted, 0)
+  recall <- ifelse(actual > 0, tp / actual, 0)
+  
+  f1 <- ifelse(
+    precision + recall > 0,
+    2 * precision * recall / (precision + recall),
+    0
+  )
+  
+  # Y=2 的 Average Precision，按同分機率分組
+  ap_data <- data.table(
+    Score = probability[, 3],
+    Positive = as.integer(y == 2L)
+  )[
+    ,
+    .(N = .N, Positives = sum(Positive)),
+    by = Score
+  ][order(-Score)]
+  
+  ap_data[, `:=`(
+    CumN = cumsum(N),
+    CumPositive = cumsum(Positives)
+  )]
+  
+  ap2 <- sum(
+    ap_data$Positives *
+      ap_data$CumPositive / ap_data$CumN
+  ) / sum(y == 2L)
+  
+  list(
+    metrics = data.table(
+      MacroF1 = mean(f1),
+      AP2 = ap2,
+      Precision2 = precision[3],
+      Recall2 = recall[3],
+      Accuracy = mean(prediction == y),
+      LogLoss = -mean(log(pmax(
+        probability[cbind(seq_along(y), y + 1L)],
+        1e-15
+      )))
+    ),
+    classes = data.table(
+      Y = 0:2,
+      ActualBins = actual,
+      PredictedBins = predicted,
+      TP = tp,
+      FP = predicted - tp,
+      FN = actual - tp,
+      Precision = precision,
+      Recall = recall,
+      F1 = f1
+    )
+  )
+}
+
+# ------------------------------------------------------------
+# 5. 單次訓練函數
+# 每個模型完成後保存模型與結果
+# ------------------------------------------------------------
+
+train_one <- function(
+    bundle, train_end, valid_start, valid_end,
+    run_name, model_name, grid_id, scheme) {
+  
+  checkpoint_name <- paste(
+    run_name, model_name, scheme, grid_id, sep = "_"
+  )
+  
+  result_path <- file.path(
+    model_dir, paste0(checkpoint_name, ".rds")
+  )
+  
+  if (file.exists(result_path)) {
+    return(readRDS(result_path))
+  }
+  
+  d <- bundle$data
+  fs <- bundle$sets[[model_name]]
+  
+  tr <- which(d$Date <= as.Date(train_end))
+  
+  va <- which(
+    d$Date >= as.Date(valid_start) &
+      d$Date <= as.Date(valid_end)
+  )
+  
+  y_tr <- as.integer(d$Y[tr])
+  y_va <- as.integer(d$Y[va])
+  
+  n_tr <- tabulate(y_tr + 1L, nbins = 3L)
+  n_va <- tabulate(y_va + 1L, nbins = 3L)
+  
+  if (any(n_tr == 0L) || any(n_va == 0L)) {
+    stop(checkpoint_name, "：訓練或驗證缺少某類 Y。")
+  }
+  
+  balanced <- length(y_tr) / (3 * n_tr)
+  
+  class_weight <- switch(
+    scheme,
+    Unweighted = rep(1, 3),
+    SqrtBalanced = sqrt(balanced),
+    Balanced = balanced
+  )
+  
+  row_weight <- class_weight[y_tr + 1L]
+  row_weight <- row_weight / mean(row_weight)
+  
+  x <- as.matrix(d[, ..fs])
+  storage.mode(x) <- "double"
+  x[!is.finite(x)] <- NA_real_
+  
+  setting <- parameter_grid[grid_id]
+  
+  dtrain <- lightgbm::lgb.Dataset(
+    x[tr, , drop = FALSE],
+    label = y_tr,
+    weight = row_weight
+  )
+  
+  dvalid <- lightgbm::lgb.Dataset(
+    x[va, , drop = FALSE],
+    label = y_va,
+    reference = dtrain
+  )
+  
+  params <- list(
+    objective = "multiclass",
+    num_class = 3L,
+    metric = "multi_logloss",
+    learning_rate = setting$LearningRate,
+    num_leaves = setting$NumLeaves,
+    min_data_in_leaf = setting$MinDataInLeaf,
+    lambda_l2 = 1,
+    feature_fraction = 1,
+    num_threads = 4L,
+    verbosity = -1L,
+    seed = 20261104L,
+    deterministic = TRUE,
+    force_col_wise = TRUE
+  )
+  
+  fit <- lightgbm::lgb.train(
+    params = params,
+    data = dtrain,
+    nrounds = 1500L,
+    valids = list(validation = dvalid),
+    early_stopping_rounds = 60L,
+    verbose = -1L
+  )
+  
+  probability <- predict(
+    fit,
+    x[va, , drop = FALSE],
+    num_iteration = fit$best_iter
+  )
+  
+  stopifnot(
+    is.matrix(probability),
+    nrow(probability) == length(va),
+    ncol(probability) == 3L
+  )
+  
+  ev <- evaluate_model(y_va, probability)
+  
+  metadata <- data.table(
+    Fold = run_name,
+    Model = model_name,
+    Scheme = scheme,
+    GridID = grid_id,
+    Features = length(fs),
+    BestIteration = fit$best_iter
+  )
+  
+  result <- list(
+    record = cbind(metadata, setting, ev$metrics),
+    classes = cbind(
+      metadata[, .(Fold, Model, Scheme, GridID)],
+      ev$classes
+    )
+  )
+  
+  lightgbm::lgb.save(
+    fit,
+    file.path(model_dir, paste0(checkpoint_name, ".txt"))
+  )
+  
+  saveRDS(result, result_path)
+  
+  cat(
+    checkpoint_name,
+    "：Macro-F1 =", round(ev$metrics$MacroF1, 4),
+    "\n"
+  )
+  
+  result
+}
+
+run_grid <- function(
+    bundle, train_end, valid_start, valid_end,
+    run_name, scheme) {
+  
+  result_list <- list()
+  i <- 0L
+  
+  for (mn in names(bundle$sets)) {
+    for (g in seq_len(nrow(parameter_grid))) {
+      
+      i <- i + 1L
+      
+      result_list[[i]] <- train_one(
+        bundle,
+        train_end, valid_start, valid_end,
+        run_name, mn, g, scheme
+      )
+    }
+  }
+  
+  list(
+    records = rbindlist(
+      lapply(result_list, function(z) z$record)
+    ),
+    classes = rbindlist(
+      lapply(result_list, function(z) z$classes)
+    )
+  )
+}
+
+select_best <- function(records) {
+  z <- copy(records)
+  setorder(z, -MacroF1, LogLoss)
+  z[, .SD[1], by = Model][order(-MacroF1)]
+}
+
+# ------------------------------------------------------------
+# 6. 第一輪：2024 Jan–Sep / Oct–Dec
+# ------------------------------------------------------------
+
+round1 <- make_features(
+  "2024-09-30", "2024-12-31", "Round1"
+)
+
+split_summary <- round1$data[
+  ,
+  .(
+    TimeBins = .N,
+    Y0 = sum(Y == 0L),
+    Y1 = sum(Y == 1L),
+    Y2 = sum(Y == 2L)
+  ),
+  by = .(
+    Period = fifelse(
+      Date < as.Date("2024-10-01"),
+      "Train_2024_JanSep",
+      "Validation_2024_OctDec"
+    )
+  )
+]
+
+print(split_summary)
+
+unweighted_run <- run_grid(
+  round1,
+  "2024-09-30", "2024-10-01", "2024-12-31",
+  "Round1", "Unweighted"
+)
+
+best_by_features <- select_best(unweighted_run$records)
+
+cat("\n【不加權：各特徵方案最佳結果】\n")
+print(best_by_features)
+
+# ------------------------------------------------------------
+# 7. OD30：三種權重比較
+# 固定不加權 OD30 選出的參數，重新早停
+# ------------------------------------------------------------
+
+od30_grid <- best_by_features[
+  Model == "OD30", GridID
+]
+
+weight_runs <- lapply(
+  c("Unweighted", "SqrtBalanced", "Balanced"),
+  function(s) {
+    train_one(
+      round1,
+      "2024-09-30", "2024-10-01", "2024-12-31",
+      "Round1", "OD30", od30_grid, s
+    )
+  }
+)
+
+weight_results <- rbindlist(
+  lapply(weight_runs, function(z) z$record)
+)[order(-MacroF1)]
+
+weight_class_results <- rbindlist(
+  lapply(weight_runs, function(z) z$classes)
+)
+
+cat("\n【OD30：權重比較】\n")
+print(weight_results)
+
+# ------------------------------------------------------------
+# 8. 所有特徵方案：平方根平衡＋8 組調參
+# ------------------------------------------------------------
+
+sqrt_run <- run_grid(
+  round1,
+  "2024-09-30", "2024-10-01", "2024-12-31",
+  "Round1", "SqrtBalanced"
+)
+
+sqrt_best_by_features <- select_best(sqrt_run$records)
+
+sqrt_class_results <- merge(
+  sqrt_run$classes,
+  sqrt_best_by_features[, .(Model, GridID)],
+  by = c("Model", "GridID")
+)
+
+cat("\n【平方根平衡：各方案最佳結果】\n")
+print(sqrt_best_by_features)
+
+# 先保存第一輪結果
+fwrite(
+  best_by_features,
+  file.path(model_dir, "Round1_unweighted_best.csv")
+)
+fwrite(
+  weight_results,
+  file.path(model_dir, "OD30_weight_comparison.csv")
+)
+fwrite(
+  weight_class_results,
+  file.path(model_dir, "OD30_weight_classes.csv")
+)
+fwrite(
+  sqrt_best_by_features,
+  file.path(model_dir, "Round1_sqrt_best.csv")
+)
+fwrite(
+  sqrt_class_results,
+  file.path(model_dir, "Round1_sqrt_classes.csv")
+)
+fwrite(
+  split_summary,
+  file.path(model_dir, "Round1_split_summary.csv")
+)
+
+# ------------------------------------------------------------
+# 9. 2024 三輪向前驗證
+# 每輪重新選 OD、重新計算權重
+# ------------------------------------------------------------
+
+folds <- data.table(
+  Fold = c("F1", "F2", "F3"),
+  TrainEnd = c(
+    "2024-06-30",
+    "2024-08-31",
+    "2024-10-31"
+  ),
+  ValidStart = c(
+    "2024-07-01",
+    "2024-09-01",
+    "2024-11-01"
+  ),
+  ValidEnd = c(
+    "2024-08-31",
+    "2024-10-31",
+    "2024-12-31"
+  )
+)
+
+fold_result_list <- list()
+fold_class_list <- list()
+fold_split_list <- list()
+
+for (f in seq_len(nrow(folds))) {
+  
+  z <- folds[f]
+  
+  fold_bundle <- make_features(
+    z$TrainEnd, z$ValidEnd, z$Fold
+  )
+  
+  fold_split_list[[f]] <- fold_bundle$data[
+    ,
+    .(
+      TimeBins = .N,
+      Y0 = sum(Y == 0L),
+      Y1 = sum(Y == 1L),
+      Y2 = sum(Y == 2L)
+    ),
+    by = .(
+      Period = fifelse(
+        Date <= as.Date(z$TrainEnd),
+        "Train", "Validation"
+      )
+    )
+  ][, Fold := z$Fold]
+  
+  r <- run_grid(
+    fold_bundle,
+    z$TrainEnd, z$ValidStart, z$ValidEnd,
+    z$Fold, "SqrtBalanced"
+  )
+  
+  fold_result_list[[f]] <- r$records
+  fold_class_list[[f]] <- r$classes
+}
+
+rolling_results <- rbindlist(fold_result_list)
+rolling_class_results <- rbindlist(fold_class_list)
+rolling_split_summary <- rbindlist(fold_split_list)
+
+# 同一特徵方案＋同一參數，對三輪等權平均
+rolling_parameter_summary <- rolling_results[
+  ,
+  .(
+    Folds = .N,
+    MeanMacroF1 = mean(MacroF1),
+    SDMacroF1 = sd(MacroF1),
+    MinMacroF1 = min(MacroF1),
+    MeanAP2 = mean(AP2),
+    MeanPrecision2 = mean(Precision2),
+    MeanRecall2 = mean(Recall2),
+    MeanLogLoss = mean(LogLoss),
+    MedianBestIteration = median(BestIteration)
+  ),
+  by = .(
+    Model,
+    GridID,
+    LearningRate,
+    NumLeaves,
+    MinDataInLeaf
+  )
+]
+
+stopifnot(all(rolling_parameter_summary$Folds == 3L))
+
+setorder(
+  rolling_parameter_summary,
+  -MeanMacroF1,
+  MeanLogLoss
+)
+
+rolling_best_by_features <- rolling_parameter_summary[
+  , .SD[1], by = Model
+][order(-MeanMacroF1)]
+
+chosen_keys <- rolling_best_by_features[
+  , .(Model, GridID)
+]
+
+rolling_selected_folds <- merge(
+  rolling_results,
+  chosen_keys,
+  by = c("Model", "GridID")
+)
+
+rolling_selected_classes <- merge(
+  rolling_class_results,
+  chosen_keys,
+  by = c("Model", "GridID")
+)
+
+b1_results <- rolling_selected_folds[
+  Model == "B1",
+  .(
+    Fold,
+    B1_MacroF1 = MacroF1,
+    B1_AP2 = AP2
+  )
+]
+
+rolling_vs_B1 <- merge(
+  rolling_selected_folds[
+    , .(Fold, Model, MacroF1, AP2)
+  ],
+  b1_results,
+  by = "Fold"
+)
+
+rolling_vs_B1[, `:=`(
+  DeltaMacroF1 = MacroF1 - B1_MacroF1,
+  DeltaAP2 = AP2 - B1_AP2
+)]
+
+rolling_stability <- rolling_vs_B1[
+  Model != "B1",
+  .(
+    MeanDeltaMacroF1 = mean(DeltaMacroF1),
+    MinDeltaMacroF1 = min(DeltaMacroF1),
+    FoldsBetterThanB1 = sum(DeltaMacroF1 > 0),
+    MeanDeltaAP2 = mean(DeltaAP2)
+  ),
+  by = Model
+][order(-MeanDeltaMacroF1)]
+
+# ------------------------------------------------------------
+# 10. 保存所有比較結果
+# ------------------------------------------------------------
+
+tables_to_save <- list(
+  Rolling_splits = rolling_split_summary,
+  Rolling_all_results = rolling_results,
+  Rolling_parameters = rolling_parameter_summary,
+  Rolling_best_by_features = rolling_best_by_features,
+  Rolling_selected_folds = rolling_selected_folds,
+  Rolling_class_metrics = rolling_selected_classes,
+  Rolling_stability = rolling_stability
+)
+
+for (nm in names(tables_to_save)) {
+  fwrite(
+    tables_to_save[[nm]],
+    file.path(model_dir, paste0(nm, ".csv"))
+  )
+}
+
+saveRDS(
+  list(
+    base_data = base_data,
+    pair_counts = pair_counts,
+    base_features = base_features,
+    parameter_grid = parameter_grid,
+    results = tables_to_save,
+    model_dir = model_dir
+  ),
+  file.path(model_dir, "Model_analysis_checkpoint.rds")
+)
+
+cat("\n【三輪平均：各特徵方案最佳設定】\n")
+print(rolling_best_by_features)
+
+cat("\n【相較 B1 的穩定性】\n")
+print(rolling_stability)
+
+cat(
+  "\n完成！\n",
+  "原始與補值檔案均未修改。\n",
+  "2025 尚未參與選模。\n",
+  "結果資料夾：", model_dir, "\n"
+)
+#######################################################################
+# ============================================================
+# OD10：近期車流特徵比較
+#
+# 需要前一份模型程式的物件／函數：
+# pair_counts、make_features、run_grid、
+# parameter_grid、model_dir
+#
+# 比較：三方案 × 三輪 × 八組參數 = 72 次訓練
+# ============================================================
+
+library(data.table)
+
+needed <- c(
+  "pair_counts", "make_features", "run_grid",
+  "parameter_grid", "model_dir"
+)
+
+stopifnot(all(vapply(needed, exists, logical(1))))
+
+history_tag <- paste0(
+  "History_", format(Sys.time(), "%Y%m%d_%H%M%S")
+)
+
+history_dir <- file.path(model_dir, history_tag)
+dir.create(history_dir, recursive = TRUE)
+
+# ------------------------------------------------------------
+# 1. 歷史流量來源：保留所有日期
+# 不可以先刪除平日或缺失 Y 的時段
+# ------------------------------------------------------------
+
+history_pairs <- copy(pair_counts)[
+  Date >= as.Date("2024-01-01") &
+    Date <= as.Date("2024-12-31")
+]
+
+if (!nrow(history_pairs)) {
+  stop("沒有 2024 OD 流量資料。")
+}
+
+# 完整年度時間格
+history_grid <- data.table(
+  TimeKey = format(
+    seq(
+      as.POSIXct("2024-01-01 00:00:00", tz = "UTC"),
+      as.POSIXct("2024-12-31 23:55:00", tz = "UTC"),
+      by = "5 min"
+    ),
+    "%Y-%m-%d %H:%M:%S",
+    tz = "UTC"
+  )
+)
+
+total_counts <- history_pairs[
+  , .(TotalTrips = sum(Trips)),
+  by = TimeKey
+]
+
+history_grid <- merge(
+  history_grid,
+  total_counts,
+  by = "TimeKey",
+  all.x = TRUE,
+  sort = TRUE
+)
+
+# 未觀測到任何旅次的時間格，不擅自視為真實零流量
+history_grid[, HasTripRecord := !is.na(TotalTrips)]
+
+cat("\n【完整時間格檢查】\n")
+print(
+  history_grid[
+    , .(TimeBins = .N),
+    by = HasTripRecord
+  ]
+)
+
+# ------------------------------------------------------------
+# 2. 產生只使用過去資訊的歷史特徵
+# ------------------------------------------------------------
+
+add_history <- function(dt, source_columns, prefix) {
+  
+  new_features <- character()
+  
+  for (s in source_columns) {
+    
+    x <- as.numeric(dt[[s]])
+    
+    lag1 <- shift(x, 1L)
+    lag2 <- shift(x, 2L)
+    
+    # t 時點使用 t-1 至 t-3／t-6
+    mean15 <- frollmean(
+      lag1, n = 3L,
+      align = "right", na.rm = FALSE
+    )
+    
+    mean30 <- frollmean(
+      lag1, n = 6L,
+      align = "right", na.rm = FALSE
+    )
+    
+    values <- list(
+      Lag5 = lag1,
+      Mean15 = mean15,
+      Mean30 = mean30,
+      Change5 = lag1 - lag2,
+      Change15 = mean15 - shift(mean15, 3L)
+    )
+    
+    for (suffix in names(values)) {
+      
+      feature_name <- paste(
+        prefix, s, suffix, sep = "_"
+      )
+      
+      set(
+        dt,
+        j = feature_name,
+        value = values[[suffix]]
+      )
+      
+      new_features <- c(
+        new_features, feature_name
+      )
+    }
+  }
+  
+  new_features
+}
+
+# 總量歷史只需建立一次
+total_history <- copy(history_grid)
+
+total_history_features <- add_history(
+  total_history,
+  source_columns = "TotalTrips",
+  prefix = "Hist"
+)
+
+# ------------------------------------------------------------
+# 3. 三輪時間切分
+# ------------------------------------------------------------
+
+history_folds <- data.table(
+  Fold = c("F1", "F2", "F3"),
+  TrainEnd = c(
+    "2024-06-30",
+    "2024-08-31",
+    "2024-10-31"
+  ),
+  ValidStart = c(
+    "2024-07-01",
+    "2024-09-01",
+    "2024-11-01"
+  ),
+  ValidEnd = c(
+    "2024-08-31",
+    "2024-10-31",
+    "2024-12-31"
+  )
+)
+
+history_results_list <- list()
+history_classes_list <- list()
+history_quality_list <- list()
+
+# ------------------------------------------------------------
+# 4. 每輪重新選 OD、建立各組歷史特徵
+# ------------------------------------------------------------
+
+for (f in seq_len(nrow(history_folds))) {
+  
+  z <- history_folds[f]
+  
+  run_name <- paste(
+    history_tag, z$Fold, sep = "_"
+  )
+  
+  # 沿用之前的特徵建構函數：
+  # OD 排名只看該輪訓練期間
+  bundle <- make_features(
+    z$TrainEnd,
+    z$ValidEnd,
+    run_name
+  )
+  
+  d <- bundle$data
+  
+  original_od10_features <- bundle$sets[["OD10"]]
+  
+  if (is.null(original_od10_features)) {
+    stop("找不到 OD10 特徵。")
+  }
+  
+  # make_features 會寫出本輪 OD 對照表
+  map_path <- file.path(
+    model_dir,
+    paste0(run_name, "_OD_mapping.csv")
+  )
+  
+  map <- fread(map_path)
+  
+  # 只取該輪訓練選出的前十個 OD
+  map10 <- map[1:10, .(PairID, Feature)]
+  
+  # 完整時間格上的各組流量
+  counts <- merge(
+    history_pairs[, .(TimeKey, PairID, Trips)],
+    map10,
+    by = "PairID"
+  )
+  
+  wide <- dcast(
+    counts,
+    TimeKey ~ Feature,
+    value.var = "Trips",
+    fun.aggregate = sum,
+    fill = 0
+  )
+  
+  od_history <- merge(
+    history_grid,
+    wide,
+    by = "TimeKey",
+    all.x = TRUE,
+    sort = TRUE
+  )
+  
+  # 有總旅次紀錄、但該 OD 沒出現：0
+  # 完全沒有旅次紀錄的時間格：NA
+  for (s in map10$Feature) {
+    
+    if (!s %in% names(od_history)) {
+      od_history[, (s) := NA_real_]
+    }
+    
+    set(
+      od_history,
+      which(
+        od_history$HasTripRecord &
+          is.na(od_history[[s]])
+      ),
+      s,
+      0
+    )
+    
+    set(
+      od_history,
+      which(!od_history$HasTripRecord),
+      s,
+      NA_real_
+    )
+  }
+  
+  od_source_columns <- c(
+    map10$Feature, "OTHER_10"
+  )
+  
+  od_history[
+    ,
+    OTHER_10 := TotalTrips -
+      rowSums(as.matrix(.SD)),
+    .SDcols = map10$Feature
+  ]
+  
+  stopifnot(all(
+    od_history$OTHER_10 >= 0 |
+      is.na(od_history$OTHER_10)
+  ))
+  
+  # 每時段分組流量應與既有 OD10 相符
+  match_od <- match(
+    d$TimeKey, od_history$TimeKey
+  )
+  
+  stopifnot(!anyNA(match_od))
+  
+  for (s in od_source_columns) {
+    if (!isTRUE(all.equal(
+      as.numeric(d[[s]]),
+      as.numeric(od_history[[s]][match_od]),
+      check.attributes = FALSE
+    ))) {
+      stop(
+        z$Fold, " 的當期 OD 特徵不一致：", s
+      )
+    }
+  }
+  
+  od_history_features <- add_history(
+    od_history,
+    source_columns = od_source_columns,
+    prefix = "Hist"
+  )
+  
+  # 依時間鍵接回，不刪除或增加模型資料列
+  match_total <- match(
+    d$TimeKey, total_history$TimeKey
+  )
+  
+  stopifnot(!anyNA(match_total))
+  
+  for (s in total_history_features) {
+    set(
+      d, j = s,
+      value = total_history[[s]][match_total]
+    )
+  }
+  
+  for (s in od_history_features) {
+    set(
+      d, j = s,
+      value = od_history[[s]][match_od]
+    )
+  }
+  
+  bundle$data <- d
+  
+  bundle$sets <- list(
+    OD10 = original_od10_features,
+    
+    OD10_TotalHistory = c(
+      original_od10_features,
+      total_history_features
+    ),
+    
+    OD10_ODHistory = c(
+      original_od10_features,
+      total_history_features,
+      od_history_features
+    )
+  )
+  
+  # 缺失歷史特徵交由 LightGBM 處理，不額外刪樣本
+  # 確保三方案使用完全相同的 Y 與時間格
+  history_quality_list[[f]] <- data.table(
+    Fold = z$Fold,
+    TimeBins = nrow(d),
+    AnyTotalHistoryMissing = sum(
+      rowSums(is.na(
+        as.matrix(d[, ..total_history_features])
+      )) > 0
+    ),
+    AnyODHistoryMissing = sum(
+      rowSums(is.na(
+        as.matrix(d[, ..od_history_features])
+      )) > 0
+    )
+  )
+  
+  # 保存本輪輸入，方便重現
+  saveRDS(
+    bundle,
+    file.path(
+      history_dir,
+      paste0(z$Fold, "_feature_snapshot.rds")
+    )
+  )
+  
+  r <- run_grid(
+    bundle,
+    z$TrainEnd,
+    z$ValidStart,
+    z$ValidEnd,
+    run_name,
+    "SqrtBalanced"
+  )
+  
+  # 保留簡短的 F1/F2/F3 輪次名稱
+  r$records[, Fold := z$Fold]
+  r$classes[, Fold := z$Fold]
+  
+  history_results_list[[f]] <- r$records
+  history_classes_list[[f]] <- r$classes
+}
+
+# ------------------------------------------------------------
+# 5. 同一參數的三輪平均
+# ------------------------------------------------------------
+
+history_results <- rbindlist(history_results_list)
+history_class_results <- rbindlist(history_classes_list)
+history_quality <- rbindlist(history_quality_list)
+
+history_parameter_summary <- history_results[
+  ,
+  .(
+    Folds = .N,
+    MeanMacroF1 = mean(MacroF1),
+    SDMacroF1 = sd(MacroF1),
+    MinMacroF1 = min(MacroF1),
+    MeanAP2 = mean(AP2),
+    MeanPrecision2 = mean(Precision2),
+    MeanRecall2 = mean(Recall2),
+    MeanLogLoss = mean(LogLoss),
+    MedianBestIteration = median(BestIteration)
+  ),
+  by = .(
+    Model,
+    GridID,
+    LearningRate,
+    NumLeaves,
+    MinDataInLeaf
+  )
+]
+
+stopifnot(all(
+  history_parameter_summary$Folds == 3L
+))
+
+setorder(
+  history_parameter_summary,
+  -MeanMacroF1,
+  MeanLogLoss
+)
+
+history_best_by_features <- history_parameter_summary[
+  , .SD[1], by = Model
+][order(-MeanMacroF1)]
+
+selected_keys <- history_best_by_features[
+  , .(Model, GridID)
+]
+
+history_selected_folds <- merge(
+  history_results,
+  selected_keys,
+  by = c("Model", "GridID")
+)
+
+history_selected_classes <- merge(
+  history_class_results,
+  selected_keys,
+  by = c("Model", "GridID")
+)
+
+# ------------------------------------------------------------
+# 6. 與原本 OD10 比較
+# ------------------------------------------------------------
+
+od10_reference <- history_selected_folds[
+  Model == "OD10",
+  .(
+    Fold,
+    OD10_MacroF1 = MacroF1,
+    OD10_AP2 = AP2
+  )
+]
+
+history_comparison <- merge(
+  history_selected_folds[
+    , .(Fold, Model, MacroF1, AP2)
+  ],
+  od10_reference,
+  by = "Fold"
+)
+
+history_comparison[, `:=`(
+  DeltaMacroF1 = MacroF1 - OD10_MacroF1,
+  DeltaAP2 = AP2 - OD10_AP2
+)]
+
+history_stability <- history_comparison[
+  Model != "OD10",
+  .(
+    MeanDeltaMacroF1 = mean(DeltaMacroF1),
+    MinDeltaMacroF1 = min(DeltaMacroF1),
+    FoldsBetterThanOD10 = sum(DeltaMacroF1 > 0),
+    MeanDeltaAP2 = mean(DeltaAP2)
+  ),
+  by = Model
+][order(-MeanDeltaMacroF1)]
+
+# ------------------------------------------------------------
+# 7. 核對原本 OD10 的結果是否維持一致
+# ------------------------------------------------------------
+
+if (exists("rolling_results")) {
+  
+  original_od10 <- rolling_results[
+    Model == "OD10",
+    .(
+      Fold,
+      GridID,
+      PreviousMacroF1 = MacroF1,
+      PreviousAP2 = AP2
+    )
+  ]
+  
+  baseline_check <- merge(
+    history_results[
+      Model == "OD10",
+      .(
+        Fold,
+        GridID,
+        CurrentMacroF1 = MacroF1,
+        CurrentAP2 = AP2
+      )
+    ],
+    original_od10,
+    by = c("Fold", "GridID")
+  )
+  
+  baseline_check[, `:=`(
+    DifferenceF1 = CurrentMacroF1 - PreviousMacroF1,
+    DifferenceAP2 = CurrentAP2 - PreviousAP2
+  )]
+  
+  cat("\n【原本 OD10 基準重現檢查】\n")
+  print(
+    baseline_check[
+      ,
+      .(
+        MaxAbsoluteF1Difference = max(abs(DifferenceF1)),
+        MaxAbsoluteAPDifference = max(abs(DifferenceAP2))
+      )
+    ]
+  )
+  
+  fwrite(
+    baseline_check,
+    file.path(history_dir, "Baseline_reproduction.csv")
+  )
+  
+  if (
+    any(abs(baseline_check$DifferenceF1) > 1e-10) ||
+    any(abs(baseline_check$DifferenceAP2) > 1e-10)
+  ) {
+    warning(
+      "原本 OD10 基準有差異，請先核對，不要直接歸因於歷史特徵。"
+    )
+  }
+}
+
+# ------------------------------------------------------------
+# 8. 保存結果
+# ------------------------------------------------------------
+
+history_tables <- list(
+  All_results = history_results,
+  Parameter_summary = history_parameter_summary,
+  Best_by_features = history_best_by_features,
+  Selected_folds = history_selected_folds,
+  Selected_classes = history_selected_classes,
+  Stability = history_stability,
+  History_quality = history_quality
+)
+
+for (nm in names(history_tables)) {
+  fwrite(
+    history_tables[[nm]],
+    file.path(history_dir, paste0(nm, ".csv"))
+  )
+}
+
+saveRDS(
+  history_tables,
+  file.path(history_dir, "History_comparison_results.rds")
+)
+
+cat("\n【三方案平均表現】\n")
+print(history_best_by_features)
+
+cat("\n【相較 OD10 的改善穩定性】\n")
+print(history_stability)
+
+cat(
+  "\n完成近期流量特徵比較。\n",
+  "2025 未參與本次選模。\n",
+  "結果資料夾：", history_dir, "\n"
+)
