@@ -1,0 +1,1198 @@
+# ============================================================
+# 五站 VD 保守補值：使用已合併的 OD＋VD＋天氣 Parquet
+#
+# 規則：
+# 1. NA、-99、-999、-9999：補值對象
+# 2. -1：保留，不補、不視為有效速度
+# 3. <=15 分鐘短缺口：前後有實測速度時使用線性插值
+# 4. 其他缺口：當下有其他有效測站時，使用 2024 歷史 KNN
+# 5. 沒有其他有效測站，且不能短缺口插值：保留 NA
+#
+# 不建立壅塞指標 Y
+# 不覆蓋原檔、不修改原始欄位
+# ============================================================
+
+packages <- c("DBI", "duckdb", "data.table", "RANN")
+
+need_install <- packages[
+  !vapply(packages, requireNamespace, logical(1), quietly = TRUE)
+]
+
+if (length(need_install)) {
+  install.packages(need_install)
+}
+
+library(data.table)
+
+# ------------------------------------------------------------
+# 1. 路徑與設定
+# ------------------------------------------------------------
+
+input_path <- paste0(
+  "C:/Users/USER/Downloads/",
+  "N3_Daxi_Longtan_N_2024_2025_V2_LITE_WEATHER.parquet"
+)
+
+stopifnot(file.exists(input_path))
+
+output_dir <- file.path(
+  dirname(input_path),
+  paste0(
+    "VD_imputation_",
+    format(Sys.time(), "%Y%m%d_%H%M%S")
+  )
+)
+
+if (dir.exists(output_dir)) {
+  stop("輸出資料夾已存在，請稍後重新執行。")
+}
+
+dir.create(output_dir, recursive = TRUE)
+
+output_path <- file.path(
+  output_dir,
+  "N3_Daxi_Longtan_N_VD_imputed.parquet"
+)
+
+SHORT_GAP_MIN <- 15L
+K_NEIGHBORS <- 20L
+MAX_DONORS <- 30000L
+MIN_DONORS <- 20L
+
+MISSING_CODES <- c(-99, -999, -9999)
+
+stations <- c(
+  "VD_61p000_Speed",
+  "VD_61p670_Speed",
+  "VD_63p990_Speed",
+  "VD_65p990_Speed",
+  "VD_69p510_Speed"
+)
+
+# ------------------------------------------------------------
+# 2. 連線與欄位檢查
+# ------------------------------------------------------------
+
+con <- DBI::dbConnect(duckdb::duckdb())
+
+qs <- function(x) {
+  as.character(DBI::dbQuoteString(con, x))
+}
+
+qi <- function(x) {
+  as.character(DBI::dbQuoteIdentifier(con, x))
+}
+
+DBI::dbExecute(con, "SET threads = 4")
+DBI::dbExecute(con, "SET memory_limit = '4GB'")
+
+DBI::dbExecute(
+  con,
+  paste0(
+    "SET temp_directory = ",
+    qs(file.path(output_dir, "temp"))
+  )
+)
+
+DBI::dbExecute(
+  con,
+  paste0(
+    "CREATE VIEW src AS SELECT * FROM read_parquet(",
+    qs(input_path), ")"
+  )
+)
+
+schema <- DBI::dbGetQuery(con, "DESCRIBE src")
+
+required <- c("BottleneckTime", stations)
+
+if (!all(required %in% schema$column_name)) {
+  stop(
+    "缺少欄位：",
+    paste(
+      setdiff(required, schema$column_name),
+      collapse = ", "
+    )
+  )
+}
+
+new_names <- unlist(lapply(stations, function(s) {
+  c(
+    paste0(s, "_Filled"),
+    paste0(s, "_ImputationMethod"),
+    paste0(s, "_GapMinutes")
+  )
+}))
+
+if (any(new_names %in% schema$column_name)) {
+  stop("輸入已有補值欄位，請使用原始合併檔。")
+}
+
+# ------------------------------------------------------------
+# 3. VD 配對時間
+#
+# 原始鐘面值視為臺灣時間，不另外加 8 小時。
+# 恰好整 5 分鐘的時間歸前一個 VD 區間。
+# ------------------------------------------------------------
+
+time_type <- schema$column_type[
+  schema$column_name == "BottleneckTime"
+]
+
+stopifnot(length(time_type) == 1L)
+
+clock_source <- if (
+  grepl("WITH TIME ZONE|TIMESTAMPTZ", time_type)
+) {
+  "timezone('UTC', BottleneckTime)"
+} else {
+  "BottleneckTime"
+}
+
+# 保留小數秒，避免 00:15:00.500 被誤認為整分鐘邊界
+clock_expr <- paste0(
+  "TRY_CAST(regexp_replace(",
+  "REPLACE(CAST(", clock_source, " AS VARCHAR), 'T', ' '), ",
+  "'(Z|[+-][0-9]{2}(:?[0-9]{2})?)$', '') AS TIMESTAMP)"
+)
+
+floor_expr <- paste0(
+  "time_bucket(INTERVAL '5 minutes', ",
+  clock_expr, ")"
+)
+
+bin_expr <- paste0(
+  "CASE WHEN ", clock_expr, " = ", floor_expr,
+  " THEN ", floor_expr, " - INTERVAL '5 minutes'",
+  " ELSE ", floor_expr, " END"
+)
+
+DBI::dbExecute(
+  con,
+  paste0(
+    "CREATE VIEW keyed AS SELECT *, ",
+    bin_expr, " AS __vd_bin FROM src"
+  )
+)
+
+time_check <- DBI::dbGetQuery(
+  con,
+  "SELECT
+     MIN(__vd_bin) AS FirstTime,
+     MAX(__vd_bin) AS LastTime,
+     COUNT(*) AS TripRows,
+     COUNT(*) FILTER (
+       WHERE __vd_bin IS NULL
+     ) AS UnparsedRows
+   FROM keyed"
+)
+
+cat("\n【時間檢查】\n")
+print(time_check)
+
+if (time_check$UnparsedRows > 0) {
+  stop("有無法解析的時間，停止處理。")
+}
+
+# ------------------------------------------------------------
+# 4. 每時段每站整理為一筆
+# ------------------------------------------------------------
+
+select_parts <- unlist(
+  lapply(seq_along(stations), function(j) {
+    s <- qi(stations[j])
+    
+    c(
+      paste0("MAX(", s, ") AS s", j),
+      paste0("COUNT(DISTINCT ", s, ") AS n", j)
+    )
+  })
+)
+
+panel <- as.data.table(
+  DBI::dbGetQuery(
+    con,
+    paste0(
+      "SELECT __vd_bin AS TimeBin, ",
+      paste(select_parts, collapse = ", "),
+      " FROM keyed",
+      " GROUP BY __vd_bin",
+      " ORDER BY __vd_bin"
+    )
+  )
+)
+
+ncols <- paste0("n", 1:5)
+
+conflict <- panel[
+  rowSums(as.matrix(panel[, ..ncols]) > 1L) > 0L
+]
+
+if (nrow(conflict) > 0L) {
+  fwrite(
+    conflict,
+    file.path(output_dir, "VD_conflicting_bins.csv")
+  )
+  
+  stop("仍有同時段速度衝突，已輸出衝突表，尚未補值。")
+}
+
+# UTC 僅作 R 內部鐘面容器，不進行 +8 小時轉換
+panel[, TimeBin := as.POSIXct(
+  format(
+    TimeBin,
+    tz = "UTC",
+    format = "%Y-%m-%d %H:%M:%S"
+  ),
+  tz = "UTC"
+)]
+
+panel[, HasTripRecord := TRUE]
+
+grid <- data.table(
+  TimeBin = seq(
+    min(panel$TimeBin),
+    max(panel$TimeBin),
+    by = "5 min"
+  )
+)
+
+panel <- merge(
+  grid,
+  panel,
+  by = "TimeBin",
+  all.x = TRUE,
+  sort = TRUE
+)
+
+panel[is.na(HasTripRecord), HasTripRecord := FALSE]
+
+speed_cols <- paste0("s", 1:5)
+
+raw <- as.matrix(panel[, ..speed_cols])
+storage.mode(raw) <- "double"
+
+# ------------------------------------------------------------
+# 5. 判定有效值與補值對象
+# ------------------------------------------------------------
+
+has_trip_matrix <- matrix(
+  panel$HasTripRecord,
+  nrow = nrow(raw),
+  ncol = ncol(raw)
+)
+
+is_missing_code <- matrix(
+  raw %in% MISSING_CODES,
+  nrow = nrow(raw),
+  ncol = ncol(raw)
+)
+
+valid <- is.finite(raw) & raw >= 0
+
+observed <- raw
+observed[!valid] <- NA_real_
+
+target_missing <- (
+  is.na(raw) | is_missing_code
+) & has_trip_matrix
+
+filled <- raw
+filled[is.na(raw) | is_missing_code] <- NA_real_
+
+method <- matrix(
+  "INVALID_NOT_FILLED",
+  nrow = nrow(raw),
+  ncol = ncol(raw)
+)
+
+method[valid] <- "OBSERVED"
+method[!is.na(raw) & raw == -1] <- "NO_VEHICLE_MINUS1"
+method[target_missing] <- "UNFILLED"
+method[!has_trip_matrix] <- "NO_TRIP_RECORD"
+
+gap_minutes <- matrix(
+  0L,
+  nrow = nrow(raw),
+  ncol = ncol(raw)
+)
+
+year <- as.integer(
+  format(panel$TimeBin, "%Y", tz = "UTC")
+)
+
+# ------------------------------------------------------------
+# 6. 短缺口線性插值
+# 不跨年度、不使用補值當作插值端點
+# ------------------------------------------------------------
+
+for (j in 1:5) {
+  
+  runs <- rle(!valid[, j])
+  ends <- cumsum(runs$lengths)
+  starts <- ends - runs$lengths + 1L
+  
+  for (r in which(runs$values)) {
+    
+    a <- starts[r]
+    b <- ends[r]
+    
+    gap_minutes[a:b, j] <- runs$lengths[r] * 5L
+    
+    left <- a - 1L
+    right <- b + 1L
+    
+    if (
+      runs$lengths[r] * 5L > SHORT_GAP_MIN ||
+      left < 1L ||
+      right > nrow(panel)
+    ) next
+    
+    if (!valid[left, j] || !valid[right, j]) next
+    if (year[left] != year[right]) next
+    
+    idx <- (a:b)[target_missing[a:b, j]]
+    
+    if (!length(idx)) next
+    
+    filled[idx, j] <- observed[left, j] +
+      (observed[right, j] - observed[left, j]) *
+      (idx - left) / (right - left)
+    
+    method[idx, j] <- "LINEAR_SHORT"
+  }
+}
+
+# ------------------------------------------------------------
+# 7. KNN 的時間特徵
+# 沿用網站：時刻、星期、週末、年內週期
+# ------------------------------------------------------------
+
+lt <- as.POSIXlt(panel$TimeBin, tz = "UTC")
+
+slot <- lt$hour * 12 + lt$min / 5
+dow <- (lt$wday + 6) %% 7
+doy <- lt$yday + 1
+
+tod_angle <- 2 * pi * slot / 288
+week_angle <- 2 * pi * dow / 7
+year_angle <- 2 * pi * doy / 365.25
+
+calendar_x <- cbind(
+  sin(tod_angle) * 1.5,
+  cos(tod_angle) * 1.5,
+  sin(2 * tod_angle) * 0.65,
+  cos(2 * tod_angle) * 0.65,
+  sin(week_angle) * 0.70,
+  cos(week_angle) * 0.70,
+  as.numeric(dow >= 5) * 0.65,
+  sin(year_angle) * 0.35,
+  cos(year_angle) * 0.35
+)
+
+train_2024 <- year == 2024
+
+knn_log <- list()
+log_id <- 0L
+
+# ------------------------------------------------------------
+# 8. 歷史相似 KNN
+#
+# 根據當下實際有效的其他測站組合分開搜尋
+# 歷史庫只用 2024 原始有效觀測
+# 不把其他站補出的速度拿來當輸入
+# ------------------------------------------------------------
+
+for (j in 1:5) {
+  
+  donors <- setdiff(1:5, j)
+  
+  pattern <- as.integer(
+    valid[, donors, drop = FALSE] %*% (2^(0:3))
+  )
+  
+  pending <- target_missing[, j] &
+    method[, j] == "UNFILLED"
+  
+  method[
+    pending & pattern == 0L, j
+  ] <- "UNFILLED_NO_DONOR"
+  
+  patterns_to_run <- sort(
+    unique(pattern[pending & pattern > 0L])
+  )
+  
+  for (p in patterns_to_run) {
+    
+    donor_set <- donors[
+      bitwAnd(
+        as.integer(p),
+        as.integer(2^(0:3))
+      ) != 0L
+    ]
+    
+    query_idx <- which(pending & pattern == p)
+    
+    train_ok <- train_2024 &
+      valid[, j] &
+      rowSums(
+        valid[, donor_set, drop = FALSE]
+      ) == length(donor_set)
+    
+    train_idx <- which(train_ok)
+    
+    if (length(train_idx) < MIN_DONORS) {
+      method[
+        query_idx, j
+      ] <- "UNFILLED_TOO_FEW_DONORS"
+      
+      next
+    }
+    
+    if (length(train_idx) > MAX_DONORS) {
+      keep <- unique(round(
+        seq(
+          1,
+          length(train_idx),
+          length.out = MAX_DONORS
+        )
+      ))
+      
+      train_idx <- train_idx[keep]
+    }
+    
+    train_x <- cbind(
+      calendar_x[train_idx, , drop = FALSE],
+      observed[train_idx, donor_set, drop = FALSE] / 15
+    )
+    
+    k <- min(K_NEIGHBORS, length(train_idx))
+    
+    batches <- split(
+      query_idx,
+      ceiling(seq_along(query_idx) / 5000)
+    )
+    
+    for (idx in batches) {
+      
+      query_x <- cbind(
+        calendar_x[idx, , drop = FALSE],
+        observed[idx, donor_set, drop = FALSE] / 15
+      )
+      
+      nn <- RANN::nn2(
+        data = train_x,
+        query = query_x,
+        k = k,
+        eps = 0
+      )
+      
+      neighbor_y <- matrix(
+        observed[train_idx, j][as.vector(nn$nn.idx)],
+        nrow = length(idx),
+        ncol = k
+      )
+      
+      neighbor_weights <- 1 / pmax(
+        nn$nn.dists, 0.05
+      )
+      
+      filled[idx, j] <- rowSums(
+        neighbor_weights * neighbor_y
+      ) / rowSums(neighbor_weights)
+      
+      method[idx, j] <- "KNN_2024"
+    }
+    
+    log_id <- log_id + 1L
+    
+    knn_log[[log_id]] <- data.table(
+      TargetStation = stations[j],
+      DonorStations = paste(
+        stations[donor_set],
+        collapse = ";"
+      ),
+      TrainingRows = length(train_idx),
+      ImputedBins = length(query_idx),
+      K = k
+    )
+  }
+  
+  cat("完成補值：", stations[j], "\n")
+}
+
+# ------------------------------------------------------------
+# 9. 基本驗證與摘要
+# ------------------------------------------------------------
+
+# 所有原始有效速度及 -1 都不能被改動
+keep_original <- valid | (!is.na(raw) & raw == -1)
+
+stopifnot(
+  all(filled[keep_original] == raw[keep_original])
+)
+
+used_imputation <- matrix(
+  method %in% c("LINEAR_SHORT", "KNN_2024"),
+  nrow = nrow(raw),
+  ncol = ncol(raw)
+)
+
+stopifnot(
+  all(is.finite(filled[used_imputation])),
+  all(filled[used_imputation] >= 0)
+)
+
+summary_table <- rbindlist(
+  lapply(1:5, function(j) {
+    data.table(
+      Station = stations[j],
+      Method = method[panel$HasTripRecord, j]
+    )[
+      , .(TimeBins = .N),
+      by = .(Station, Method)
+    ]
+  })
+)
+
+cat("\n【補值摘要：每個 VD 時段一筆】\n")
+print(summary_table)
+
+fwrite(
+  summary_table,
+  file.path(output_dir, "VD_imputation_summary.csv")
+)
+
+if (length(knn_log)) {
+  fwrite(
+    rbindlist(knn_log),
+    file.path(output_dir, "VD_KNN_models.csv")
+  )
+}
+
+# ------------------------------------------------------------
+# 10. 每時段補值查找表
+# ------------------------------------------------------------
+
+lookup <- data.table(
+  `__vd_key` = format(
+    panel$TimeBin,
+    format = "%Y-%m-%d %H:%M:%S",
+    tz = "UTC"
+  )
+)
+
+for (j in 1:5) {
+  lookup[[paste0(
+    stations[j], "_Filled"
+  )]] <- filled[, j]
+  
+  lookup[[paste0(
+    stations[j], "_ImputationMethod"
+  )]] <- method[, j]
+  
+  lookup[[paste0(
+    stations[j], "_GapMinutes"
+  )]] <- gap_minutes[, j]
+}
+
+stopifnot(!anyDuplicated(lookup[["__vd_key"]]))
+
+duckdb::duckdb_register(
+  con,
+  "vd_lookup",
+  as.data.frame(lookup)
+)
+
+DBI::dbExecute(
+  con,
+  paste0(
+    "COPY vd_lookup TO ",
+    qs(file.path(
+      output_dir,
+      "VD_imputation_5min.parquet"
+    )),
+    " (FORMAT PARQUET, COMPRESSION ZSTD)"
+  )
+)
+
+# ------------------------------------------------------------
+# 11. 接回原始旅次資料
+# 原始欄位不動，只新增每站三個欄位
+# ------------------------------------------------------------
+
+added <- unlist(lapply(stations, function(s) {
+  
+  orig <- paste0("k.", qi(s))
+  
+  missing_expr <- paste0(
+    "(",
+    orig, " IS NULL",
+    " OR isnan(", orig, ")",
+    " OR ", orig, " IN (-99, -999, -9999)",
+    ")"
+  )
+  
+  f <- qi(paste0(s, "_Filled"))
+  m <- qi(paste0(s, "_ImputationMethod"))
+  g <- qi(paste0(s, "_GapMinutes"))
+  
+  c(
+    paste0(
+      "CASE WHEN ", missing_expr,
+      " THEN p.", f,
+      " ELSE ", orig,
+      " END AS ", f
+    ),
+    
+    paste0(
+      "CASE WHEN ", missing_expr,
+      " THEN CASE",
+      " WHEN p.", m, " = 'OBSERVED'",
+      " THEN 'SAME_BIN_OBSERVED'",
+      " ELSE p.", m, " END",
+      " WHEN ", orig, " = -1",
+      " THEN 'NO_VEHICLE_MINUS1'",
+      " WHEN ", orig, " >= 0",
+      " AND isfinite(", orig, ")",
+      " THEN 'OBSERVED'",
+      " ELSE 'INVALID_NOT_FILLED'",
+      " END AS ", m
+    ),
+    
+    paste0("p.", g, " AS ", g)
+  )
+}))
+
+# 先驗證時間鍵全部配得到
+unmatched <- DBI::dbGetQuery(
+  con,
+  "SELECT COUNT(*) AS n
+   FROM keyed k
+   LEFT JOIN vd_lookup p
+     ON k.__vd_bin = CAST(p.__vd_key AS TIMESTAMP)
+   WHERE p.__vd_key IS NULL"
+)$n
+
+stopifnot(unmatched == 0)
+
+if (file.exists(output_path)) {
+  stop("輸出檔已存在，停止以避免覆蓋。")
+}
+
+cat("\n開始輸出完整補值旅次檔……\n")
+
+DBI::dbExecute(
+  con,
+  paste0(
+    "COPY (",
+    "SELECT k.* EXCLUDE (__vd_bin), ",
+    paste(added, collapse = ", "),
+    " FROM keyed k",
+    " LEFT JOIN vd_lookup p",
+    " ON k.__vd_bin = CAST(p.__vd_key AS TIMESTAMP)",
+    ") TO ", qs(output_path),
+    " (FORMAT PARQUET, COMPRESSION ZSTD)"
+  )
+)
+
+output_rows <- DBI::dbGetQuery(
+  con,
+  paste0(
+    "SELECT COUNT(*) AS n FROM read_parquet(",
+    qs(output_path), ")"
+  )
+)$n
+
+stopifnot(output_rows == time_check$TripRows)
+
+DBI::dbDisconnect(con, shutdown = TRUE)
+
+cat(
+  "\n完成！\n",
+  "原始筆數：", time_check$TripRows, "\n",
+  "輸出筆數：", output_rows, "\n",
+  "原始欄位全部保留。\n",
+  "新增每站 Filled、ImputationMethod、GapMinutes。\n",
+  "尚未建立壅塞指標 Y。\n",
+  "新檔案：", output_path, "\n"
+)
+
+# 再顯示一次摘要，方便複製
+print(summary_table)
+# ============================================================
+# 建立四站壅塞指標 Y
+# 接在上一份補值程式後執行
+#
+# 需要上一份程式仍存在的物件：
+# output_path、output_dir、lookup、bin_expr
+# ============================================================
+
+library(data.table)
+
+required_objects <- c(
+  "output_path", "output_dir", "lookup", "bin_expr"
+)
+
+if (!all(vapply(required_objects, exists, logical(1)))) {
+  stop("缺少上一階段物件，請在剛才補值使用的 R 工作階段執行。")
+}
+
+if (!file.exists(output_path)) {
+  stop("找不到上一階段輸出的補值 Parquet。")
+}
+
+C_MAIN <- 0.50  # 暫定，尚待敏感性分析
+
+weights <- c(
+  VD_69p510_Speed = 0.0417,
+  VD_65p990_Speed = 0.4600,
+  VD_63p990_Speed = 0.3600,
+  VD_61p670_Speed = 0.1383
+)
+
+stopifnot(abs(sum(weights) - 1) < 1e-10)
+
+site_names <- names(weights)
+filled_names <- paste0(site_names, "_Filled")
+method_names <- paste0(site_names, "_ImputationMethod")
+
+stopifnot(all(
+  c("__vd_key", filled_names, method_names) %in% names(lookup)
+))
+
+# lookup 每個 VD 時段只有一列
+if (anyDuplicated(lookup[["__vd_key"]])) {
+  stop("VD 補值表時間鍵重複，停止，避免接回時增加旅次列數。")
+}
+
+# ------------------------------------------------------------
+# 1. 取出四站補值後速度
+# -1、其他負數、NA、Inf 都不當作有效速度
+# ------------------------------------------------------------
+
+speed <- as.matrix(lookup[, ..filled_names])
+storage.mode(speed) <- "double"
+
+valid <- is.finite(speed) & speed >= 0
+
+method_matrix <- as.matrix(lookup[, ..method_names])
+
+# 只有實際採用補值且速度有效，才算補值站
+is_imputed <- valid &
+  method_matrix %in% c("LINEAR_SHORT", "KNN_2024")
+
+# 確保維度一致
+dim(is_imputed) <- dim(valid)
+
+valid_weight <- sweep(valid * 1, 2, weights, "*")
+
+# 無效值先歸零，只供分子加總；分母仍僅計有效站
+station_congested <- matrix(
+  FALSE,
+  nrow = nrow(speed),
+  ncol = ncol(speed)
+)
+station_congested[valid] <- speed[valid] < 40
+
+congested_weight <- sweep(
+  station_congested * 1, 2, weights, "*"
+)
+
+coverage <- rowSums(valid_weight)
+numerator <- rowSums(congested_weight)
+
+C_weighted <- rep(NA_real_, nrow(speed))
+has_information <- coverage > 0
+
+C_weighted[has_information] <-
+  numerator[has_information] / coverage[has_information]
+
+# 避免浮點誤差使理論上的 1 略超過 1
+C_weighted[has_information] <- pmin(
+  1, pmax(0, C_weighted[has_information])
+)
+
+make_Y <- function(C, threshold) {
+  result <- rep(NA_integer_, length(C))
+  ok <- is.finite(C)
+  
+  result[ok & C == 0] <- 0L
+  result[ok & C > 0 & C < threshold] <- 1L
+  result[ok & C >= threshold] <- 2L
+  
+  result
+}
+
+# ------------------------------------------------------------
+# 2. 建立主 Y、敏感性分析 Y 與資料品質欄位
+# ------------------------------------------------------------
+
+y_table <- data.table(
+  VDTimeKey = lookup[["__vd_key"]],
+  C_weighted = C_weighted,
+  Y = make_Y(C_weighted, C_MAIN),
+  Y_c025 = make_Y(C_weighted, 0.25),
+  Y_c075 = make_Y(C_weighted, 0.75),
+  n_valid_vd = as.integer(rowSums(valid)),
+  n_missing_vd = as.integer(4L - rowSums(valid)),
+  weight_coverage = coverage,
+  used_partial_vd = rowSums(valid) > 0 & rowSums(valid) < 4,
+  n_imputed_vd = as.integer(rowSums(is_imputed))
+)
+
+y_table[, Y_used_imputation := n_imputed_vd > 0]
+
+y_table[, Y_source := fifelse(
+  n_valid_vd == 0L,
+  "UNKNOWN",
+  fifelse(
+    Y_used_imputation,
+    "USES_IMPUTED_SPEED",
+    "OBSERVED_SPEED_ONLY"
+  )
+)]
+
+y_table[, Y_label := fcase(
+  Y == 0L, "無壅塞",
+  Y == 1L, "局部壅塞",
+  Y == 2L, "大範圍壅塞",
+  default = "無法判定"
+)]
+
+# ------------------------------------------------------------
+# 3. 摘要：每個 VD 時段一筆，不按旅次重複計算
+# ------------------------------------------------------------
+
+y_summary <- y_table[
+  ,
+  .(TimeBins = .N),
+  by = .(Y, Y_label, Y_source)
+][order(Y, Y_source)]
+
+cat("\n【Y 摘要：每個 VD 時段一筆】\n")
+print(y_summary)
+
+cat("\n【有效站數分布】\n")
+print(
+  y_table[, .(TimeBins = .N), by = n_valid_vd][order(n_valid_vd)]
+)
+
+sensitivity <- rbindlist(lapply(
+  c(0.25, C_MAIN, 0.75),
+  function(threshold) {
+    yy <- make_Y(C_weighted, threshold)
+    
+    data.table(
+      Threshold = threshold,
+      ValidBins = sum(!is.na(yy)),
+      UnknownBins = sum(is.na(yy)),
+      Y0 = sum(yy == 0L, na.rm = TRUE),
+      Y1 = sum(yy == 1L, na.rm = TRUE),
+      Y2 = sum(yy == 2L, na.rm = TRUE)
+    )
+  }
+))
+
+cat("\n【門檻敏感性摘要】\n")
+print(sensitivity)
+
+fwrite(
+  y_summary,
+  file.path(output_dir, "Y_summary.csv")
+)
+
+fwrite(
+  sensitivity,
+  file.path(output_dir, "Y_threshold_sensitivity.csv")
+)
+
+# ------------------------------------------------------------
+# 4. 另存每時段 Y 表及包含 Y 的完整旅次檔
+# ------------------------------------------------------------
+
+con_y <- DBI::dbConnect(duckdb::duckdb())
+
+qy_string <- function(x) {
+  as.character(DBI::dbQuoteString(con_y, x))
+}
+qy_id <- function(x) {
+  as.character(DBI::dbQuoteIdentifier(con_y, x))
+}
+
+DBI::dbExecute(con_y, "SET threads = 4")
+DBI::dbExecute(con_y, "SET memory_limit = '4GB'")
+
+DBI::dbExecute(
+  con_y,
+  paste0(
+    "SET temp_directory = ",
+    qy_string(file.path(output_dir, "temp_y"))
+  )
+)
+
+duckdb::duckdb_register(
+  con_y, "y_lookup", as.data.frame(y_table)
+)
+
+y_timeseries_path <- file.path(
+  output_dir, "VD_Y_5min.parquet"
+)
+
+output_y_path <- file.path(
+  output_dir, "N3_Daxi_Longtan_N_VD_imputed_withY.parquet"
+)
+
+if (any(file.exists(c(y_timeseries_path, output_y_path)))) {
+  stop("Y 輸出檔案已存在，停止以避免覆蓋。")
+}
+
+DBI::dbExecute(
+  con_y,
+  paste0(
+    "COPY y_lookup TO ", qy_string(y_timeseries_path),
+    " (FORMAT PARQUET, COMPRESSION ZSTD)"
+  )
+)
+
+DBI::dbExecute(
+  con_y,
+  paste0(
+    "CREATE VIEW imputed_src AS SELECT * FROM read_parquet(",
+    qy_string(output_path), ")"
+  )
+)
+
+existing_names <- DBI::dbGetQuery(
+  con_y, "DESCRIBE imputed_src"
+)$column_name
+
+add_names <- setdiff(names(y_table), "VDTimeKey")
+
+if (any(add_names %in% existing_names)) {
+  stop(
+    "輸入檔已有同名 Y 欄位：",
+    paste(intersect(add_names, existing_names), collapse = ", ")
+  )
+}
+
+# 沿用已修正的 VD 配對規則：
+# 恰好整 5 分鐘歸前一格；其他時間向下取整
+DBI::dbExecute(
+  con_y,
+  paste0(
+    "CREATE VIEW imputed_keyed AS SELECT *, ",
+    bin_expr,
+    " AS __vd_y_bin FROM imputed_src"
+  )
+)
+
+added_sql <- paste(
+  paste0("y.", vapply(add_names, qy_id, character(1))),
+  collapse = ", "
+)
+
+DBI::dbExecute(
+  con_y,
+  paste0(
+    "COPY (",
+    "SELECT k.* EXCLUDE (__vd_y_bin), ", added_sql,
+    " FROM imputed_keyed k",
+    " LEFT JOIN y_lookup y",
+    " ON k.__vd_y_bin = CAST(y.VDTimeKey AS TIMESTAMP)",
+    ") TO ", qy_string(output_y_path),
+    " (FORMAT PARQUET, COMPRESSION ZSTD)"
+  )
+)
+
+row_check <- DBI::dbGetQuery(
+  con_y,
+  paste0(
+    "SELECT ",
+    "(SELECT COUNT(*) FROM imputed_src) AS InputRows, ",
+    "(SELECT COUNT(*) FROM read_parquet(",
+    qy_string(output_y_path), ")) AS OutputRows"
+  )
+)
+
+print(row_check)
+stopifnot(row_check$InputRows == row_check$OutputRows)
+
+unmatched <- DBI::dbGetQuery(
+  con_y,
+  "SELECT COUNT(*) AS UnmatchedRows
+   FROM imputed_keyed k
+   LEFT JOIN y_lookup y
+     ON k.__vd_y_bin = CAST(y.VDTimeKey AS TIMESTAMP)
+   WHERE y.VDTimeKey IS NULL"
+)
+
+stopifnot(unmatched$UnmatchedRows == 0)
+
+DBI::dbDisconnect(con_y, shutdown = TRUE)
+
+cat(
+  "\n完成！\n",
+  "主 Y 門檻 c =", C_MAIN, "\n",
+  "每時段 Y：", y_timeseries_path, "\n",
+  "完整旅次檔：", output_y_path, "\n",
+  "原始及補值檔案均未覆蓋。\n"
+)
+
+#########################################
+# ============================================================
+# 建模前快速檢查
+# 需要：lookup、y_table、output_y_path
+# ============================================================
+
+library(data.table)
+
+needed <- c("lookup", "y_table", "output_y_path")
+stopifnot(all(vapply(needed, exists, logical(1))))
+
+# ------------------------------------------------------------
+# 1. 整理四站速度及補值來源
+# ------------------------------------------------------------
+
+sites <- c(
+  "VD_69p510_Speed",
+  "VD_65p990_Speed",
+  "VD_63p990_Speed",
+  "VD_61p670_Speed"
+)
+
+w <- c(0.0417, 0.4600, 0.3600, 0.1383)
+
+speed_cols <- paste0(sites, "_Filled")
+method_cols <- paste0(sites, "_ImputationMethod")
+
+v <- as.matrix(lookup[, ..speed_cols])
+m <- as.matrix(lookup[, ..method_cols])
+
+valid_station <- is.finite(v) & v >= 0
+
+# 檢查 c 時只用四站都有原始有效觀測的時段
+all_observed <- rowSums(valid_station) == 4L &
+  rowSums(m == "OBSERVED") == 4L
+
+time_text <- lookup[["__vd_key"]]
+is_2024 <- substr(time_text, 1, 4) == "2024"
+
+idx <- which(all_observed & is_2024)
+
+if (!length(idx)) {
+  stop("沒有符合條件的 2024 四站完整原始觀測。")
+}
+
+congested <- v[idx, , drop = FALSE] < 40
+
+patterns <- data.table(
+  CongestedStations = apply(
+    congested,
+    1,
+    function(z) {
+      if (!any(z)) return("無")
+      paste(
+        c("69.510", "65.990", "63.990", "61.670")[z],
+        collapse = "+"
+      )
+    }
+  ),
+  C = as.numeric(congested %*% w)
+)
+
+pattern_summary <- patterns[
+  ,
+  .(TimeBins = .N),
+  by = .(CongestedStations, C)
+][order(C)]
+
+pattern_summary[
+  ,
+  Percent := round(100 * TimeBins / sum(TimeBins), 2)
+]
+
+pattern_summary[
+  ,
+  Y_c050 := fifelse(
+    C == 0, 0L,
+    fifelse(C >= 0.50, 2L, 1L)
+  )
+]
+
+cat("\n【2024 四站完整實測：壅塞站組合】\n")
+print(pattern_summary)
+
+# ------------------------------------------------------------
+# 2. 讀取已補值＋Y 的檔案，檢查建模期間及欄位
+# 不載入整份旅次資料
+# ------------------------------------------------------------
+
+stopifnot(file.exists(output_y_path))
+
+con_check <- DBI::dbConnect(duckdb::duckdb())
+
+qstr <- function(x) {
+  as.character(DBI::dbQuoteString(con_check, x))
+}
+
+DBI::dbExecute(
+  con_check,
+  paste0(
+    "CREATE VIEW model_source AS ",
+    "SELECT * FROM read_parquet(",
+    qstr(output_y_path), ")"
+  )
+)
+
+model_schema <- DBI::dbGetQuery(
+  con_check,
+  "DESCRIBE model_source"
+)
+
+cat("\n【建模可用欄位】\n")
+print(
+  model_schema[
+    ,
+    c("column_name", "column_type"),
+    drop = FALSE
+  ],
+  row.names = FALSE
+)
+
+# 這裡先用原始時間字串取日期，
+# 不做 +8 小時轉換
+daytype_summary <- DBI::dbGetQuery(
+  con_check,
+  "
+  SELECT
+    SUBSTR(CAST(BottleneckTime AS VARCHAR), 1, 4) AS Year,
+    DayType,
+    COUNT(*) AS TripRows
+  FROM model_source
+  GROUP BY 1, 2
+  ORDER BY 1, 2
+  "
+)
+
+cat("\n【年份與假日類別：旅次筆數】\n")
+print(daytype_summary)
+
+DBI::dbDisconnect(con_check, shutdown = TRUE)
+
+# ------------------------------------------------------------
+# 3. 目前 Y 時間表：年份、類別、補值來源
+# 注意：這張是 VD 時間格，尚未套用建模日期篩選
+# ------------------------------------------------------------
+
+y_check <- copy(y_table)
+y_check[, Year := substr(VDTimeKey, 1, 4)]
+
+year_y_summary <- y_check[
+  ,
+  .(TimeBins = .N),
+  by = .(Year, Y, Y_source)
+][order(Year, Y, Y_source)]
+
+cat("\n【各年 Y 分布：VD 時間格】\n")
+print(year_y_summary)
