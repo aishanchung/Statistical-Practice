@@ -335,29 +335,30 @@
 <section>
   <h2>目前研究狀態</h2>
   <div class="progress-summary">
-    <h3>V3 EDA 與 OD 分群 Pilot 已完成；下一步為 15 分鐘壅塞預測驗證</h3>
+    <h3>OD 當期辨識、O 歷史需求預測與預警 Pilot 已完成</h3>
     <p>目前正式資料版本為 V3_LITE：國道三號龍潭 → 大溪北向 2024–2025 年週末及連續假期 230 天，配合四站 VD 建構 Y=0／1／2。V1／V2 與早期探索成果仍保留作版本比較。</p>
-    <p><strong>截至 2026/11/05：</strong>已完成 V3 OD-pair EDA、2024 年 1,493 組高頻 OD 的 64 組非監督式分群 Pilot；三種分類器與 B0／B1／B2 的 <code>Y(t+15min)</code> 實證比較尚未執行。</p>
+    <p><strong>截至 2026/11/12：</strong>OD10 當期辨識、O 歷史需求九組模型、15／30 分鐘敏感度、成本敏感決策與 Y0／Y1 Rejection 已完成初步比較。K-means O 分群目前僅描述性分析；2025 結果屬探索性回測。<a href="reports/2026-11-12_summary.html">完整研究報告</a>。</p>
   </div>
   <div class="progress-status-grid">
     <div class="progress-status-card"><strong>V1_FULL / V1_LITE</strong><span class="progress-status-value">已完成</span>完整保存與核心旅次版本</div>
     <div class="progress-status-card"><strong>北向 VD / V2_LITE</strong><span class="progress-status-value">已完成</span>五分鐘 VD 與分析整合資料</div>
     <div class="progress-status-card"><strong>V3 EDA</strong><span class="progress-status-value">已完成</span>假日、OD 時間、距離、車種與跨年比較</div>
     <div class="progress-status-card"><strong>OD 分群</strong><span class="progress-status-value">64 組 Pilot</span>非監督式結果完成；最佳 K 待下游驗證</div>
-    <div class="progress-status-card"><strong>壅塞預測</strong><span class="progress-status-value">方法規劃</span>尚未完成模型訓練與效能比較</div>
+    <div class="progress-status-card"><strong>壅塞預測</strong><span class="progress-status-value">Pilot 完成</span>九組預測、事件預警與拒絕分類</div>
   </div>
 </section>
 
+<section class="weekly-update" id="research-20261112"><div class="weekly-date">2026 / 11 / 12｜第一次研究進度報告</div><h2>從 OD 當期辨識到 O 歷史需求與提前預警</h2><p>四站空間加權 Y，主分析 c=0.50。OD10 的 2024 第四季 Macro-F1 為 0.7184，優於總流量 0.6633；此為當期辨識，不等同未來預警。O 模型以時間與 VD 為 Baseline，加入 Top20＋OTHER 的 P 或 P+Q，三分類器共九組。</p><p><strong>主要結果：</strong>LightGBM Baseline Log loss 0.1613；歷史 O 需求未一致改善。15 分鐘 Y1 Recall 36.14%，30 分鐘為 26.76%；30 分鐘預警提前量較長。Balanced 成本下 LightGBM 事件命中 98→106／111，誤報每日 1.51→2.27。D2 錯判暢通 354→204，Coverage 95.96%，需評估複核負擔。</p><div class="weekly-note"><strong>未完成：</strong>ALL／Top20／K-means 下游公平比較、連假歷史支持度及 2026 獨立驗證。<a href="reports/2026-11-12_summary.html">閱讀完整內容（含公式、九組結果、K=5 五群與成本矩陣）</a>／<a href="reports.html">報告列表</a>。</div></section>
 <section class="weekly-update" id="v3-eda-cluster-20261105">
   <div class="weekly-date">2026 / 11 / 05｜V3 OD EDA 與分群 Pilot</div>
-  <h2>已完成 64 組分群候選，準備預測 15 分鐘後大範圍壅塞</h2>
+  <h2>歷史紀錄：已完成 64 組分群候選，當時準備預測 15 分鐘後大範圍壅塞</h2>
   <ul>
     <li><strong>V3 EDA：</strong>230 天、16,068,709 筆旅次、11,740 組 OD；按年與 DayType 比較單日平均需求，區分相對比例與實際流量。</li>
     <li><strong>OD 分群：</strong>2024 年每 OD ≥300 筆，共 1,493 組；F1–F4、K-means／K-medoids／GMM／Sparse K-means、K=2–5，共 64 組，已記錄分群品質與穩定性。</li>
     <li><strong>模型規劃：</strong>以 <code>Y(t+15min)</code> 為目標，比較 Logistic Regression、XGBoost、LightGBM 的 B0（不含 OD）、B1（OD 總量）、B2（OD 分群）。</li>
     <li><strong>驗證原則：</strong>2024 時序驗證選特徵／方法／K，2025 最終測試；以 Y=2 的 PR-AUC 為主，防止使用事後才知道的交通資訊。</li>
   </ul>
-  <div class="weekly-note"><strong>目前不能宣稱最佳 K 或預測精度：</strong>分類器尚未訓練。<a href="v3_lite.html#v3-eda">V3 EDA</a>／<a href="od_clustering.html">分群 Pilot</a>／<a href="machine_learning.html">預測方案</a>。</div>
+  <div class="weekly-note"><strong>11/05 當時尚不能宣稱最佳 K 或預測精度：</strong>分類器尚未訓練。<a href="v3_lite.html#v3-eda">V3 EDA</a>／<a href="od_clustering.html">分群 Pilot</a>／<a href="machine_learning.html">預測方案</a>。</div>
 </section>
 
 <!-- =====================================================

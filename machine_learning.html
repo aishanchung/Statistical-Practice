@@ -21,10 +21,10 @@
 <a href="progress.html">研究進度</a>
 <a href="reports.html">報告簡報</a>
 </aside>
-<div class="main"><header class="page-header"><h1>機器學習模型</h1><p>Logistic Regression、XGBoost、LightGBM｜Y(t+15min) 的 B0／B1／B2 比較</p></header><main class="content">
-<section class="research-section"><h2>研究目標｜提前 15 分鐘的大範圍壅塞預測</h2>
+<div class="main"><header class="page-header"><h1>機器學習模型</h1><p>Logistic Regression、XGBoost、LightGBM｜OD 當期辨識與 O 歷史需求預測（最新 2026/11/12）</p></header><main class="content">
+<section class="research-section" id="latest-20261112"><h2>最新實證｜2026/11/12</h2><p>目前已完成 OD10 當期辨識與 O 歷史需求預測 Pilot；兩套實驗不可混為一談。O 模型每五分鐘預測 30 分鐘後三分類 Y，另比較 15 分鐘 horizon。</p><div class="table-wrap"><table><thead><tr><th>O 特徵配置</th><th>內容</th></tr></thead><tbody><tr><td>Baseline</td><td>時間、假日與四站 VD（t−10、t−25）</td></tr><tr><td>+P</td><td>Baseline＋Top20＋OTHER 的 21 組歷史預期通過需求</td></tr><tr><td>+P+Q</td><td>Baseline＋經 Q 對齊的 21 組歷史抵達需求</td></tr></tbody></table></div><p>三配置 × Logistic、LightGBM、XGBoost 共九組。LightGBM Baseline 的 Log loss 0.1613，歷史 O 未一致改善。成本敏感與 Rejection 使用既有預測機率；K-means 只完成描述性分群。</p><div class="research-note"><a href="reports/2026-11-12_summary.html"><strong>完整數學定義、模型績效、事件預警與拒絕分類結果</strong></a>。2025 是探索性回測，正式驗證保留 2026。</div></section><section class="research-section"><h2>早期規劃紀錄｜提前 15 分鐘的大範圍壅塞預測</h2>
 <p class="page-intro">以時間 <code>t</code> 已可取得的 OD、VD、日曆及氣象特徵，預測 <strong><code>Y(t+15min)</code></strong>，即五分鐘資料向前 3 格。V3 的 Y=0 為無壅塞、Y=1 為局部壅塞、Y=2 為大範圍壅塞。加權壅塞比例 <code>C(t)</code> 的門檻 <code>c=0.50</code> 暫定，後續進行敏感度分析。</p>
-<div class="research-note research-warning"><strong>目前尚無正式預測成績：</strong>OD 分群 64 組 Pilot 已執行，但 Logistic Regression、XGBoost、LightGBM 與 B0/B1/B2 的時序驗證尚未完成。此頁是<strong>已確認的實驗設計</strong>，不是結果排行榜。</div>
+<div class="research-note research-warning"><strong>11/05 歷史規劃：</strong>OD 分群 64 組 Pilot 已執行，但 Logistic Regression、XGBoost、LightGBM 與 B0/B1/B2 的時序驗證尚未完成。此頁是<strong>已確認的實驗設計</strong>，不是結果排行榜。</div>
 </section>
 <section class="research-section"><h2>三種模型</h2>
 <div class="research-grid">
@@ -52,7 +52,7 @@
 <div class="research-note research-warning"><strong>需注意：</strong>若不同日期 Y=2 的比例差很多，PR-AUC 的基準水準也會變動；報告需同時顯示 Y=2 盛行率。<code>Y=NA</code> 不得當作 0。V3 完整 Y 定義見 <a class="research-link" href="v3_lite.html#target">V3_LITE</a>。</div>
 </section>
 <section class="research-section"><h2>程式與目前進度</h2>
-<p>已完成 V3 OD EDA 與分群 Pilot 的程式、指標及每組 OD 標籤；<strong>三分類器評估程式和實證結果尚待完成</strong>。</p>
+<p>已完成 V3 OD EDA 與分群 Pilot 的程式、指標及每組 OD 標籤；<strong>早期 B0/B1/B2 分群預測設計尚待驗證；最新 O 三配置結果請見上方 11/12 專節</strong>。</p>
 <p><a class="research-link" href="od_clustering.html">OD 分群 Pilot</a>　｜　<a class="research-link" href="https://github.com/aishanchung/Statistical-Practice/blob/main/10_OD-analysis/FOUR_VD_Y_AND_PREDICTIVE_K_PROTOCOL.md">15 分鐘預測方案與防洩漏說明</a></p>
 </section>
 </main></div><footer>統計實務 — 機器學習模型</footer><script src="script.js"></script></body></html>

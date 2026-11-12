@@ -83,7 +83,7 @@
 
 
 <main class="content">
-<section aria-labelledby="v3-news"><h2 id="v3-news">最新資料版本：V3_LITE</h2><div class="note"><strong>週末與連續假期（2024–2025）</strong>的完整 24 小時 OD 旅次，整合四支 VD 與三類壅塞 Y。共納入 230 天；四站全部缺失時 Y 才記為 NA。<strong>V3 OD EDA 與 64 組 OD 分群 Pilot 已完成</strong>，正在規劃 Y(t+15min) 的 2024 時序驗證及 2025 最終測試。<a href="v3_lite.html"><strong>查看 V3_LITE 詳細說明</strong></a>。</div></section>
+<section aria-labelledby="v3-news"><h2 id="v3-news">最新資料版本：V3_LITE</h2><div class="note"><strong>週末與連續假期（2024–2025）</strong>的完整 24 小時 OD 旅次，整合四支 VD 與三類壅塞 Y。共納入 230 天；四站全部缺失時 Y 才記為 NA。<strong>V3 OD EDA 與 64 組 OD 分群 Pilot 已完成</strong>，已完成 OD 當期辨識、O 歷史需求的 15／30 分鐘預測 Pilot 與成本敏感／Rejection 比較；2025 屬探索性回測。<a href="reports/2026-11-12_summary.html"><strong>查看 11/12 最新研究報告</strong></a>。<a href="v3_lite.html"><strong>查看 V3_LITE 詳細說明</strong></a>。</div></section>
 
 
 
@@ -344,7 +344,7 @@ V3 EDA／OD 分群 Pilot（完成）
 <br><br>
 
 <strong>
-15 分鐘壅塞預測（待實證）
+OD 辨識／O 15–30 分鐘預測 Pilot（完成）
 </strong>
 
 </div>
@@ -597,7 +597,7 @@ V3 EDA／OD 分群 Pilot
 </div>
 
 <p>
-64 組候選已完成；15 分鐘預測待驗證
+64 組候選已完成；O 15／30 分鐘預測與預警 Pilot 已完成
 </p>
 
 </div>
@@ -628,7 +628,7 @@ V3 節假日 OD EDA 已完成，並以 2024 年 1,493 組高頻 OD 執行 64 組
 
 
 <p>
-下一階段：以 Logistic Regression、XGBoost、LightGBM 比較 B0（不含 OD）、B1（加入 OD 總量）、B2（加入 OD 群組需求），以 2024 時序驗證選模、2025 作最終測試，預測 <strong>15 分鐘後 Y=2 大範圍壅塞</strong>。<a href="od_clustering.html">查看分群 Pilot</a>、<a href="machine_learning.html">查看模型設計</a>。
+下一階段：固定相同樣本、VD 與分類器，比較 ALL、Top20＋OTHER、K-means 的 O 歷史需求特徵；完善成本敏感預警與 R 複核流程，凍結設定後以 2026 新資料獨立驗證。<a href="reports/2026-11-12_summary.html">查看最新模型與結果</a>。
 </p>
 
 </section>

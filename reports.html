@@ -60,13 +60,13 @@
     <main class="content">
       <div class="report-header">
         <div>
-          <h2 id="reportTitle">2026/10/22 研究進度報告</h2>
-          <div class="report-current-date" id="reportDescription">正式 EDA、OD 分群與壅塞預測方法規劃</div>
+          <h2 id="reportTitle">2026/11/12 第一次研究進度報告</h2>
+          <div class="report-current-date" id="reportDescription">OD 辨識、O 歷史需求、成本敏感與 Rejection</div>
         </div>
       </div>
       <div class="report-layout">
         <div class="report-viewer">
-          <iframe id="pdfViewer" src="reports/2026-10-22_report.pdf" title="研究進度簡報 PDF 預覽"></iframe>
+          <iframe id="pdfViewer" src="reports/2026-11-12_summary.html" title="研究進度簡報 PDF 預覽"></iframe>
         </div>
         <div class="report-list">
           <div class="report-list-title">報告列表</div>
@@ -86,13 +86,14 @@
             <div class="report-name">第二次進度報告</div>
             <span class="report-badge">預定報告</span>
           </div>
-          <div class="report-item upcoming">
-            <div class="report-date">2026/11/12</div>
-            <div class="report-name">第一次進度報告</div>
-            <span class="report-badge">預定報告</span>
-          </div>
           <div class="report-list-subhead">已完成報告</div>
-          <div class="report-item active" data-report="2026-10-22">
+          <div class="report-item active" data-report="2026-11-12">
+            <button type="button" class="report-select" onclick="openReport('2026-11-12')" style="border:0;background:transparent;padding:0;font:inherit;text-align:left;cursor:pointer;width:100%;">
+              <div class="report-date">2026/11/12</div><div class="report-name">第一次研究進度報告</div>
+            </button><div class="report-description">35 頁｜OD 與 O 歷史需求、提前預警</div>
+            <div class="report-links"><a href="reports/2026-11-12_summary.html" target="_blank" rel="noopener">研究內容</a><span id="nov12-ppt" hidden> &nbsp;｜&nbsp; <a href="reports/2026-11-12_report.pptx" download>下載 PPT</a></span><span id="nov12-pdf" hidden> &nbsp;｜&nbsp; <a href="reports/2026-11-12_report.pdf" target="_blank" rel="noopener">開啟 PDF</a></span></div>
+          </div>
+          <div class="report-item" data-report="2026-10-22">
             <button type="button" class="report-select" onclick="openReport('2026-10-22')" style="border:0;background:transparent;padding:0;font:inherit;text-align:left;cursor:pointer;width:100%;">
               <div class="report-date">2026/10/22</div>
               <div class="report-name">正式 EDA 與預測方法規劃</div>
@@ -115,9 +116,26 @@
   <script src="script.js"></script>
   <script>
     const reports = {
+      '2026-11-12': {pdf:'reports/2026-11-12_summary.html', title:'2026/11/12 第一次研究進度報告', description:'OD 辨識、O 歷史需求、成本敏感與 Rejection'},
       '2026-10-22': {pdf:'reports/2026-10-22_report.pdf', title:'2026/10/22 研究進度報告', description:'正式 EDA、OD 分群與壅塞預測方法規劃'},
       '2026-10-01': {pdf:'reports/2026-10-01_report.pdf', title:'2026/10/01 研究進度報告', description:'資料整併與初步 EDA'}
     };
+    async function enableNov12Files() {
+      for (const [ext, id] of [['pdf','nov12-pdf'],['pptx','nov12-ppt']]) {
+        const url = 'reports/2026-11-12_report.' + ext;
+        try {
+          const res = await fetch(url,{method:'HEAD',cache:'no-cache'});
+          if (res.ok && !(res.headers.get('content-type') || '').includes('text/html')) {
+            document.getElementById(id).hidden=false;
+            if (ext==='pdf') {
+              reports['2026-11-12'].pdf=url;
+              if (document.querySelector('.report-item.active')?.dataset.report==='2026-11-12') openReport('2026-11-12');
+            }
+          }
+        } catch (_) {}
+      }
+    }
+    enableNov12Files();
     function openReport(id) {
       const report = reports[id];
       if (!report) return;
