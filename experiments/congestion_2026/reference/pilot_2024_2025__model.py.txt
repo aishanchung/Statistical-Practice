@@ -1,0 +1,24 @@
+def make_model(algorithm, params, cfg):
+    seed, threads = cfg["seed"], cfg["model_threads"]
+    if algorithm == "logistic":
+        return make_pipeline(SimpleImputer(strategy="median", add_indicator=True),
+                             StandardScaler(), LogisticRegression(max_iter=2000,
+                                                                  random_state=seed, **params))
+    if algorithm == "lightgbm":
+        from lightgbm import LGBMClassifier
+        return LGBMClassifier(objective="multiclass", num_class=3, learning_rate=0.05,
+                              deterministic=True, force_col_wise=True, verbosity=-1,
+                              random_state=seed, n_jobs=threads, **params)
+    from xgboost import XGBClassifier
+    return XGBClassifier(objective="multi:softprob", num_class=3, learning_rate=0.05,
+                         eval_metric="mlogloss", tree_method="hist", subsample=0.9,
+                         random_state=seed, n_jobs=threads, **params)
+
+
+def predict(model, x):
+    if list(model.classes_) != LABELS:
+        raise ValueError("Unexpected probability column order")
+    prob = model.predict_proba(x).astype(float)
+    if not np.isfinite(prob).all() or not np.allclose(prob.sum(axis=1), 1):
+        raise ValueError("Invalid probabilities")
+    return prob / prob.sum(axis=1, keepdims=True)

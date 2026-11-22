@@ -1,0 +1,10 @@
+﻿algorithm,features,n,log_loss,macro_f1,max_metric_difference,trained_model_binary_found,training_code_found,checkpoint_parameters_found,probability_rows_found,legacy_embargo
+lightgbm,baseline,33423,0.1612791889535284,0.6874042338829143,1.1102230246251565e-16,False,True,True,True,not explicitly recorded
+lightgbm,p,33423,0.16572554759306451,0.6854611497964521,2.7755575615628914e-17,False,True,True,True,not explicitly recorded
+lightgbm,pq,33423,0.16662143599987503,0.6837617954089117,1.3877787807814457e-16,False,True,True,True,not explicitly recorded
+logistic,baseline,33423,0.1737438213319028,0.6646401979982673,1.1102230246251565e-16,False,True,True,True,not explicitly recorded
+logistic,p,33423,0.16946336359597824,0.6746356652115288,1.3877787807814457e-16,False,True,True,True,not explicitly recorded
+logistic,pq,33423,0.1726018779524508,0.6728317679144862,1.942890293094024e-16,False,True,True,True,not explicitly recorded
+xgboost,baseline,33423,0.16179439863687883,0.6691299764542421,8.326672684688674e-17,False,True,True,True,not explicitly recorded
+xgboost,p,33423,0.16419321417042054,0.6707789900710687,5.551115123125783e-17,False,True,True,True,not explicitly recorded
+xgboost,pq,33423,0.1644219731927609,0.6753486796945684,8.326672684688674e-17,False,True,True,True,not explicitly recorded

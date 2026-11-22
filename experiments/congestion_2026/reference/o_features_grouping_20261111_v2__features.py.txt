@@ -1,0 +1,77 @@
+def build_table(detail,hist,days,alpha):
+    all_counts=detail.groupby(["o","kind"])[["n","n_b"]].sum()
+    origins=sorted(detail.o.unique())
+    out=pd.DataFrame({"o":origins}).set_index("o")
+    for kind,key in (("WEEKEND","W"),("LONGHOLIDAY","L")):
+        block=all_counts.xs(kind,level="kind").reindex(origins,fill_value=0)
+        out[f"N_all_{key}"]=block.n
+        out[f"N_B_{key}"]=block.n_b
+        out[f"D_{key}"]=days[kind]
+        out[f"p_{key}"]=block.n_b/block.n.replace(0,np.nan)
+        out[f"daily_all_{key}"]=block.n/days[kind]
+        out[f"daily_B_{key}"]=block.n_b/days[kind]
+    out["N_all"]=out.N_all_W+out.N_all_L
+    out["N_B"]=out.N_B_W+out.N_B_L
+    out["p"]=out.N_B/out.N_all.replace(0,np.nan)
+    out["log1p_N_all"]=np.log1p(out.N_all)
+    out["log1p_N_B"]=np.log1p(out.N_B)
+    out["r_all"]=out.daily_all_L/out.daily_all_W.replace(0,np.nan)
+    out["r_p"]=out.p_L/out.p_W.replace(0,np.nan)
+    out["r_B"]=out.daily_B_L/out.daily_B_W.replace(0,np.nan)
+    valid=out[["r_all","r_p","r_B"]].notna().all(axis=1)
+    out["raw_identity_valid"]=valid
+    out["raw_identity_error"]=np.where(valid,out.r_B-out.r_all*out.r_p,np.nan)
+    if not np.allclose(out.loc[valid,"r_B"],out.loc[valid,"r_all"]*out.loc[valid,"r_p"],
+                       atol=1e-10,rtol=1e-10):
+        raise ValueError("Raw ratio identity failed")
+    population_p=out.N_B.sum()/out.N_all.sum()
+    pooled_p=(out.N_B+CFG["smooth_global_trips"]*population_p)/(out.N_all+CFG["smooth_global_trips"])
+    pooled_daily=out.N_all/(days["WEEKEND"]+days["LONGHOLIDAY"])
+    pooled_B_daily=out.N_B/(days["WEEKEND"]+days["LONGHOLIDAY"])
+    for key,kind in (("W","WEEKEND"),("L","LONGHOLIDAY")):
+        out[f"daily_all_{key}_smoothed"]=(out[f"N_all_{key}"]+alpha*pooled_daily)/(days[kind]+alpha)
+        out[f"p_{key}_smoothed"]=(out[f"N_B_{key}"]+CFG["smooth_probability_trips"]*pooled_p)/(
+            out[f"N_all_{key}"]+CFG["smooth_probability_trips"])
+        # Independently smooth observed bottleneck counts, not the product of the other two rates.
+        out[f"daily_B_{key}_smoothed"]=(out[f"N_B_{key}"]+alpha*pooled_B_daily)/(days[kind]+alpha)
+    for name,left,right in (("r_all","daily_all_L_smoothed","daily_all_W_smoothed"),
+                            ("r_p","p_L_smoothed","p_W_smoothed"),
+                            ("r_B","daily_B_L_smoothed","daily_B_W_smoothed")):
+        out[name+"_smoothed"]=out[left]/out[right]
+        out["log_"+name+"_smoothed"]=np.log(out[name+"_smoothed"])
+    out["smoothed_product_residual"]=out.r_B_smoothed-out.r_all_smoothed*out.r_p_smoothed
+    out["r"]=out.r_B
+    out["r_smoothed"]=out.r_B_smoothed
+    out["log_r_smoothed"]=out.log_r_B_smoothed
+    out["daily_B_increase"]=out.daily_B_L-out.daily_B_W
+    pi=detail.groupby(["o","hour"]).n_b.sum().unstack(fill_value=0).reindex(index=origins,columns=range(24),fill_value=0)
+    for hour in range(24):
+        out[f"pi_B_{hour:02d}"]=pi[hour]/out.N_B.replace(0,np.nan)
+    nu=detail.groupby(["o","vehicle"],dropna=False).n_b.sum().unstack(fill_value=0).reindex(index=origins,fill_value=0)
+    for vehicle in nu.columns:
+        key="MISSING" if pd.isna(vehicle) or vehicle=="" else str(vehicle)
+        out[f"nu_B_{key}"]=nu[vehicle]/out.N_B.replace(0,np.nan)
+    durations=hist.loc[hist.travel_seconds.notna() & hist.n_b.gt(0)].groupby(
+        ["o","travel_seconds"]).n_b.sum().reset_index().sort_values(["o","travel_seconds"])
+    def weighted_median(group):
+        n=int(group.n_b.sum())
+        cumul=group.n_b.cumsum().to_numpy()
+        values=group.travel_seconds.to_numpy()
+        positions=[(n-1)//2,n//2]
+        return np.mean(values[np.searchsorted(cumul,np.array(positions)+1)])/60
+    med={o:weighted_median(g) for o,g in durations.groupby("o")}
+    out["lag_median"]=pd.Series(med)
+    out["zero_all"]=out.N_all.eq(0)
+    out["zero_B"]=out.N_B.eq(0)
+    out["missing_lag"]=out.lag_median.isna()
+    out["low_all"]=out.N_all.lt(CFG["low_n"])
+    out["low_B"]=out.N_B.lt(CFG["low_passing"])
+    out["low_L_B"]=out.N_B_L.lt(CFG["low_passing"])
+    out["zero_W_all"]=out.N_all_W.eq(0)
+    out["zero_W_B"]=out.N_B_W.eq(0)
+    out["zero_L_all"]=out.N_all_L.eq(0)
+    out["missing_vehicle_B"]=detail.loc[detail.vehicle.isna()|detail.vehicle.eq("")].groupby("o").n_b.sum().reindex(origins,fill_value=0)
+    for prefix in ("pi_B_","nu_B_"):
+        sums=out.filter(regex="^"+prefix).sum(axis=1)
+        if not np.allclose(sums.loc[out.N_B.gt(0)],1): raise ValueError(prefix)
+    return out.reset_index()

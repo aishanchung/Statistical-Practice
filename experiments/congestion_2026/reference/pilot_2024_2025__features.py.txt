@@ -1,0 +1,94 @@
+def aggregate_counts(frame, keys):
+    return frame.groupby(keys, observed=True, sort=False)[["n", "passing"]].sum()
+
+
+def probability(counts, width, strength, origins, top=None, separate=True):
+    """Type-specific Beta mean, shrunk to the type-agnostic O/time rate."""
+    h = counts.assign(bucket=counts["hour"] // width)
+    if top is not None:
+        h = h.assign(o=h["o"].where(h["o"].isin(top), "OTHER"))
+    origins = list(origins) if top is None else [*top, "OTHER"]
+    overall = h["passing"].sum() / h["n"].sum()
+    o = aggregate_counts(h, ["o"]).reindex(origins, fill_value=0)
+    o_rate = (o["passing"] + strength * overall) / (o["n"] + strength)
+    buckets = list(range(24 // width))
+    hour_index = pd.MultiIndex.from_product([origins, buckets], names=["o", "bucket"])
+    b = aggregate_counts(h, ["o", "bucket"]).reindex(hour_index, fill_value=0)
+    parent = (b["passing"] + strength * o_rate.reindex(
+        b.index.get_level_values("o")).to_numpy()) / (b["n"] + strength)
+    child_index = pd.MultiIndex.from_product([origins, buckets, KINDS], names=["o", "bucket", "kind"])
+    child = aggregate_counts(h, ["o", "bucket", "kind"]).reindex(child_index, fill_value=0)
+    child["p_raw"] = child["passing"] / child["n"].replace(0, np.nan)
+    prior = parent.reindex(child.index.droplevel("kind")).to_numpy()
+    child["p"] = (child["passing"] + strength * prior) / (child["n"] + strength) if separate else prior
+    return child, overall
+
+
+def read_counts(con, condition):
+    return con.execute(f"""
+        SELECT o, kind, slot//12 AS hour, sum(n)::BIGINT AS n,
+               coalesce(sum(n) FILTER (WHERE lag>=0),0)::BIGINT AS passing
+        FROM m WHERE {condition} GROUP BY ALL
+    """).df()
+
+
+def history_before(cutoff):
+    # One full extra day after the last observed terminal event. Archival latency
+    # is a retrospective assumption and must be verified for live deployment.
+    return (f"depart_day IN (SELECT depart_day FROM completion "
+            f"WHERE latest_end + INTERVAL '1 day' < TIMESTAMP {literal(cutoff)})")
+
+
+def estimate_history(con, condition, top, width, strength, q_strength):
+    hour_counts = read_counts(con, condition)
+    origins = sorted(hour_counts["o"].unique())
+    table, _ = probability(hour_counts, width, strength, origins)
+    p = table["p"].unstack(["kind", "bucket"])
+    demand = con.execute(f"""
+        WITH day_count AS (
+            SELECT kind, count(DISTINCT depart_day) AS n_days FROM m WHERE {condition} GROUP BY kind
+        ), dep AS (
+            SELECT kind,o,slot,sum(n) AS n FROM m WHERE {condition} GROUP BY ALL
+        )
+        SELECT dep.kind,o,slot,n/n_days AS mean_n FROM dep JOIN day_count USING(kind)
+    """).df()
+    q = con.execute(f"""
+        SELECT o, slot//12 AS hour, lag, sum(n)::BIGINT AS n
+        FROM m WHERE lag>=0 AND {condition} GROUP BY ALL
+    """).df()
+    maxlag = int(q["lag"].max())
+    idx = {o: i for i, o in enumerate(origins)}
+    groups = [*top, "OTHER"]
+    gidx = {o: i for i, o in enumerate(groups)}
+    lag = np.zeros((len(origins), 24, maxlag+1))
+    lag[q["o"].map(idx), q["hour"], q["lag"]] = q["n"]
+    q_global = lag.sum(axis=(0, 1))
+    q_global /= q_global.sum()
+    q_o = lag.sum(axis=1) + q_strength * q_global[None, :]
+    q_o /= q_o.sum(axis=1, keepdims=True)
+    lag += q_strength*q_o[:, None, :]
+    lag /= lag.sum(axis=2, keepdims=True)
+    by_type = {}
+    for kind in KINDS:
+        d = demand[demand["kind"].eq(kind)]
+        if d.empty:
+            raise ValueError(f"Need observed {kind} before fitting profiles")
+        daily = np.zeros((len(origins), SLOTS))
+        daily[d["o"].map(idx), d["slot"]] = d["mean_n"]
+        flat = np.zeros((SLOTS, len(groups)))
+        arrivals = np.zeros((SLOTS+maxlag, len(groups)))
+        hour_index = np.arange(24)//width
+        prob = p[kind].reindex(columns=hour_index).to_numpy().repeat(12, axis=1)
+        expected = daily*prob
+        for i, o in enumerate(origins):
+            g = gidx.get(o, gidx["OTHER"])
+            flat[:, g] += expected[i]
+            for hour in range(24):
+                slot = hour*12
+                arrivals[slot:slot+12+maxlag, g] += np.convolve(
+                    expected[i, slot:slot+12], lag[i, hour]
+                )
+        if not np.allclose(flat.sum(axis=0), arrivals.sum(axis=0)):
+            raise ValueError("Convolution did not conserve cohort mass")
+        by_type[kind] = flat, arrivals
+    return table, by_type, q

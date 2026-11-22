@@ -1,0 +1,6 @@
+{
+  "C1_y1_threshold": 0.15,
+  "Y2_protection": 0.4,
+  "selection": "2024 OOF Y1 F1 with Y2 Recall >= original-.01",
+  "2025_used": false
+}

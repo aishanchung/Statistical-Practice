@@ -1,0 +1,22 @@
+{
+  "page_errors": [],
+  "event_onset_alignment": [
+    {
+      "event": "2025-01-31 15:40",
+      "plotted_onset": "2025-01-31T15:40:00",
+      "naive_local_ISO_alignment": true
+    },
+    {
+      "event": "2025-02-15 12:30",
+      "plotted_onset": "2025-02-15T12:30:00",
+      "naive_local_ISO_alignment": true
+    }
+  ],
+  "screenshots": [
+    "downloaded_probability_chart.png",
+    "missed_event.png",
+    "overview_h30.png",
+    "successful_event.png"
+  ],
+  "real_data": true
+}

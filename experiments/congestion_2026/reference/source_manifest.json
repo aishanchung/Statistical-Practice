@@ -1,0 +1,43 @@
+[
+  {
+    "legacy_relative_path": "pilot_2024_2025/features.py",
+    "original_sha256": "313447a46d211f5be25af1e1f624c504c25ce4a86933a3576fd80872ea9e18e1",
+    "functions": [
+      "aggregate_counts",
+      "probability",
+      "read_counts",
+      "history_before",
+      "estimate_history"
+    ],
+    "reference_file": "pilot_2024_2025__features.py.txt",
+    "role": "verbatim owning functions; reference only; runtime requires configured legacy_root"
+  },
+  {
+    "legacy_relative_path": "pilot_2024_2025/model.py",
+    "original_sha256": "4a12d665d4c38128515127944381ca9bdb9ac4538235d88aad8f3d61d3ad096f",
+    "functions": [
+      "make_model",
+      "predict"
+    ],
+    "reference_file": "pilot_2024_2025__model.py.txt",
+    "role": "verbatim owning functions; reference only; runtime requires configured legacy_root"
+  },
+  {
+    "legacy_relative_path": "o_features_grouping_20261111_v2/features.py",
+    "original_sha256": "b22704b538648c64cd2c4840cec2ee49b58ecb4e27772f9588540e648a49c210",
+    "functions": [
+      "build_table"
+    ],
+    "reference_file": "o_features_grouping_20261111_v2__features.py.txt",
+    "role": "verbatim owning functions; reference only; runtime requires configured legacy_root"
+  },
+  {
+    "legacy_relative_path": "o_features_grouping_20261111_v2/groups.py",
+    "original_sha256": "1c70b525f073fa3f09a88209158227e93fb396c3dc57649d7276ddaa856d6f89",
+    "functions": [
+      "geometry"
+    ],
+    "reference_file": "o_features_grouping_20261111_v2__groups.py.txt",
+    "role": "verbatim owning functions; reference only; runtime requires configured legacy_root"
+  }
+]

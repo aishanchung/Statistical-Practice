@@ -1,0 +1,6 @@
+streamlit>=1.45
+plotly>=6.1
+pandas>=2.2
+pyarrow>=18
+PyYAML>=6
+matplotlib>=3.9

@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.parquet
+*.joblib
+*.pkl
+*.pickle
+experiments/congestion_2026/outputs/
+experiments/congestion_2026/config/local.*
+dashboard/data/
+dashboard/config.local.*
+environment_setup.log
+*.log

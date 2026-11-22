@@ -1,0 +1,203 @@
+{
+  "config": {
+    "version": "congestion_20261122_v1",
+    "data_root": "../Data",
+    "legacy_root": "../M1B_O_PILOT",
+    "local_source_root": "../M06B_project",
+    "output_root": "experiments/congestion_2026/outputs",
+    "run_id": "workpackages_0ABCDE_v1",
+    "seed": 20261122,
+    "threads": 4,
+    "memory_limit": "2GB",
+    "bottleneck": "03F0648N",
+    "holiday_types": [
+      "WEEKEND",
+      "LONGHOLIDAY"
+    ],
+    "primary_horizon_minutes": 30,
+    "sensitivity_horizons_minutes": [
+      15
+    ],
+    "supported_horizons_minutes": [
+      15,
+      30,
+      60
+    ],
+    "grid_minutes": 5,
+    "Y": {
+      "version": "four_vd_available_c050_speed40_v1",
+      "weights": {
+        "69.510": 0.0417,
+        "65.990": 0.46,
+        "63.990": 0.36,
+        "61.670": 0.1383
+      },
+      "speed_lt": 40,
+      "c": 0.5,
+      "all_missing": null
+    },
+    "availability": {
+      "vd_delay_minutes": 10,
+      "vd_history_offsets_minutes": [
+        10,
+        25
+      ],
+      "exclude_vd_types": [
+        "RECOVERED_P1"
+      ],
+      "completed_trip_extra_delay_days": 1,
+      "embargo_minutes": 30
+    },
+    "warmup_before": "2024-04-01",
+    "folds": [
+      {
+        "id": "F1",
+        "start": "2024-06-01",
+        "end": "2024-09-01"
+      },
+      {
+        "id": "F2",
+        "start": "2024-09-01",
+        "end": "2024-11-01"
+      },
+      {
+        "id": "F3",
+        "start": "2024-11-01",
+        "end": "2025-01-01"
+      }
+    ],
+    "exploratory": {
+      "start": "2025-01-01",
+      "end": "2026-01-01"
+    },
+    "inputs": {
+      "v3": "V3_LITE/V3_LITE.parquet",
+      "m06b": "M06B_HOLIDAYS_2024_2025/M06B_WEEKEND_LONGHOLIDAY_2024_2025.parquet",
+      "vd": "VD_N3_N_LITE/VD_N3_N_2024_2025_LITE.parquet",
+      "labels": "V3_LITE/V3_Y_5MIN.parquet",
+      "calendar": "M06B_HOLIDAYS_2024_2025/_logs/holiday_calendar.csv"
+    },
+    "algorithms": [
+      "lightgbm",
+      "logistic"
+    ],
+    "grouping": [
+      "ALL",
+      "TOP20",
+      "K05",
+      "K10",
+      "K20"
+    ],
+    "kmeans": {
+      "n_init": 30,
+      "ratio": "none",
+      "unseen_origin": "OTHER_zero_expected_demand"
+    },
+    "npq": {
+      "P_width_hours": 1,
+      "P_strength": 300,
+      "Q_strength": 30,
+      "B1_N_pseudo_days": 3,
+      "B1_P_strength": 600,
+      "B2_Q_kind_strength": 200,
+      "Q_truncate": false
+    },
+    "models": {
+      "lightgbm": {
+        "n_estimators": 160,
+        "num_leaves": 12,
+        "min_child_samples": 60
+      },
+      "logistic": {
+        "C": 1.0
+      }
+    },
+    "selection": {
+      "primary": "average_precision_2",
+      "secondary": [
+        "macro_f1",
+        "log_loss"
+      ],
+      "practical_ap_tie": 0.005,
+      "bootstrap_reps": 300,
+      "bootstrap_unit": "consecutive_holiday_block"
+    },
+    "decision": {
+      "balanced_cost": [
+        [
+          0,
+          1,
+          3
+        ],
+        [
+          5,
+          0,
+          1
+        ],
+        [
+          12,
+          5,
+          0
+        ]
+      ],
+      "cost_sensitivity": {
+        "false_alarm_cautious": [
+          [
+            0,
+            2,
+            5
+          ],
+          [
+            6,
+            0,
+            2
+          ],
+          [
+            15,
+            6,
+            0
+          ]
+        ],
+        "miss_sensitive": [
+          [
+            0,
+            1,
+            3
+          ],
+          [
+            8,
+            0,
+            2
+          ],
+          [
+            20,
+            8,
+            0
+          ]
+        ]
+      },
+      "coverage_floor": 0.95,
+      "y2_protection_probability": 0.4,
+      "onset_min_slots": 3,
+      "event_window_minutes": 30
+    },
+    "class_weight_candidates": [
+      1.5,
+      2.0
+    ],
+    "large_model_search": false
+  },
+  "config_signature": "3cf895230c4342d400821af54e9592c4c9561a6afbd32e8fdd6ba261d39f9692",
+  "git_main_commit": "98b742f759bdf30e444f073107dbe8bd35e3c3d5",
+  "packages": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.5",
+    "pyarrow": "24.0.0",
+    "duckdb": "2.0.1",
+    "scikit-learn": "1.9.0",
+    "lightgbm": "4.7.0",
+    "streamlit": "1.61.1",
+    "plotly": "7.1.0"
+  },
+  "platform": "Windows-10-10.0.26200-SP0"
+}

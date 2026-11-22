@@ -1,5 +1,16 @@
 # Statistical-Practice
 
+## 目前正式方向：O 歷史需求與短期壅塞預警（2026-11-22）
+
+正式提前預測使用 VD 歷史狀態、已知時間／日型及歷史 O 的 N/P/Q，不使用未知目的地 D。主分析為 **t+30 分鐘**，15 分鐘作敏感度；正式Y為四站有效權重重新正規化、速度<40、c=.50。2024時序驗證選模，2025為探索性回測，2026保留新獨立驗證。
+
+- [**2026-11-22 已完成工作包0–E：結果、圖表與Dashboard**](reports/2026-11-22/README.md)
+- [**詳細定義：母體、Y、N/P/Q、平滑、O分群、事件與成本**](experiments/congestion_2026/METHODS_zh-TW.md)
+- [資料介面、schema與重現依賴](experiments/congestion_2026/DATA_CONTRACT.md)
+- [實驗程式、Windows執行與續跑](experiments/congestion_2026/README.md)｜[Dashboard操作與啟動](dashboard/README.md)
+
+本輪完成120個模型配置／折別，20項測試通過。K-means尚無穩定增額優勢，暫保留Baseline；需求估計與分類改善分開評估。Dashboard明示Historical Replay / Offline Evaluation，沒有即時串流。下方OD探索與11/12報告為保留的歷史研究，不能當成目前正式提前預測使用完整OD。
+
 ## 國道瓶頸資料專案：已確認研究設定（2026-11-04）
 
 - **正式壅塞 Y：** 使用龍潭—大溪北向的四支 VD（K69.510、K65.990、K63.990、K61.670；不納入 K61.000），以代表區段長度權重計算加權壅塞比例；局部／大範圍主分析門檻 `c=0.50`（2026/11/12）。

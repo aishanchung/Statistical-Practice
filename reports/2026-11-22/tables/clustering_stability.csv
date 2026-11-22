@@ -1,0 +1,13 @@
+﻿fold,history_before,K,comparison,ARI,predictive_evidence
+F1,2024-06-01,5,seed_only_geometry,1.0,False
+F1,2024-06-01,10,seed_only_geometry,0.9363443067473082,False
+F1,2024-06-01,20,seed_only_geometry,0.7058376378795275,False
+F2,2024-09-01,5,seed_only_geometry,0.964901415327943,False
+F2,2024-09-01,10,seed_only_geometry,0.9961576603911309,False
+F2,2024-09-01,20,seed_only_geometry,0.7022642129353819,False
+F3,2024-11-01,5,seed_only_geometry,1.0,False
+F3,2024-11-01,10,seed_only_geometry,0.9381580353926415,False
+F3,2024-11-01,20,seed_only_geometry,0.648032864381948,False
+EXP2025,2025-01-01,5,seed_only_geometry,1.0,False
+EXP2025,2025-01-01,10,seed_only_geometry,0.9822980175828543,False
+EXP2025,2025-01-01,20,seed_only_geometry,0.8207579945813402,False

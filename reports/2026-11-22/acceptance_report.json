@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-22",
+  "completed_model_cells": 120,
+  "prediction_rows": 1501986,
+  "pytest_passed": 20,
+  "dashboard_ui_checks": 6,
+  "browser_page_errors": [],
+  "required_outputs_verified": 29,
+  "png_figures": 17,
+  "svg_figures": 17,
+  "bootstrap_unit": "consecutive research-date block; onset fragments on same/adjacent dates retained together",
+  "existing_tracked_files_modified": false,
+  "github_push_performed": false
+}

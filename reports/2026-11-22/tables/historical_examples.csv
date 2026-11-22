@@ -1,0 +1,4 @@
+﻿case,event_time,selection_rule,figure
+success,2025-01-31 15:40:00,"earliest clean outcome if present, otherwise earliest observed; no manually manufactured values",fig_D3_event_timeline
+miss,2025-02-15 12:30:00,"earliest clean outcome if present, otherwise earliest observed; no manually manufactured values",fig_D3_missed_event_timeline
+Y1,2025-01-04 16:45:00,"earliest clean outcome if present, otherwise earliest observed; no manually manufactured values",fig_C4_example_y1_event

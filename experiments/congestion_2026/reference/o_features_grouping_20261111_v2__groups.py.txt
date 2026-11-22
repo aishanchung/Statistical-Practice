@@ -1,0 +1,35 @@
+def geometry(table,ratio):
+    blocks=[];records=[]
+    def scalar_block(values,name):
+        x=np.asarray(values,dtype=float)
+        if x.ndim==1:x=x[:,None]
+        med=np.nanmedian(x,axis=0)
+        med=np.where(np.isfinite(med),med,0)
+        x=np.where(np.isfinite(x),x,med)
+        lo,hi=np.quantile(x,[.01,.99],axis=0)
+        x=np.clip(x,lo,hi)
+        mean=x.mean(axis=0);sd=x.std(axis=0)
+        sd=np.where(sd>1e-12,sd,1)
+        blocks.append((x-mean)/sd/np.sqrt(x.shape[1]))
+        records.append({"block":name,"median":med.tolist(),"low":lo.tolist(),"high":hi.tolist(),
+                        "mean":mean.tolist(),"sd":sd.tolist(),"dimension":x.shape[1]})
+    scalar_block(table[["log1p_N_all","log1p_N_B"]],"log_counts")
+    scalar_block(np.arcsin(np.sqrt(table.p.clip(0,1))),"passing_probability_arcsin")
+    for prefix in ("pi_B_","nu_B_"):
+        x=table.filter(regex="^"+prefix).to_numpy(dtype=float, copy=True)
+        missing=np.isnan(x).all(axis=1)
+        parent=np.nansum(x*table.N_B.to_numpy()[:,None],axis=0)
+        parent=parent/parent.sum()
+        x[missing]=parent
+        x=np.sqrt(x)
+        mean=x.mean(axis=0)
+        scale=np.sqrt(np.mean(np.sum((x-mean)**2,axis=1)))
+        if scale<1e-12:scale=1
+        blocks.append((x-mean)/scale)
+        records.append({"block":prefix+"Hellinger","parent":parent.tolist(),"mean":mean.tolist(),"scale":scale})
+    scalar_block(np.c_[np.log1p(table.lag_median),table.missing_lag.astype(float)],"lag_and_missing")
+    if ratio=="r_all_and_p":
+        scalar_block(table[["log_r_all_smoothed","log_r_p_smoothed"]],ratio)
+    elif ratio!="none":
+        scalar_block(table["log_"+ratio+"_smoothed"],ratio)
+    return np.concatenate(blocks,axis=1),records

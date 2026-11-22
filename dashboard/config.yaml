@@ -1,0 +1,4 @@
+data_dir: ../experiments/congestion_2026/outputs/workpackages_0ABCDE_v1/dashboard_export
+title: 國道三號龍潭至大溪北向｜短期壅塞預警系統
+positioning: Historical Replay / Offline Evaluation
+default_horizon: 30
