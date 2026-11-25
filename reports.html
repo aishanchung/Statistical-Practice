@@ -86,10 +86,13 @@
             <div class="report-name">第二次進度報告</div>
             <span class="report-badge">預定報告</span>
           </div>
-          <div class="report-item upcoming">
-            <div class="report-date">2026/11/12</div>
-            <div class="report-name">第一次進度報告</div>
-            <span class="report-badge">預定報告</span>
+          <div class="report-list-subhead">已完成報告</div>
+            <div class="report-item active" data-report="2026-11-12">
+            <button type="button" class="report-select" onclick="openReport('2026-11-12')" style="border:0;background:transparent;padding:0;font:inherit;text-align:left;cursor:pointer;width:100%;">
+              <div class="report-date">2026/11/12</div>
+              <div class="report-name">結合 VD 與 O 歷史需求之高速公路壅塞預測</div>
+            </button>
+            <div class="report-links"><a href="reports/2026-10-22_report.pptx" download>下載 PPT</a> &nbsp;｜&nbsp; <a href="reports/2026-10-22_report.pdf" target="_blank" rel="noopener noreferrer">開啟 PDF</a></div>
           </div>
           <div class="report-list-subhead">已完成報告</div>
           <div class="report-item active" data-report="2026-10-22">
@@ -115,6 +118,7 @@
   <script src="script.js"></script>
   <script>
     const reports = {
+      '2026-11-12': {pdf:'reports/2026-11-12_report.pdf', title:'2026/11/12 研究進度報告', description:'結合 VD 與 O 歷史需求之高速公路壅塞預測'}
       '2026-10-22': {pdf:'reports/2026-10-22_report.pdf', title:'2026/10/22 研究進度報告', description:'正式 EDA、OD 分群與壅塞預測方法規劃'},
       '2026-10-01': {pdf:'reports/2026-10-01_report.pdf', title:'2026/10/01 研究進度報告', description:'資料整併與初步 EDA'}
     };
