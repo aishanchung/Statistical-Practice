@@ -1,0 +1,27 @@
+{
+  "source": "2024 pooled OOF development exploration; not unbiased selected validation",
+  "uses_2025": false,
+  "precision_min": 0.8,
+  "thresholds": {
+    "ALL_B02": 0.5,
+    "ALL_B03": 0.5,
+    "ALL_B04_w2": 0.65,
+    "ALL_B04_w4": 0.8,
+    "TOP20_B02": 0.6,
+    "TOP20_B03": 0.6,
+    "TOP20_B04_w2": 0.7,
+    "TOP20_B04_w4": null,
+    "K05_B02": 0.5,
+    "K05_B03": 0.5,
+    "K05_B04_w2": 0.65,
+    "K05_B04_w4": 0.75,
+    "GMM05_B02": 0.5,
+    "GMM05_B03": 0.5,
+    "GMM05_B04_w2": 0.65,
+    "GMM05_B04_w4": 0.8,
+    "TS10_B02": 0.55,
+    "TS10_B03": 0.55,
+    "TS10_B04_w2": 0.7,
+    "TS10_B04_w4": 0.8
+  }
+}

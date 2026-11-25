@@ -224,3 +224,7 @@ R為待人工複核，不是第四真值、不算正確分類、不算硬警報�
 僅clone GitHub不會取得研究原始資料及舊月checkpoint。現有程式為相容性保留對`legacy_root`指定的歷史函式、月彙總、完成時間表與h15/h30來源特徵表依賴。reference保存逐字函式供審核，並非可獨立執行完整前處理的資料替代品。缺資料應明確報錯，不能生成假結果。完整依賴見 [DATA_CONTRACT.md](DATA_CONTRACT.md)。
 
 本輪120個cell = A的96個（6配置×2演算法×2h×4折）＋B的16個（4配置×h30×4折）＋C2的8個（2權重×h30×4折），並非120種研究模型。Dashboard是Historical Replay / Offline Evaluation；只有實際完成模型可進排行榜。未來真值需選「事後答案」，不在當時可知資訊中顯示。
+
+## 2026-11-25 二元 Pilot 補充
+
+本次新工作不沿用第9節歷史Macro-F1輔助排序，不納入M0，也不選單一最佳模型。固定PQ、h30、LightGBM及ALL/TOP20/K05/GMM05/TS10；Z0=1(Y>0)，原缺失保持缺失。B01原argmax合併、B02 p1+p2、B03直接二元、B04正類權重2/4；加權為未校準分數。0.20–0.80以0.05網格作預設決策比較，2024 pooled OOF的precision>=0.80門檻只屬開發探索，2025前凍結；無折內選門檻後的正式驗證主張。Z1以每折截止前高速>=80的占有率Q95固定，strict/available分開，與Z0共同樣本比較；本輪沒有Z1重訓。所有舊模型機率先重現再開始二元訓練。日期區塊Bootstrap條件於已訓練模型，2024合併OOF與折別平均分開。完整成果、未完成項目與來源見[二元Pilot報告](../../reports/2026-11-25/binary_congestion_pilot/findings_zh-TW.md)。

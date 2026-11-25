@@ -63,3 +63,7 @@ VD可用延遲採10分鐘保守代理，輸入t−10/t−25，遮罩RECOVERED_P1
 事件不確定性以連續研究日期區塊重抽樣，同日及相鄰日 onset 不拆成獨立事件。未完整觀測警報後事件窗且沒有已知命中的 episode 保留為截尾，不能視為誤報或成功。`event_bootstrap.csv` 同時提供事件 Recall 與已確認誤報／日的區間。
 
 最後驗收見本機輸出 `acceptance_report.md`，研究結論見 `research_conclusions_zh.md`。現有原始逐日 CSV 是非假日母體候選，尚未完成其完整性及發布時間稽核，不能直接當作已可用的 N/P/Q 輸入。
+
+## 2026-11-25 二元壅塞 Pilot
+
+[實際成果與圖表](../../reports/2026-11-25/binary_congestion_pilot/findings_zh-TW.md)｜[獨立執行與續跑說明](BINARY_PILOT_zh-TW.md)。使用既有快取、LightGBM、PQ、h30、五種代表性O分組；三分類保留，Z0為主、折內歷史Q95標籤為敏感度。門檻網格預先固定，2024 OOF選門檻僅開發探索；2025不參與選模或門檻調整。

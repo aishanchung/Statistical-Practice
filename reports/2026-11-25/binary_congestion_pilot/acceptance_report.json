@@ -1,0 +1,68 @@
+{
+  "passed": true,
+  "scope": "full_pilot",
+  "expected_prediction_cells": 100,
+  "completed_prediction_cells": 100,
+  "new_binary_models": 60,
+  "reproduced_three_class_models": 20,
+  "all_old_models_reproduced_before_binary_training": true,
+  "fold_history_occupancy_threshold_verified": true,
+  "unknown_never_imputed_negative": true,
+  "fixed_threshold_validation": true,
+  "selected_threshold_2024_is_exploratory": true,
+  "2025_exploratory_only": true,
+  "no_raw_trip_scan": true,
+  "no_M0": true,
+  "weighted_scores_not_calibrated": true,
+  "Z1_sensitivity": "same fitted Z0 models; common valid samples; no Z1 retraining",
+  "event_warning_evaluation": "not performed; observed durations and t-state strata descriptive only",
+  "bootstrap": "conditional on trained models; date blocks; exploratory",
+  "delivery_checks": {
+    "input_hashes_unchanged": true,
+    "inherited_checkpoint_hashes_unchanged": true,
+    "all_confusion_sums_equal_samples": true,
+    "100_prediction_cells": true,
+    "60_new_models": true,
+    "20_old_models_reproduced": true,
+    "no_2025_threshold_selection": true,
+    "threshold_constraint_table_only_2024": true,
+    "handoff_TOP20_binary_confusion_reproduced": true,
+    "2024_fold_sample_counts": true,
+    "unknown_label_not_counted_as_negative": true,
+    "both_time_units_events_match": true,
+    "all_frozen_thresholds_satisfy_2024_constraint": true,
+    "bootstrap_300_repetitions": true,
+    "bootstrap_multiple_date_blocks": true,
+    "2025_labels_identical_on_common_samples": true
+  },
+  "environment": {
+    "python": "3.11.15",
+    "numpy": "2.4.6",
+    "pandas": "3.0.5",
+    "pyarrow": "24.0.0",
+    "lightgbm": "4.7.0",
+    "scikit-learn": "1.9.0"
+  },
+  "incomplete": [
+    "inner-history threshold selection",
+    "Z1 retraining",
+    "window-target/event-warning model",
+    "exact requested Word file not found"
+  ],
+  "smoke_and_resume_test": "final source: smoke and same-output resume both passed",
+  "regression_tests_passed": 3,
+  "figures_visually_reviewed": [
+    "PR_2024.png",
+    "PR_2025_exploratory.png",
+    "confusion_2024.png",
+    "confusion_2025.png"
+  ],
+  "source_cosmetic_revision": {
+    "before_sha256": "0ed739862ade9c68940c48fb7d955a705b3b10e3b32037a8244bbc99292faa28",
+    "after_sha256": "a69711abfa063c76392ab19bfe870b84d6cd31d3c195ef4f3336d4b7666fd1ef",
+    "AST_identical": true,
+    "change": "Remove trailing whitespace and normalize line endings; executable AST unchanged",
+    "executed_source_snapshot": "audit/executed_source_before_whitespace_cleanup.py",
+    "original_manifest_snapshot": "audit/manifest_before_whitespace_cleanup.json"
+  }
+}

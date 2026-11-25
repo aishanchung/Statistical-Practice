@@ -1,0 +1,13 @@
+﻿fold,label,events,clean_30m,left_censored,right_censored,observed_median_minutes,observed_p90_minutes
+EXP2025,Z0,562,158,0,0,10.0,70.0
+EXP2025,Z1_available,562,158,0,0,10.0,70.0
+EXP2025,Z1_strict,562,154,14,14,10.0,70.0
+F1,Z0,168,55,0,0,10.0,55.0
+F1,Z1_available,167,55,0,0,10.0,55.0
+F1,Z1_strict,167,52,19,22,10.0,55.0
+F2,Z0,88,27,1,1,15.0,75.4999999999999
+F2,Z1_available,88,27,1,1,12.5,75.4999999999999
+F2,Z1_strict,88,27,1,1,12.5,75.4999999999999
+F3,Z0,71,22,0,0,10.0,105.0
+F3,Z1_available,71,22,0,0,10.0,105.0
+F3,Z1_strict,71,22,0,0,10.0,105.0
