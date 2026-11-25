@@ -79,3 +79,11 @@ K05兩群涵蓋99.95%瓶頸旅次；有效需求群數1/sum(s_g²)：K05 1.77、
 ALL的2024三折平均B01/B02/B03 recall為63.87%/67.08%/67.64%，precision為83.20%/81.73%/82.19%。直接二元對B02的2024 pooled recall差+0.83百分點，300次配對日期區塊95%區間[-0.50,+2.28]百分點，增益有限。權重2/4固定0.5下recall升至76.47%/81.53%，precision降至75.95%/68.80%。2024 pooled precision>=0.80下ALL權重2選0.65僅比B03多9格命中；TOP20權重4在網格無可行解。五種O分組無一致優於ALL的證據。2025維持探索定位，未參與門檻或模型選擇。
 
 [完整數值、圖表、標籤稽核與限制](binary_congestion_pilot/findings_zh-TW.md)｜[PowerShell執行與續跑](../../experiments/congestion_2026/BINARY_PILOT_zh-TW.md)。本輪完成固定t+30分鐘格分類，尚未做折內歷史門檻選擇、Z1重訓或窗口／新發事件預警模型。指定Word的(2).docx未定位，未擅自以其他版本替換。
+
+## 7. 跨分類器二元比較已完成
+
+固定原Pilot Z0、B0_PQ、h30及ALL/TOP20/K05/GMM05/TS10，補上Logistic與XGBoost，原LightGBM完全沿用。Logistic/XGBoost共160個訓練checkpoint，其中12份舊Logistic三分類機率精確重現，148個新模型；B01/B02共用三分類，合計300個策略預測配置。smoke與續跑、24項測試、來源與checkpoint雜湊檢查通過，產出19組300dpi PNG及PDF圖。
+
+2024三折平均ALL/B03的Precision／Recall／AP：Logistic 82.78%／68.33%／.83399，XGBoost 82.94%／64.97%／.83340，LightGBM 82.19%／67.64%／.83359。ALL下跨分類器AP的合併OOF配對區間皆跨零，未認定單一最佳分類器；Logistic可用較簡單的線性形式取得相近效果。B03相對B02無一致AP增益，加權主要改變決策取捨；2024其他O分組相對ALL無穩定正AP增益。原12ef9da的主要限制仍保留，2025不選模／調門檻。
+
+[完整六題回答、圖表與不確定性](binary_classifier_comparison/findings_zh-TW.md)｜[參數、資料依賴及PowerShell續跑](../../experiments/congestion_2026/BINARY_CLASSIFIER_COMPARISON_zh-TW.md)。原Word本輪未再修改；未新增K搜尋、Y修改、窗口或新發事件模型。

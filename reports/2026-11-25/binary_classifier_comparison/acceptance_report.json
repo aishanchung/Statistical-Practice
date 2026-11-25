@@ -1,0 +1,57 @@
+{
+  "passed": true,
+  "scope": "full",
+  "checks": {
+    "training_expected_cells": true,
+    "input_hashes_unchanged": true,
+    "no_M0": true,
+    "label_Z0_only": true,
+    "source_lightgbm_not_retrained": true,
+    "lightgbm_metrics_reproduced": true,
+    "confusion_sums_equal_samples": true,
+    "common_samples_all_classifiers": true,
+    "thresholds_frozen_without_2025": true,
+    "bootstrap_AP_matches_sklearn": true,
+    "bootstrap_multiple_date_blocks": true,
+    "expected_300_prediction_configurations": true,
+    "all_source_files_still_unchanged": true,
+    "threshold_grid_only_2024_selected": true
+  },
+  "source_commit": "12ef9da",
+  "prediction_configurations": 300,
+  "new_or_reproduced_training_models": 160,
+  "bootstrap_reps": 300,
+  "no_hyperparameter_search": true,
+  "2025_exploratory_only": true,
+  "weighted_scores_not_calibrated": true,
+  "event_analysis": "post-hoc t-state strata, not first onset or window warning",
+  "logistic_effects_not_causal": true,
+  "unfinished": [
+    "inner-history threshold selection/unbiased post-selection validation",
+    "new-onset/window prediction models"
+  ],
+  "analysis_script_sha256": "eb2537cd0ee18adb36546f914da8cda9991851f0938fc195856686bff6bb09d6",
+  "delivery_checks": {
+    "160_checkpoint_hashes_verified": true,
+    "input_files_unchanged": true,
+    "analysis_code_matches_report": true,
+    "300_common_sample_configurations": true,
+    "12_old_logistic_predictions_reproduced_exactly": true,
+    "60_threshold_rules_frozen_on_2024": true,
+    "300_valid_bootstrap_draws": true,
+    "B01_B02_identical_ranking_AP_difference_zero": true
+  },
+  "reused_logistic_three_class_cells": 12,
+  "new_models_not_counting_reproduction": 148,
+  "smoke_and_resume_verified": true,
+  "regression_tests_passed": 3,
+  "full_test_suite": {
+    "command": ".venv/Scripts/python.exe -m pytest experiments/congestion_2026/tests -q",
+    "passed": 24,
+    "new_regression_tests": 3,
+    "smoke_resume": "8/8 checkpoints reused; same training source"
+  },
+  "figure_count": 19,
+  "delivery_script_sha256": "37d5be6eab363503748909136be55c5d0b5d9f88f52b0b185d6f763da2742ffe",
+  "figures_visually_reviewed": true
+}

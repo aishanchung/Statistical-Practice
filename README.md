@@ -2,6 +2,9 @@
 
 ## 最新研究進度（2026-11-25）
 
+- [2026-11-25 三分類器二元壅塞比較已完成](reports/2026-11-25/binary_classifier_comparison/findings_zh-TW.md)：Logistic、XGBoost與既有LightGBM，共300個預測配置、19組PNG／PDF圖及300次配對日期區塊Bootstrap；Logistic可達相近效果，ALL仍有競爭力，加權主要改變漏報／誤報取捨。[執行與續跑](experiments/congestion_2026/BINARY_CLASSIFIER_COMPARISON_zh-TW.md)。
+
+
 - [2026-11-25 二元壅塞 Pilot 已完成：實際結果、PR與混淆矩陣](reports/2026-11-25/binary_congestion_pilot/findings_zh-TW.md)｜[PowerShell執行與續跑](experiments/congestion_2026/BINARY_PILOT_zh-TW.md)。20個舊模型重現、60個新二元模型；類別加權減少漏報但增加誤報，直接重訓與分群增益有限，2025僅探索。
 
 

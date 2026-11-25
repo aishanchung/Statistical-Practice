@@ -67,3 +67,7 @@ VD可用延遲採10分鐘保守代理，輸入t−10/t−25，遮罩RECOVERED_P1
 ## 2026-11-25 二元壅塞 Pilot
 
 [實際成果與圖表](../../reports/2026-11-25/binary_congestion_pilot/findings_zh-TW.md)｜[獨立執行與續跑說明](BINARY_PILOT_zh-TW.md)。使用既有快取、LightGBM、PQ、h30、五種代表性O分組；三分類保留，Z0為主、折內歷史Q95標籤為敏感度。門檻網格預先固定，2024 OOF選門檻僅開發探索；2025不參與選模或門檻調整。
+
+## 2026-11-25 三分類器二元補充
+
+[完整研究結果、六個問題及圖表](../../reports/2026-11-25/binary_classifier_comparison/findings_zh-TW.md)｜[執行、續跑、參數與私有依賴](BINARY_CLASSIFIER_COMPARISON_zh-TW.md)。固定原Pilot Z0、B0_PQ、h30、五組O配置與時間切分，新增Logistic/XGBoost，LightGBM完全重用。B01/B02共用三分類模型，不以Macro-F1選模，2025仍為探索性回測；公開報告不含逐格預測或原始旅次。

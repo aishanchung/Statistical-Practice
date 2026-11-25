@@ -1,0 +1,5 @@
+{
+  "xgboost": "160 trees, max_depth=3, min_child_weight=8, eta=.05, subsample=.9, colsample=1, L2 lambda=10, max_bin=256, CPU hist, 4 threads; no tuning/early stopping",
+  "logistic": "median imputation + missing indicators; training StandardScaler; L2 C=1; lbfgs; max_iter=2000; sample weights only in classifier",
+  "lightgbm": "read-only reuse of prior binary pilot scores; no fitting"
+}

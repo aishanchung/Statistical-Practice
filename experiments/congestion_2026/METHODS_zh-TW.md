@@ -228,3 +228,9 @@ R為待人工複核，不是第四真值、不算正確分類、不算硬警報�
 ## 2026-11-25 二元 Pilot 補充
 
 本次新工作不沿用第9節歷史Macro-F1輔助排序，不納入M0，也不選單一最佳模型。固定PQ、h30、LightGBM及ALL/TOP20/K05/GMM05/TS10；Z0=1(Y>0)，原缺失保持缺失。B01原argmax合併、B02 p1+p2、B03直接二元、B04正類權重2/4；加權為未校準分數。0.20–0.80以0.05網格作預設決策比較，2024 pooled OOF的precision>=0.80門檻只屬開發探索，2025前凍結；無折內選門檻後的正式驗證主張。Z1以每折截止前高速>=80的占有率Q95固定，strict/available分開，與Z0共同樣本比較；本輪沒有Z1重訓。所有舊模型機率先重現再開始二元訓練。日期區塊Bootstrap條件於已訓練模型，2024合併OOF與折別平均分開。完整成果、未完成項目與來源見[二元Pilot報告](../../reports/2026-11-25/binary_congestion_pilot/findings_zh-TW.md)。
+
+## 2026-11-25 跨分類器補充
+
+在12ef9da的Z0／PQ／h30與相同五組O特徵上，Logistic採median＋缺失指示、StandardScaler、L2 C=1、lbfgs及max_iter=2000；僅訓練期fit前處理，類別權重只傳分類器損失。XGBoost固定160棵、深度3、min_child_weight=8、eta=.05、subsample=.9、colsample=1、reg_lambda=10、hist CPU與max_bin=256，不調參、不用外部eval_set。其Hessian子節點權重門檻不同於LightGBM樣本數門檻，不能稱模型容量已完全匹配。B01/B02共用一個三分類模型；B03/B04為另訓二元，正類權重1/2/4。LightGBM全部重用舊Pilot並核對樣本與指標。
+
+配對Bootstrap在同一批合併OOF／2025探索資料上，以連續日期區塊的共同抽中次數計算各模型P/R/F1/AP、誤報格數及Y1/Y2漏報差；AP含ties的加權計算與sklearn核對。300次區間條件於已訓練模型，無多重比較校正。2024折平均、合併OOF以及2025明確分開；同OOF選precision>=.80門檻僅開發探索，額外.80–.82窄帶是描述性公平工作點比較，無可行就報缺。Logistic係數是每訓練SD的條件log-odds關聯，非因果，群編號不跨fold硬接。詳見[完整補充](BINARY_CLASSIFIER_COMPARISON_zh-TW.md)。
